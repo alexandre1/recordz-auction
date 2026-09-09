@@ -1,0 +1,36 @@
+# Maven
+target/
+
+# Gradle (si tu utilises Gradle plutôt que Maven)
+build/
+.gradle/
+
+# Vaadin - fichiers générés automatiquement
+frontend/generated/
+frontend/index.html
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+vite.generated.ts
+types.d.ts
+tsconfig.json
+vaadin-featureflags.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Fichiers de config sensibles
+.env
+application-local.properties

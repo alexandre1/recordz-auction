@@ -1,0 +1,318 @@
+/*
+   CSS styling examples for the Vaadin app.
+   Visit https://vaadin.com/docs/flow/theme/theming-overview.html and
+   https://vaadin.com/themes/lumo for more information.
+*/
+
+/* Example: CSS class name to center align the content . */
+.centered-content {
+  margin: 0 auto;
+  max-width: 250px;
+}
+.centered-content2 {
+  margin: 0 auto;
+  max-width: 550px;
+}
+.background-image{
+  background-image: url("./logo.png");
+  background-repeat: no-repeat;
+  background-position:center;
+  background-color: white;
+}
+.background-image2{
+  background-image: url("./logo.png");
+  background-repeat: no-repeat;
+  background-position:top;
+  background-color: white;
+}
+
+.custom-margins{
+        &.v-margin-left   {padding-left:   250px;}
+        &.v-margin-right  {padding-right:  250px;}
+        &.v-margin-top    {padding-top:    100px;}
+        &.v-margin-bottom {padding-bottom: 300px;}
+    }
+.background-image3{
+  background-image: url("./logo.png");
+  background-repeat: no-repeat;
+  background-position:center;
+  background-color: white;
+}
+.label_error {
+	color:red;
+}
+
+body{
+    margin:0;
+    margin-left:60px;
+/*background: url(../images/logo.jpg) center center no-repeat;	*/
+    font-size:80%;
+    font-family:Geneva, Arial, Helvetica, sans-serif;
+    font-size:15px;
+    font-weight:300;
+    color:#0B06E2;
+
+}
+.preload {
+    display:none;
+}
+.header2{
+    width:780px;
+    height:120px;
+	margin-left:20px;
+    background: url(../images/logo.jpg) center center no-repeat;
+
+/*  height:1000px;*/
+    padding:0;
+}
+
+/*  input[disabled="disabled"] {
+	background-color:#333333;
+	color:#FF0000;
+}*/
+
+.menu_top {
+	margin:10px;
+	margin-top:25px;
+	margin-left:35px;
+}
+
+.middle_middle{
+/*    width:680px;
+	height:60px;
+	margin-left:95px;
+/*  height:1000px;*/
+}
+.menu_second {
+	margin-left:12px;
+}
+.header{
+    top:20px;
+    background: url(../images/star.gif) 100px left no-repeat;
+/*  width:20px;*/
+    padding:0;
+}
+.marquee_text {
+	margin-left:110px;
+}
+select {
+    border-style:inset;
+    border-color:#94CEFA;
+    color:#0066CC;
+    width:150px;
+    background-color:#FFFFFF;
+    font-size:15px;
+}
+
+textarea {
+    border-style:dotted;
+    border-color:#94CEFA;
+    color:#0B06E2;
+    background-color:#FFFFFF;
+    font-size:15px;
+}
+
+.rigth_search {
+    position:absolute;right:340px;
+}
+button {
+ border-radius: 12px;
+}
+
+input {
+    border-color:#6aa3f8;
+    color:#0B06E2;
+    width:150px;
+    background-color:#FFFFFF;
+    font-size:15px;
+}
+.search_box {
+ background:url(../images/middle.gif) center center no-repeat;
+ margin-left:30px;
+ margin-top:0px;
+ height:60px;
+ width:813px;
+}
+
+.conteneur{
+    margin-top:0px;
+/*  background: url(../images/test_new_back_ground_13_nov.gif) no-repeat;*/
+  /*  /*  background: url(../images/test_back_4.gif) no-repeat;*/
+  /*   background: url(../images/test.gif) no-repeat;*/
+ /*     background: url(../images/test_11.gif) no-repeat;*/
+    margin-right:auto;
+    font-size:12px;
+    margin-left:center;
+    width:880px;
+    text-align:left;
+    height:2480px;
+
+}
+
+.conteneur2{
+    background: url(../images/super.jpg) no-repeat;
+    margin-left:auto;
+    margin-right:auto;
+    width:780px;
+    font-size:15px;
+    text-align:justify;
+    height:439px;
+}
+
+.login_back {
+	background: url(../images/login_back.gif) no-repeat;
+}
+.table_login {
+	width:491px;
+	height:120px;
+}
+.register_back {
+	margin-left:250px;
+	width:520px;
+	height:420px;
+
+}
+.table_register_back {
+	margin-top:20px;
+	width:520px;
+
+}
+.list-menu {
+	margin-left: 20px;
+    margin-top:0px;
+/*    background: url(../images/menu8.gif) no-repeat;*/
+    float:left;
+    margin-right:auto;
+    width:175px;
+    font-size:15px;
+    text-align:left;
+    height:600px;
+}
+.box {
+    margin-top:0px;
+    float:left;
+    margin-right:auto;
+    width:375px;
+    font-size:15px;
+    text-align:left;
+
+}
+
+.rigth {
+    float: left;
+  width: 70%;
+}
+.smaller {
+ width:90px;
+}
+.input_left {
+    margin-right:20px;
+}
+
+fieldset {
+    border:0px solid black;
+}
+hr {
+ color:#94CEFA;
+ border-style:dashed;
+ background-color: #94CEFA;
+ height: 1px;
+}
+
+ul{
+    list-style:none;
+    padding:5px;
+    margin-top:10px;
+    margin-left:7px;
+    font-size:15px;
+    text-align:left;
+
+}
+
+li{
+    padding : 4px 0;
+    color:#FF324B;
+    font-weight:bold;
+    font-size:15px;
+    text-align:left;
+/*  font-size:1.2em;*/
+}
+A.menulink {
+    display:inline;
+    width: 100px;
+    height:40px;
+    text-align: center;
+    text-decoration: none;
+    font-family: Verdana, Helvetica, Arial, sans-serif;
+    font-size:12px;
+    color: #0B06E2;
+    border: solid 1px #FFFFFF;
+}
+
+A.menulink:hover {
+    border: solid 1px #6100C1;
+    background-color:#F0E1FF;
+}
+
+
+A.menulink2 {
+    display: inline;
+    width: 160px;
+	height:30px;
+    text-align: left;
+    text-decoration: none;
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+    font-size:12px;
+    color: #0B06E2;
+    border: solid 1px #FFFFFF;
+
+}
+
+
+A.menulink3 {
+    display: inline;
+    width: 98px;
+    text-align: left;
+    text-decoration: none;
+/*      background:url(../images/menu_back.jpg);            */
+   font-family: Verdana, Helvetica, Arial, sans-serif;
+    font-size:12px;
+    color: #0B06E2;
+    border: solid 1px #FFFFFF;
+}
+
+A.menulink3:hover {
+    border: solid 1px #6100C1;
+    background-color:#F0E1FF;
+    color:#666666;
+}
+.menu {
+  margin-left: 80%;
+  border: 1px solid #000000;
+  padding: 1em;
+}
+.filmTable{
+	border-collapse: collapse;
+}
+.tabs {position:relative; height: 27px; margin: 0; padding: 0; background:url("../images/bar_off.gif") repeat-x; overflow:hidden;border:0px solid #6D99B6; }
+.tabs li {display:inline;}
+.tabs a:hover, .tabs a.tab-active {background:#fff url("../images/bar_on.gif") repeat-x; border-right: 0px solid #fff; border-top-width:0px;}
+.tabs a  {height: 27px; font:12px verdana, helvetica, sans-serif;font-weight:bold;
+    position:relative; padding:6px 10px 10px 10px; margin: 0px -4px 0px 0px; color:#2B4353;text-decoration:none;border-left:1px solid #fff; border-right:1px solid #6D99B6;}
+.tab-container {background: #fff; border:1px solid #6D99B6; margin-left:0px;width:540px;}
+.tab-panes { margin: 3px;border:0px solid #6D99B6;;  }
+
+#rcorners2 {
+  border-radius: 25px;
+  border: 2px solid #73AD21;
+  padding: 20px;
+  width: 200px;
+  height: 150px;
+}
+
+/* ✅ Forcer fond blanc sur toute la navbar Vaadin */
+vaadin-app-layout::part(navbar) {
+    background-color: white !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #DDD;
+}

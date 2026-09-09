@@ -1,0 +1,1 @@
+import '@vaadin/stefan/fullcalendar2/full-calendar.js';

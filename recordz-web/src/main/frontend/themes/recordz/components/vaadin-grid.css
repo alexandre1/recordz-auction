@@ -1,0 +1,33 @@
+/* Bordure arrondie violette autour du grid */
+:host([theme~="avant-garde"]) {
+  border: 2px solid #6a0dad;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+/* Header : fond blanc, texte bleu/violet */
+:host([theme~="avant-garde"]) [part="header-cell"] {
+  background-color: #ffffff;
+  color: #3a3adb;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #d0b0f0;
+}
+
+/* Lignes : fond blanc, texte foncé */
+:host([theme~="avant-garde"]) [part="body-cell"] {
+  background-color: #ffffff;
+  color: #222222;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* Ligne survolée */
+:host([theme~="avant-garde"]) [part="row"]:hover [part="body-cell"] {
+  background-color: #f3eeff;
+}
+
+/* Ligne sélectionnée */
+:host([theme~="avant-garde"]) [part="row"][selected] [part="body-cell"] {
+  background-color: #e8d8ff;
+}

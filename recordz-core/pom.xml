@@ -1,0 +1,161 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!--  ✅ Héritage du parent : versions et configuration centralisées  -->
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>recordz-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <!--  relativePath pointe vers le pom.xml parent un niveau au-dessus  -->
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>recordz-core</artifactId>
+    <!--  ✅ packaging jar (par défaut) : ce module produit une librairie  -->
+    <packaging>jar</packaging>
+    <dependencies>
+        <!--  ── Spring ─────────────────────────────────────────────────  -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>27.1.0</version> <!-- vérifier la dernière sur Maven Central -->
+        </dependency>
+        <!--  ── Base de données ────────────────────────────────────────  -->
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>${mysql.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+        <!--  ── Dev ────────────────────────────────────────────────────  -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <!--  ✅ jOOQ codegen désactivé par défaut (phase none).
+                             Activé uniquement via le profil "codegen" ci-dessous.
+                             Commande : mvn generate-sources -P codegen -pl recordz-core  -->
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>jooq-codegen</id>
+                        <!--  phase none = désactivé par défaut  -->
+                        <phase>none</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jdbc>
+                        <driver>com.mysql.cj.jdbc.Driver</driver>
+                        <url>${jooq.codegen.url}</url>
+                        <user>${jooq.codegen.user}</user>
+                        <password>${jooq.codegen.password}</password>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.meta.mysql.MySQLDatabase</name>
+                            <inputSchema>${jooq.codegen.schema}</inputSchema>
+                            <excludes>flyway_schema_history|app_user</excludes>
+                        </database>
+                        <target>
+                            <packageName>com.example.recordz.jooq</packageName>
+                            <directory>target/generated-sources/jooq</directory>
+                        </target>
+                        <generate>
+                            <records>true</records>
+                            <pojos>true</pojos>
+                            <daos>true</daos>
+                            <fluentSetters>true</fluentSetters>
+                        </generate>
+                    </generator>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.mysql</groupId>
+                        <artifactId>mysql-connector-j</artifactId>
+                        <version>${mysql.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!--  ✅ PAS de spring-boot-maven-plugin ici :
+                             recordz-core est une librairie, pas un exécutable.
+                             Le repackage Boot (fat jar) appartient uniquement à recordz-web.  -->
+        </plugins>
+    </build>
+    <profiles>
+        <!--
+                ╔══════════════════════════════════════════════════════════════════╗
+                ║  Profil "codegen" : régénère les classes jOOQ depuis la DB      ║
+                ║                                                                  ║
+                ║  Usage : mvn generate-sources -P codegen -pl recordz-core       ║
+                ║                                                                  ║
+                ║  ⚠️  Adaptez les 4 propriétés ci-dessous à votre DB locale.     ║
+                ║      Ne committez jamais de mot de passe en clair dans Git :     ║
+                ║      préférez un fichier ~/.m2/settings.xml pour les secrets.    ║
+                ╚══════════════════════════════════════════════════════════════════╝
+                 -->
+        <profile>
+            <id>codegen</id>
+            <properties>
+                <jooq.codegen.url>jdbc:mysql://localhost:3306/new_db_recordz</jooq.codegen.url>
+                <jooq.codegen.user>root</jooq.codegen.user>
+                <jooq.codegen.password></jooq.codegen.password>
+                <jooq.codegen.schema>new_db_recordz</jooq.codegen.schema>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jooq</groupId>
+                        <artifactId>jooq-codegen-maven</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jooq-codegen</id>
+                                <!--  ✅ Réactivé uniquement quand -P codegen est passé  -->
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
