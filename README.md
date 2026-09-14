@@ -50,6 +50,9 @@ mvn generate-sources \
   -Djooq.codegen.password= \
   -Djooq.codegen.schema=new_db_recordz
 
+
+(Ou alors importer le fichier .sql dans PhpMyAdmin)
+
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
 export GOOGLE_CLIENT_SECRET=...
