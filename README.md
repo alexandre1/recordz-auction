@@ -1,5 +1,11 @@
 # Recordz — Marketplace
 
+Cette application Web Java Full Stack représente une place de marché Suisse permettant aux vendeurs et aux acheteurs 
+d'acheter et de vendre des articles de luxe sans frais de transaction. Aucun coût n'est facturé lors de la mise en vente
+ou de l'achat d'un article.
+
+Le financement se fera par la mise en évidence des articles sur les pages principales.
+
 Stack : **Java 25 · Vaadin 25 · Spring Boot 3.4 · Spring Security · OAuth2 Google · jOOQ 3.19 · MySQL 9 · Flyway · Docker**
 
 Base de données : schéma **recordz** (marketplace suisse — vêtements, électronique, automobile, vins, enchères…)
