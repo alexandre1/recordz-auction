@@ -4,6 +4,12 @@ Stack : **Java 25 · Vaadin 25 · Spring Boot 3.4 · Spring Security · OAuth2 G
 
 Base de données : schéma **recordz** (marketplace suisse — vêtements, électronique, automobile, vins, enchères…)
 
+https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3
+
+https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac
+
+https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620
+
 ---
 
 ## Architecture du schéma (résumé)
@@ -41,63 +47,11 @@ mvn generate-sources \
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
 export GOOGLE_CLIENT_SECRET=...
-mvn spring-boot:run
+mvn spring-boot:run -pl recordz-web
 ```
 
-→ [http://localhost:8080](http://localhost:8080)
+→ [http://localhost:8081](http://localhost:8081)
 
 ---
 
 ## Structure du projet
-
-```
-src/main/java/com/example/recordz/
-├── RecordzApplication.java
-├── config/
-│   └── JooqConfig.java                   # DSL settings + @EnableCaching
-├── security/
-│   ├── SecurityConfig.java               # Vaadin + OAuth2 Google
-│   ├── CustomOAuth2UserService.java      # Sync OAuth → personne
-│   ├── AuthenticatedUser.java            # Accès utilisateur courant
-│   └── LoginView.java                    # Page de connexion Vaadin
-├── model/domain/
-│   ├── Article.java                      # Annonce marketplace
-│   ├── Personne.java                     # Utilisateur / membre
-│   ├── Enchere.java                      # Mise aux enchères
-│   ├── Commande.java                     # Commande
-│   ├── Transaction.java                  # Transaction financière
-│   ├── Boutique.java                     # Boutique vendeur
-│   ├── Wish.java / WishList.java         # Liste de souhaits
-│   ├── Commentaire.java                  # Commentaire article
-│   ├── Referentiel.java                  # Tous les types de référence
-│   └── Evaluations.java                  # Notes achat/vente/article
-├── repository/
-│   ├── ArticleRepository.java            # jOOQ — articles
-│   ├── PersonneRepository.java           # jOOQ — utilisateurs
-│   ├── EnchereRepository.java            # jOOQ — enchères
-│   ├── CommandeRepository.java           # jOOQ — commandes
-│   └── ReferentielRepository.java        # jOOQ — tables de référence (@Cacheable)
-├── service/
-│   ├── ArticleService.java               # Logique métier articles
-│   ├── EnchereService.java               # Logique enchères avec validation
-│   └── PersonneService.java              # Logique utilisateurs
-└── ui/
-    ├── layouts/MainLayout.java           # Shell + nav drawer
-    └── views/
-        ├── HomeView.java                 # Accueil
-        ├── CatalogueView.java            # Catalogue + recherche
-        ├── EncheresView.java             # Enchères actives
-        └── OtherViews.java              # MesAnnonces, MesAchats, Wishlist, Boutique, Profil
-```
-
----
-
-## Notes importantes
-
-**OAuth2 ↔ Personne** : à la connexion Google, `CustomOAuth2UserService` fait un upsert dans la table `personne` (email = identifiant unique). Le champ `mot_de_passe` legacy n'est pas utilisé.
-
-**jOOQ code generation** : les repositories utilisent du DSL brut (`table("article")`, `field("nom")`). Après génération, remplacer par les classes typées : `import static com.example.recordz.jooq.tables.Article.ARTICLE`.
-
-**Référentiels mis en cache** : `ReferentielRepository` utilise `@Cacheable` — les cantons, catégories, libellés, etc. sont chargés une fois en mémoire.
-
-**Flyway** : la migration `V1__recordz_schema.sql` recrée tout le schéma en `utf8mb4`. Si vous importez le dump original (`new_db_recordz.sql`) directement, passez `baseline-on-migrate: true` et `baseline-version: 1`.
