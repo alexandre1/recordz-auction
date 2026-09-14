@@ -1744,6 +1744,13 @@ ALTER TABLE `wish_list`
 ALTER TABLE `article_visite`
   ADD CONSTRAINT `fk_av_article` FOREIGN KEY (`ref_article`) REFERENCES `article` (`id_article`),
   ADD CONSTRAINT `fk_av_personne` FOREIGN KEY (`ref_personne`) REFERENCES `personne` (`id_personne`);
+
+ALTER TABLE personne
+    ADD CONSTRAINT uk_personne_email UNIQUE (email);
+
+ALTER TABLE personne
+    ADD CONSTRAINT uk_personne_nom_utilisateur UNIQUE (nom_utilisateur);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
