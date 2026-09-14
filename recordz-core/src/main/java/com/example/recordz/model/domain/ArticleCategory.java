@@ -6,7 +6,7 @@ package com.example.recordz.model.domain;
  */
 public enum ArticleCategory {
 
-    ART(0, "Art & Design"),
+    ART(22222, "Art & Design"),
     FASHION_FEMME(1, "Mode Femme"),
     FASHION_HOMME(2, "Mode Homme"),
     PARFUM(13, "Parfum"),

@@ -759,7 +759,7 @@ CREATE TABLE `libelle` (
 --
 
 INSERT INTO `libelle` (`id_libelle`, `libelle`) VALUES
-(0, 'Art et design'),
+(22222, 'Art et design'),
 (1, 'Habits femmes'),
 (2, 'Habits hommes'),
 (3, 'Habits enfants'),
