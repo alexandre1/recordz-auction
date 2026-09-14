@@ -108,12 +108,58 @@ recordz-web/
 
 ---
 
-## Notes importantes
+## Architecture logicielle
 
-**OAuth2 ↔ Personne** : à la connexion Google, `CustomOAuth2UserService` fait un upsert dans la table `personne` (email = identifiant unique). Le champ `mot_de_passe` legacy n'est pas utilisé.
+### Modules Maven
 
-**jOOQ code generation** : les repositories utilisent du DSL brut (`table("article")`, `field("nom")`). Après génération, remplacer par les classes typées : `import static com.example.recordz.jooq.tables.Article.ARTICLE`.
+Le projet est découpé en deux modules pour séparer la logique métier de la couche web :
 
-**Référentiels mis en cache** : `ReferentielRepository` utilise `@Cacheable` — les cantons, catégories, libellés, etc. sont chargés une fois en mémoire.
+- **`recordz-core`** — modèles de domaine, repositories (accès données) et services (logique métier). Indépendant de Vaadin/Spring Web, réutilisable si une autre interface (API REST, batch) devait un jour consommer la même logique.
+- **`recordz-web`** — point d'entrée Spring Boot, configuration, sécurité et interface utilisateur Vaadin. Dépend de `recordz-core`.
 
-**Flyway** : la migration `V1__recordz_schema.sql` recrée tout le schéma en `utf8mb4`. Si vous importez le dump original (`new_db_recordz.sql`) directement, passez `baseline-on-migrate: true` et `baseline-version: 1`.
+### Couches applicatives
+
+L'application suit une architecture en couches classique :
+
+```
+┌─────────────────────────────────────┐
+│   UI (Vaadin Views)                  │  recordz-web/ui
+│   HomeView, CatalogueView, ...       │
+└──────────────┬────────────────────────┘
+               │
+┌──────────────▼────────────────────────┐
+│   Service (logique métier)           │  recordz-core/service
+│   ArticleService, EnchereService...  │
+│   @Transactional                     │
+└──────────────┬────────────────────────┘
+               │
+┌──────────────▼────────────────────────┐
+│   Repository (accès données)         │  recordz-core/repository
+│   DSL jOOQ brut                      │
+└──────────────┬────────────────────────┘
+               │
+┌──────────────▼────────────────────────┐
+│   MySQL (schéma recordz)             │  via HikariCP
+└─────────────────────────────────────┘
+```
+
+Chaque couche ne dépend que de la couche immédiatement inférieure : les vues Vaadin n'appellent jamais un repository directement, elles passent systématiquement par un service.
+
+### Sécurité et authentification
+
+L'authentification repose entièrement sur **OAuth2 Google** (pas de mot de passe local) :
+
+1. `SecurityConfig` délègue la connexion à `VaadinSecurityConfigurer` + `oauth2Login`.
+2. À chaque connexion, `CustomOAuth2UserService` intercepte le flux OIDC et fait un **upsert** dans la table `personne` (email = identifiant unique). Le champ `mot_de_passe` legacy n'est pas utilisé.
+3. `AuthenticatedUser` expose ensuite l'utilisateur courant aux vues Vaadin sans qu'elles aient à connaître les détails OAuth2.
+
+### Accès aux données
+
+- **jOOQ en DSL brut** (`table("article")`, `field("nom")`) tant que la génération de code typée n'a pas encore été branchée sur le schéma final. Une fois générée, remplacer par les classes typées : `import static com.example.recordz.jooq.tables.Article.ARTICLE`.
+- **HikariCP** comme pool de connexions, configuré dans `JooqConfig`.
+- **Flyway** pilote le schéma (`V1__recordz_schema.sql`, qui recrée tout le schéma en `utf8mb4`). Toute évolution du schéma passe par une nouvelle migration versionnée, jamais par une modification du fichier existant. Si vous importez le dump original (`new_db_recordz.sql`) directement, passez `baseline-on-migrate: true` et `baseline-version: 1`.
+- **Concurrence** : les opérations sensibles à la concurrence (ex. upsert OAuth2 dans `PersonneRepository`) s'appuient sur les contraintes `UNIQUE` en base plutôt que sur des vérifications applicatives, pour rester correctes sous forte charge concurrente (virtual threads).
+
+### Caching
+
+`ReferentielRepository` utilise `@Cacheable` pour les données de référence peu volatiles (cantons, catégories, libellés, etc.) — chargées une fois en mémoire au lieu d'un aller-retour DB à chaque affichage.
