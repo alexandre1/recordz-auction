@@ -2,6 +2,7 @@ package com.example.recordz.repository;
 
 import com.example.recordz.model.domain.Personne;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -10,6 +11,8 @@ import static org.jooq.impl.DSL.*;
 
 @Repository
 public class PersonneRepository {
+
+    private static final int MAX_USERNAME_ATTEMPTS = 10;
 
     private final DSLContext dsl;
 
@@ -40,8 +43,19 @@ public class PersonneRepository {
                 .fetchOptional()
                 .map(this::toPersonne);
     }
+
     /**
      * Upsert OAuth2 : crée ou met à jour la personne à partir de son email Google.
+     *
+     * Utilise un pattern "retry-on-conflict" plutôt qu'un check-then-act :
+     * avec les virtual threads, plusieurs requêtes concurrentes pour le même
+     * email (double-clic, plusieurs onglets) sont plus probables, donc on
+     * s'appuie sur les contraintes UNIQUE en base (email, nom_utilisateur)
+     * comme filet de sécurité atomique, et on réessaie en cas de collision
+     * sur le nom d'utilisateur.
+     *
+     * Prérequis en base (Flyway) : contraintes UNIQUE sur personne.email
+     * et personne.nom_utilisateur.
      */
     public Personne upsertFromOAuth(String email, String displayName) {
         Optional<Personne> existing = findByEmail(email);
@@ -49,36 +63,55 @@ public class PersonneRepository {
             return existing.get();
         }
 
-        // Dériver un nom d'utilisateur unique depuis l'email
         String baseUsername = email.split("@")[0];
-        String nomUtilisateur = ensureUniqueUsername(baseUsername);
 
-        dsl.insertInto(table("personne"))
-                .set(field("nom_utilisateur"), nomUtilisateur)
-                .set(field("mot_de_passe"), "")           // non utilisé avec OAuth2
-                .set(field("nom"), displayName != null ? displayName : "")
-                .set(field("prenom"), "")
-                .set(field("adresse"), "")
-                .set(field("npa"), 0)
-                .set(field("ville"), "")
-                .set(field("pays"), "")
-                .set(field("email"), email)
-                .set(field("no_telephone"), "")
-                .set(field("active"), 1)
-                .set(field("level"), 1)
-                .set(field("ref_host"), "")
-                .execute();
+        for (int attempt = 0; attempt <= MAX_USERNAME_ATTEMPTS; attempt++) {
+            String candidate = attempt == 0 ? baseUsername : baseUsername + attempt;
+            try {
+                dsl.insertInto(table("personne"))
+                        .set(field("nom_utilisateur"), candidate)
+                        .set(field("mot_de_passe"), "")           // non utilisé avec OAuth2
+                        .set(field("nom"), displayName != null ? displayName : "")
+                        .set(field("prenom"), "")
+                        .set(field("adresse"), "")
+                        .set(field("npa"), 0)
+                        .set(field("ville"), "")
+                        .set(field("pays"), "")
+                        .set(field("email"), email)
+                        .set(field("no_telephone"), "")
+                        .set(field("active"), 1)
+                        .set(field("level"), 1)
+                        .set(field("ref_host"), "")
+                        .execute();
 
-        return findByEmail(email).orElseThrow();
+                return findByEmail(email).orElseThrow();
+
+            } catch (DataAccessException e) {
+                if (!isDuplicateKeyViolation(e)) {
+                    throw e;
+                }
+
+                // Un autre thread vient peut-être de créer le même email
+                // entre notre findByEmail initial et cet insert : on lui cède la main.
+                Optional<Personne> raceWinner = findByEmail(email);
+                if (raceWinner.isPresent()) {
+                    return raceWinner.get();
+                }
+
+                // Sinon, c'est le nom_utilisateur qui est en collision : on réessaie
+                // avec un suffixe, sauf si on a épuisé les tentatives.
+                if (attempt == MAX_USERNAME_ATTEMPTS) {
+                    throw e;
+                }
+            }
+        }
+
+        // Inatteignable, mais requis par le compilateur
+        throw new IllegalStateException("Échec de l'upsert OAuth2 pour " + email);
     }
 
-    private String ensureUniqueUsername(String base) {
-        String candidate = base;
-        int suffix = 1;
-        while (dsl.fetchCount(table("personne"), field("nom_utilisateur").eq(candidate)) > 0) {
-            candidate = base + suffix++;
-        }
-        return candidate;
+    private boolean isDuplicateKeyViolation(DataAccessException e) {
+        return e.getMessage() != null && e.getMessage().contains("Duplicate entry");
     }
 
     public void update(Personne p) {

@@ -3403,7 +3403,16 @@ ALTER TABLE `wish`
 --
 ALTER TABLE `wish_list`
   ADD CONSTRAINT `fk_wl_user` FOREIGN KEY (`ref_user`) REFERENCES `personne` (`id_personne`);
+
+
+ALTER TABLE personne
+    ADD CONSTRAINT uk_personne_email UNIQUE (email);
+
+ALTER TABLE personne
+    ADD CONSTRAINT uk_personne_nom_utilisateur UNIQUE (nom_utilisateur);
 COMMIT;
+
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
