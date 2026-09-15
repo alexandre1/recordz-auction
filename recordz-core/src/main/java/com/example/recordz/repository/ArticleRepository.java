@@ -392,7 +392,7 @@ public class ArticleRepository {
                 .map(this::toArticle);
     }
     public List<Article> findArticlesAPaye(String email, int page, int pageSize) {
-        System.out.println("page=" + page + " pageSize=" + pageSize);
+
         return dsl.select(
                         field("article.id_article"),
                         field("article.pochette"),
@@ -709,7 +709,6 @@ public class ArticleRepository {
     }
     // ✅ Parenthèses manquantes corrigées sur ref_vendeur et ref_acheteur
     public void updateStatutEstLivre(Integer idArticle, Article article, Personne personne) {
-        System.out.println("---------------updateStatutEstLivre---------------");
         dsl.update(table("a_livre"))
                 .set(field("ref_vendeur"),           article.getRefVendeur())
                 .set(field("ref_acheteur"),          article.getRefAcheteur())
@@ -724,7 +723,6 @@ public class ArticleRepository {
     }
 
     public void updateFaitDeLapublicite(Integer idArticle) {
-        System.out.println("---------------updateStatutEstLivre---------------");
         dsl.update(table("article"))
                 .set(field("pub"), 1)
                 .where(field("id_article").eq(idArticle))
@@ -732,7 +730,6 @@ public class ArticleRepository {
     }
 
     public void confirmerReception (Integer idArticle, Integer refAchteur) {
-        System.out.println("---------------updateStatutPaye---------------s");
         dsl.update(table("a_livre"))
                 .set(field("ref_statut"), 12)
                 .set(field("date_achat"), LocalDateTime.now())
@@ -742,7 +739,6 @@ public class ArticleRepository {
 
     }
     public void updateStatutPaye(Integer idArticle, Article article) {
-        System.out.println("---------------updateStatutPaye---------------s");
         dsl.update(table("a_paye"))
                 .set(field("ref_statut"), 7)
                 .where(field("ref_article").eq(idArticle))
