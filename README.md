@@ -51,7 +51,7 @@ mvn generate-sources \
   -Djooq.codegen.schema=new_db_recordz
 
 
-(Ou alors importer le fichier .sql dans PhpMyAdmin)
+(Ou alors importer le fichier .sql dans PhpMyAdmin sans passer par l'étape numéro 2)
 
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
