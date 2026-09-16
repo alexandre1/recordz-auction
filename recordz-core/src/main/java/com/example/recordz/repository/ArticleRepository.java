@@ -1286,4 +1286,15 @@ public class ArticleRepository {
                 .and(field("enchere_date_fin").lessThan(LocalDateTime.now()))
                 .execute();
     }
+
+    public List<String> findNomsByFiltre(String filtre, int limit) {
+        return dsl.selectDistinct(field("nom", String.class))
+                .from(table("article"))
+                .where(field("nom").likeIgnoreCase("%" + filtre + "%"))
+                .and(field("vendu").eq(0))
+                .orderBy(field("nom").asc())
+                .limit(limit)
+                .fetchInto(String.class);
+    }
 }
+

@@ -4,6 +4,7 @@ import static org.jooq.impl.DSL.*;
 import com.example.recordz.model.domain.*;
 
 // ✅ Remplacer par
+import com.example.recordz.repository.ArticleRepository;
 import com.example.recordz.repository.ReferentielRepository;
 import com.fasterxml.jackson.core.SerializableString;
 import org.jooq.DSLContext;
@@ -20,10 +21,13 @@ public class ReferenceService {
     private final DSLContext dsl;
     private static final int LANGUE_FR = 1;
     private final ReferentielRepository referentielRepository; // ← ajouter
+    private final ArticleRepository articleRepository;
 
-    public ReferenceService(DSLContext dsl,ReferentielRepository referentielRepository) {
+
+    public ReferenceService(DSLContext dsl, ReferentielRepository referentielRepository, ArticleRepository articleRepository) {
         this.dsl = dsl;
         this.referentielRepository = referentielRepository;
+        this.articleRepository = articleRepository;
     }
 
     public List<ReferenceItem> findAllTypesEnchere() {
@@ -668,7 +672,12 @@ public class ReferenceService {
                 });
     }
 
-
+    public List<String> searchNoms(String filtre, int limit) {
+        if (filtre == null || filtre.isBlank()) {
+            return List.of();
+        }
+        return articleRepository.findNomsByFiltre(filtre, limit);
+    }
     public void enregistrerVisite(int idArticle, String nom, String prenom, String email) {
         try {
             Integer refPersonne = findPersonneIdByEmail(email);
