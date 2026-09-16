@@ -671,23 +671,15 @@ public class ReferenceService {
 
     public void enregistrerVisite(int idArticle, String nom, String prenom, String email) {
         try {
-            // ✅ Vérifier si déjà visité
-            boolean existe = !dsl.fetch("""
-                SELECT 1 FROM article_visite
-                WHERE ref_article = ? AND email = ?
-                """, idArticle, email).isEmpty();
+            Integer refPersonne = findPersonneIdByEmail(email);
+            if (refPersonne == null) refPersonne = 0;
 
-            if (!existe) {
-                // ✅ Récupérer ref_personne depuis email
-                Integer refPersonne = findPersonneIdByEmail(email);
-                if (refPersonne == null) refPersonne = 0; // valeur par défaut si inconnu
+            dsl.execute("""
+            INSERT INTO article_visite
+                (ref_article, ref_personne, nom, prenom, email, date_visite)
+            VALUES (?, ?, ?, ?, ?, now())
+            """, idArticle, refPersonne, nom, prenom, email);
 
-                dsl.execute("""
-                INSERT INTO article_visite 
-                    (ref_article, ref_personne, nom, prenom, email)
-                VALUES (?, ?, ?, ?, ?)
-                """, idArticle, refPersonne, nom, prenom, email);
-            }
         } catch (Exception ex) {
             System.err.println("Erreur enregistrerVisite : " + ex.getMessage());
         }
@@ -709,18 +701,21 @@ public class ReferenceService {
 
     public List<String[]> findVisiteurs(int idArticle) {
         return dsl.fetch("""
-            SELECT av.nom, av.prenom, av.email
-            FROM article_visite av
-            WHERE av.ref_article = ?
-            LIMIT 50
-            """, idArticle)
+        SELECT av.nom, av.prenom, av.email, av.date_visite
+        FROM article_visite av
+        WHERE av.ref_article = ?
+        ORDER BY av.date_visite DESC
+        LIMIT 50
+        """, idArticle)
                 .map(r -> new String[]{
                         r.get("nom", String.class),
                         r.get("prenom", String.class),
-                        r.get("email", String.class)
+                        r.get("email", String.class),
+                        r.get("date_visite", java.time.LocalDateTime.class) != null
+                                ? r.get("date_visite", java.time.LocalDateTime.class).toString()
+                                : ""
                 });
     }
-
     public Double findDerniereOffre(int idArticle) {
         return dsl.fetch("""
             SELECT prix FROM enchere

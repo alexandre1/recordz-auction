@@ -41,6 +41,8 @@ import org.vaadin.stefan.fullcalendar.*;
 
 import java.time.LocalTime;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 
 @Route(value = "detail/:articleId", layout = MainLayout.class)
@@ -586,7 +588,8 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             } else {
                 buttonsLayout.add(listeVisiteursBtn, offreBtn);
             }
-        }        col.add(buttonsLayout);
+        }
+        col.add(buttonsLayout);
 
         return col;
     }
@@ -822,7 +825,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private void showVisiteursDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("420px");
+        // CORRECTION 7 : la largeur de 420px ne laissait plus assez de place
+        // pour la colonne "Date de visite" une fois ajoutée (avatar + nom +
+        // email prenaient déjà quasi toute la largeur disponible). La date
+        // existait bien dans le DOM mais était poussée hors de la zone
+        // visible du dialogue, faute de retour à la ligne automatique sur
+        // un HorizontalLayout.
+        dlg.setWidth("560px");
 
         var visiteurs = referenceService.findVisiteurs(article.getIdArticle().intValue());
         final int PAGE_SIZE = 5;
@@ -862,6 +871,12 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     .set("padding", "2px 10px");
         }
 
+        // CORRECTION 5 : la pagination était visible puis immédiatement
+        // re-masquée par un second appel à setVisible(totalPages > 1) en fin
+        // de méthode. Il ne reste plus qu'un seul appel, juste après le
+        // contrôle "liste vide", qui affiche la barre dès qu'il y a au moins
+        // un visiteur (les flèches sont désactivées via setEnabled si une
+        // seule page suffit).
         Runnable renderPage = () -> {
             listeZone.removeAll();
 
@@ -873,14 +888,18 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 return;
             }
 
+            pagination.setVisible(true);
+
             HorizontalLayout tableHeader = new HorizontalLayout();
             tableHeader.setWidthFull();
             tableHeader.getStyle().set("padding", "6px 8px").set("margin-bottom", "4px");
             Span hNom = new Span("Visiteur");
-            hNom.getStyle().set("width", "180px").set("font-size", "0.8rem").set("font-weight", "bold");
+            hNom.getStyle().set("width", "150px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
             Span hEmail = new Span("Email");
-            hEmail.getStyle().set("font-size", "0.8rem").set("font-weight", "bold");
-            tableHeader.add(hNom, hEmail);
+            hEmail.getStyle().set("width", "120px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
+            Span hDate = new Span("Date de visite");
+            hDate.getStyle().set("font-size", "0.8rem").set("font-weight", "bold").set("white-space", "nowrap");
+            tableHeader.add(hNom, hEmail, hDate);
             listeZone.add(tableHeader);
 
             int totalPages = (int) Math.ceil((double) visiteurs.size() / PAGE_SIZE);
@@ -918,7 +937,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 Span nomLink = new Span(nomComplet.trim());
                 nomLink.getStyle()
                         .set("color", "#0000CC").set("cursor", "pointer")
-                        .set("font-size", "0.85rem").set("width", "150px");
+                        .set("font-size", "0.85rem").set("width", "150px").set("flex-shrink", "0");
                 nomLink.addClickListener(e -> {
                     dlg.close();
                     nomLink.getUI().ifPresent(ui -> ui.navigate("profil/" + username));
@@ -927,16 +946,22 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 Span emailSpan = new Span(email.contains("@")
                         ? email.substring(0, 2) + "***" + email.substring(email.indexOf('@'))
                         : "—");
-                emailSpan.getStyle().set("font-size", "0.78rem").set("color", "#888");
+                emailSpan.getStyle().set("font-size", "0.78rem").set("color", "#888").set("width", "120px").set("flex-shrink", "0");
 
-                row.add(avatar, nomLink, emailSpan);
+                // CORRECTION 6 : affichage de la date de visite (v[3]) pour
+                // que chaque passage d'un même visiteur soit distingué,
+                // et non uniquement le dernier tel qu'avant.
+                String dateBrute = v.length > 3 ? v[3] : null;
+                Span dateSpan = new Span(formatDateVisite(dateBrute));
+                dateSpan.getStyle().set("font-size", "0.78rem").set("color", "#888").set("white-space", "nowrap");
+
+                row.add(avatar, nomLink, emailSpan, dateSpan);
                 listeZone.add(row);
             }
 
             pageInfo.setText((currentPage[0] + 1) + " / " + totalPages);
             prevBtn.setEnabled(currentPage[0] > 0);
             nextBtn.setEnabled(currentPage[0] < totalPages - 1);
-            pagination.setVisible(totalPages > 1);
         };
 
         prevBtn.addClickListener(e -> { currentPage[0]--; renderPage.run(); });
@@ -1279,6 +1304,24 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private String str(Object o) {
         return o != null ? o.toString() : "—";
+    }
+
+    // CORRECTION 6 (suite) : formate la date de visite renvoyée par
+    // ReferenceService.findVisiteurs (chaîne issue de LocalDateTime.toString()).
+    // En cas de format inattendu ou de valeur nulle, on affiche "—" plutôt
+    // que de laisser planter l'interface.
+    private static final DateTimeFormatter DATE_VISITE_FORMAT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private String formatDateVisite(String brute) {
+        if (brute == null || brute.isBlank()) {
+            return "—";
+        }
+        try {
+            return java.time.LocalDateTime.parse(brute).format(DATE_VISITE_FORMAT);
+        } catch (DateTimeParseException e) {
+            return brute; // valeur déjà lisible ou format non standard
+        }
     }
 
     private Button styledButton(String label) {
