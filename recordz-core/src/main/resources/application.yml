@@ -8,6 +8,7 @@ spring:
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:secret}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # ── Hikari ────────────────────────────────────────────────
     hikari:
       maximum-pool-size: 20          # selon formule ci-dessus, par instance
       minimum-idle: 10
@@ -18,7 +19,8 @@ spring:
       leak-detection-threshold: 60000 # détecte les connexions non relâchées
       pool-name: HikariPool-App
       auto-commit: false
-    s# ── Flyway ───────────────────────────────────────────────────
+
+  # ── Flyway ───────────────────────────────────────────────────
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -71,13 +73,7 @@ spring:
   config:
     activate:
       on-profile: production
-logging:
-  level:
-    root: WARN
-    com.example.recordz: INFO
-    org.jooq.tools.LoggerListener: WARN
-    org.springframework.security: WARN
-security:
+  security:
     oauth2:
       client:
         registration:
@@ -88,3 +84,10 @@ security:
               - openid
               - email
               - profile
+
+logging:
+  level:
+    root: WARN
+    com.example.recordz: INFO
+    org.jooq.tools.LoggerListener: WARN
+    org.springframework.security: WARN
