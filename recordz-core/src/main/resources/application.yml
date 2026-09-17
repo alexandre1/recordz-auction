@@ -9,10 +9,16 @@ spring:
     password: ${DB_PASSWORD:secret}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-
-  # ── Flyway ───────────────────────────────────────────────────
+      maximum-pool-size: 20          # selon formule ci-dessus, par instance
+      minimum-idle: 10
+      connection-timeout: 3000       # ms — échoue vite plutôt que d'accumuler les threads bloqués
+      idle-timeout: 600000           # 10 min
+      max-lifetime: 1800000          # 30 min, < wait_timeout MySQL/idle timeout DB
+      validation-timeout: 5000
+      leak-detection-threshold: 60000 # détecte les connexions non relâchées
+      pool-name: HikariPool-App
+      auto-commit: false
+    s# ── Flyway ───────────────────────────────────────────────────
   flyway:
     enabled: true
     locations: classpath:db/migration
