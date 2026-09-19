@@ -885,4 +885,45 @@ public class ReferenceService {
                 refArticle, refVendeur, email, telephone, nom, prenom, adresse, commentaire, dateVisite
         );
     }
-}
+
+
+    // Nouvelle version avec offset
+    public List<String[]> findDerniersEncherisseurs(int idArticle, int limit, int offset) {
+        var nom            = field(name("personne", "nom"), String.class);
+        var prenom         = field(name("personne", "prenom"), String.class);
+        var nomUtilisateur = field(name("personne", "nom_utilisateur"), String.class);
+        var prix           = field(name("enchere", "prix"), java.math.BigDecimal.class);
+        var date           = field(name("enchere", "date_enchere"), java.time.LocalDateTime.class);
+        var idEnch         = field(name("enchere", "id_enchere"), Long.class);
+
+        return dsl
+                .select(nom, prenom, prix, date, nomUtilisateur)
+                .from(table(name("enchere")))
+                .join(table(name("personne")))
+                .on(field(name("personne", "id_personne"), Long.class)
+                        .eq(field(name("enchere", "ref_enchereur"), Long.class)))
+                .where(field(name("enchere", "ref_article"), Long.class).eq((long) idArticle))
+                .orderBy(date.desc(), idEnch.desc())
+                .limit(limit)
+                .offset(offset)                                   // ← nouveau
+                .fetch(r -> new String[]{
+                        r.get(nom),
+                        r.get(prenom),
+                        String.format(Locale.ROOT, "%.2f", r.get(prix)),
+                        r.get(date) != null ? r.get(date).toString() : null,
+                        r.get(nomUtilisateur)
+                });
+    }
+
+    // L'ancienne signature continue de fonctionner pour les autres appelants
+    public List<String[]> findDerniersEncherisseurs(int idArticle, int limit) {
+        return findDerniersEncherisseurs(idArticle, limit, 0);
+    }
+
+    // Nombre total d'offres, pour calculer le nombre de pages
+    public int countEncherisseurs(int idArticle) {
+        return dsl.selectCount()
+                .from(table(name("enchere")))
+                .where(field(name("enchere", "ref_article"), Long.class).eq((long) idArticle))
+                .fetchOne(0, int.class);
+    }}

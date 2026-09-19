@@ -136,7 +136,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         body.add(buildLeftColumn(article));
         body.add(buildRightColumn(article));
         add(body);
-
+// ── Derniers enchérisseurs ────────────────────────────
+        if (article.getEnchere() != null && article.getEnchere() > 0) {
+            add(new Hr());
+            add(buildEncherisseursSection(article));
+        }
         // ── Description ───────────────────────────────────────
         add(new Hr());
         if (article.getLabel() != null && !article.getLabel().isBlank()) {
@@ -159,6 +163,171 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         add(new Hr());
         add(buildCommentsSection(article));
+    }
+
+    private VerticalLayout buildEncherisseursSection(Article article) {
+        final int PAGE_SIZE = 5;
+        final int idArticle = article.getIdArticle().intValue();
+        int[] currentPage = {0};
+
+        VerticalLayout section = new VerticalLayout();
+        section.setPadding(false);
+        section.setSpacing(false);
+        section.setWidthFull();
+
+        H4 titre = new H4("🔨 Derniers enchérisseurs");
+        titre.getStyle().set("color", "#0000CC").set("margin-bottom", "8px");
+        section.add(titre);
+
+        VerticalLayout listeZone = new VerticalLayout();
+        listeZone.setPadding(false);
+        listeZone.setSpacing(false);
+        listeZone.setWidthFull();
+
+        HorizontalLayout pagination = new HorizontalLayout();
+        pagination.setAlignItems(Alignment.CENTER);
+        pagination.setJustifyContentMode(
+                com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.CENTER);
+        pagination.setWidthFull();
+        pagination.setMaxWidth("560px");
+        pagination.getStyle().set("margin-top", "8px");
+
+        Button prevBtn = new Button("◀");
+        Button nextBtn = new Button("▶");
+        Span pageInfo = new Span();
+        for (Button btn : new Button[]{prevBtn, nextBtn}) {
+            btn.getStyle()
+                    .set("background", "none")
+                    .set("border", "1px solid #6100C1")
+                    .set("color", "#6100C1")
+                    .set("border-radius", "20px")
+                    .set("cursor", "pointer")
+                    .set("padding", "2px 10px");
+        }
+        pageInfo.getStyle().set("font-size", "0.8rem");
+
+        Runnable renderPage = () -> {
+            listeZone.removeAll();
+
+            int total = referenceService.countEncherisseurs(idArticle);
+            if (total == 0) {
+                Span aucun = new Span("Aucune offre pour le moment.");
+                aucun.getStyle().set("font-size", "0.85rem").set("color", "#999");
+                listeZone.add(aucun);
+                pagination.setVisible(false);
+                return;
+            }
+
+            int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
+            // si des offres ont disparu entre deux clics, on reste dans les bornes
+            currentPage[0] = Math.max(0, Math.min(currentPage[0], totalPages - 1));
+
+            var offres = referenceService.findDerniersEncherisseurs(
+                    idArticle, PAGE_SIZE, currentPage[0] * PAGE_SIZE);
+
+            for (int i = 0; i < offres.size(); i++) {
+                // seule la toute première offre (page 1, ligne 1) est mise en évidence
+                boolean plusRecente = currentPage[0] == 0 && i == 0;
+                listeZone.add(buildEncherisseurRow(offres.get(i), plusRecente));
+            }
+
+            pageInfo.setText((currentPage[0] + 1) + " / " + totalPages);
+            prevBtn.setEnabled(currentPage[0] > 0);
+            nextBtn.setEnabled(currentPage[0] < totalPages - 1);
+            pagination.setVisible(true);
+        };
+
+        prevBtn.addClickListener(e -> { currentPage[0]--; renderPage.run(); });
+        nextBtn.addClickListener(e -> { currentPage[0]++; renderPage.run(); });
+
+        pagination.add(prevBtn, pageInfo, nextBtn);
+        section.add(listeZone, pagination);
+        renderPage.run();
+
+        return section;
+    }
+
+    private HorizontalLayout buildEncherisseurRow(String[] o, boolean plusRecente) {
+        String[] identite = formatEncherisseur(o[0], o[1]);
+        String affichage = identite[0];
+        String initiale  = identite[1];
+        String nomUtilisateur = o.length > 4 ? o[4] : null;
+
+        HorizontalLayout row = new HorizontalLayout();
+        row.setAlignItems(Alignment.CENTER);
+        row.setWidthFull();
+        row.setMaxWidth("560px");
+        row.getStyle()
+                .set("padding", "6px 8px")
+                .set("border-bottom", "1px solid #F0E6FF");
+        if (plusRecente) {
+            row.getStyle().set("background-color", "#F7F0FF");
+        }
+
+        Div avatar = new Div();
+        avatar.setText(initiale);
+        avatar.getStyle()
+                .set("width", "30px").set("height", "30px")
+                .set("border-radius", "50%")
+                .set("background-color", "#6100C1")
+                .set("color", "white")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("font-size", "0.8rem")
+                .set("flex-shrink", "0");
+
+        Span nomSpan = new Span(affichage.trim());
+        nomSpan.getStyle()
+                .set("font-size", "0.85rem")
+                .set("width", "150px")
+                .set("flex-shrink", "0");
+        if (nomUtilisateur != null && !nomUtilisateur.isBlank()) {
+            nomSpan.getStyle().set("cursor", "pointer").set("color", "#0000CC");
+            nomSpan.addClickListener(e -> nomSpan.getUI().ifPresent(ui ->
+                    ui.navigate(ProfilView.class,
+                            new RouteParameters("username", nomUtilisateur))));
+        }
+
+        Span montantSpan = new Span(o[2] + " CHF");
+        montantSpan.getStyle()
+                .set("font-size", "0.85rem")
+                .set("font-weight", "bold")
+                .set("color", "#0000CC")
+                .set("width", "110px")
+                .set("flex-shrink", "0");
+
+        Span dateSpan = new Span(formatDateVisite(o.length > 3 ? o[3] : null));
+        dateSpan.getStyle()
+                .set("font-size", "0.78rem")
+                .set("color", "#888")
+                .set("white-space", "nowrap");
+
+        row.add(avatar, nomSpan, montantSpan, dateSpan);
+        return row;
+    }
+    /**
+     * Retourne [affichage, initiale] pour un enchérisseur.
+     * Gère le cas où le nom complet est stocké dans "nom" avec "prenom" vide.
+     */
+    private String[] formatEncherisseur(String nom, String prenom) {
+        String n = nom != null ? nom.trim() : "";
+        String p = prenom != null ? prenom.trim() : "";
+
+        // Fonctionne dans les deux cas :
+        // - prenom = "Alexandre", nom = "Jaquet"  -> "Alexandre Jaquet"
+        // - prenom vide, nom = "Alexandre Jaquet" -> "Alexandre Jaquet"
+        String complet = (p + " " + n).trim();
+
+        if (complet.isBlank()) {
+            return new String[]{"Anonyme", "?"};
+        }
+        String[] mots = complet.split("\\s+");
+        String initiales = mots.length > 1
+                ? ("" + mots[0].charAt(0) + mots[mots.length - 1].charAt(0)).toUpperCase()
+                : mots[0].substring(0, 1).toUpperCase();
+
+        return new String[]{complet, initiales};
     }
 
     private VerticalLayout buildCommentsSection(Article article) {
