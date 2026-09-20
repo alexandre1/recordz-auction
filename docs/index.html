@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chic Overdose – La place de marché suisse du luxe</title>
+<meta name="description" content="Chic Overdose : enchères et ventes directes d'articles de luxe en Suisse, sans frais de mise en ligne et sans commission.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F7F4;
+    --panel: #ECF0ED;
+    --ink: #14201B;
+    --muted: #4A5851;
+    --rule: #D3DBD5;
+    --forest: #0E3B2E;
+    --on-forest: #E8EFEA;
+    --gold: #C9A66B;
+    --accent: #7A5A1E;
+
+    --display: "Bodoni Moda", "Didot", "Bodoni 72", "Times New Roman", serif;
+    --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0A1310;
+      --panel: #111E19;
+      --ink: #E7EDE9;
+      --muted: #A5B2AB;
+      --rule: #22342D;
+      --accent: #C9A66B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0A1310;
+    --panel: #111E19;
+    --ink: #E7EDE9;
+    --muted: #A5B2AB;
+    --rule: #22342D;
+    --accent: #C9A66B;
+  }
+
+  html {
+    background: var(--forest);
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  .wrap {
+    width: min(100% - 2.5rem, 72rem);
+    margin-inline: auto;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    --accent: var(--gold);
+    background: var(--forest);
+    color: var(--on-forest);
+    padding-top: 1.5rem;
+    overflow: hidden;
+  }
+  .hero nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1.75rem;
+    font-size: 1rem;
+  }
+  .hero nav a { text-decoration: none; padding: .25rem 0; border-bottom: 1px solid transparent; }
+  .hero nav a:hover { border-bottom-color: var(--gold); }
+
+  .mark {
+    margin-top: clamp(3rem, 9vw, 7rem);
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(3.4rem, 15vw, 13rem);
+    line-height: .86;
+    letter-spacing: -.03em;
+  }
+  .mark h1 { font: inherit; margin: 0; }
+  .echo { height: 1.2em; overflow: hidden; }
+  .echo span {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold);
+  }
+  .echo span:first-child { opacity: .75; }
+  .echo span:last-child { opacity: .3; }
+
+  /* ---------- Intro ---------- */
+  .intro { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(1.5rem, 3vw, 2.5rem); }
+  .intro .lede {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    max-width: 34ch;
+  }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
+  .btn {
+    display: inline-block;
+    padding: .8rem 1.5rem;
+    background: var(--forest);
+    color: var(--on-forest);
+    border: 1px solid var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .btn:hover { background: #124a39; }
+  .link { text-decoration-thickness: 1px; text-underline-offset: .3em; font-weight: 500; }
+
+  /* ---------- Sections ---------- */
+  section { padding-block: clamp(2.5rem, 6vw, 5rem); }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+  }
+  h2, h3 {
+    font-family: var(--display);
+    font-weight: 500;
+    letter-spacing: -.015em;
+    margin: 0;
+  }
+  h2 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; }
+  h3 { font-size: 1.5rem; line-height: 1.2; }
+  p { margin: 0 0 1em; max-width: 62ch; }
+  p:last-child { margin-bottom: 0; }
+  .muted { color: var(--muted); }
+
+  /* Concept */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.25rem 2.5rem;
+  }
+  .concept-grid > div { border-top: 1px solid var(--rule); padding-top: 1.1rem; }
+  .concept-grid h3 { margin-bottom: .5rem; }
+
+  /* Fiche technique */
+  .spec { margin: 0; background: var(--panel); padding: clamp(1rem, 3vw, 2rem); }
+  .spec > div {
+    display: grid;
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+    gap: 1rem;
+    padding: .8rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .spec > div:first-child { padding-top: 0; }
+  .spec > div:last-child { border-bottom: 0; padding-bottom: 0; }
+  .spec dt { color: var(--muted); font-size: 1rem; }
+  .spec dd { margin: 0; font-weight: 500; }
+
+  /* Choix techniques */
+  .choices .head { margin-bottom: clamp(2rem, 4vw, 3.5rem); }
+  .choice { padding-block: 1.75rem; border-top: 1px solid var(--rule); }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .9em;
+    background: var(--panel);
+    padding: .1em .35em;
+    border-radius: 3px;
+  }
+
+  /* Fondateur */
+  .founder { background: var(--panel); }
+  .founder .name { font-family: var(--display); font-size: 1.5rem; margin: 0 0 .15rem; }
+
+  /* Footer */
+  footer {
+    --accent: var(--gold);
+    background: var(--forest);
+    color: var(--on-forest);
+    padding-block: 2.5rem;
+  }
+  footer .wordmark { font-family: var(--display); font-size: 1.75rem; margin: 0; }
+  footer p { max-width: 46ch; }
+
+  @media (max-width: 820px) {
+    .split { grid-template-columns: minmax(0, 1fr); }
+    .concept-grid { grid-template-columns: minmax(0, 1fr); }
+    .spec > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+    .intro .lede { max-width: none; }
+  }
+</style>
+</head>
+<body id="top">
+
+<header class="hero">
+  <div class="wrap">
+    <nav aria-label="Sections de la page">
+      <ul>
+        <li><a href="#concept">Concept</a></li>
+        <li><a href="#technique">Fiche technique</a></li>
+        <li><a href="#choix">Choix techniques</a></li>
+        <li><a href="#fondateur">Fondateur</a></li>
+      </ul>
+    </nav>
+    <div class="mark">
+      <h1>Chic<br>Overdose</h1>
+      <div class="echo" aria-hidden="true"><span>Overdose</span><span>Overdose</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="intro">
+    <div class="wrap split">
+      <p class="lede">La place de marché suisse du luxe : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
+      <div class="actions" style="align-self:end">
+        <a class="btn" href="#concept">Découvrir le concept</a>
+        <a class="link" href="#technique">Voir la fiche technique</a>
+      </div>
+    </div>
+  </div>
+
+  <section id="concept">
+    <div class="wrap split">
+      <h2>Une place de marché pensée pour le luxe suisse</h2>
+      <div class="concept-grid">
+        <div>
+          <h3>Enchères</h3>
+          <p>Les acheteurs misent jusqu’à la clôture, et l’offre la plus élevée l’emporte.</p>
+        </div>
+        <div>
+          <h3>Ventes directes</h3>
+          <p>Le vendeur fixe son prix, l’acheteur achète immédiatement, neuf ou d’occasion.</p>
+        </div>
+        <div>
+          <h3>Zéro frais, zéro commission</h3>
+          <p>Mettre un article en ligne ne coûte rien, et aucune commission n’est prélevée sur la vente.</p>
+        </div>
+        <div>
+          <h3>Conçue pour la Suisse</h3>
+          <p>Le catalogue s’organise par catégories et par canton.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="technique">
+    <div class="wrap split">
+      <h2>Fiche technique</h2>
+      <dl class="spec">
+        <div><dt>Langage</dt><dd>Java 21 (LTS)</dd></div>
+        <div><dt>Framework</dt><dd>Spring Boot 3.4</dd></div>
+        <div><dt>Interface web</dt><dd>Vaadin 25</dd></div>
+        <div><dt>Base de données</dt><dd>MySQL 9</dd></div>
+        <div><dt>Accès aux données</dt><dd>jOOQ 3.19</dd></div>
+        <div><dt>Migrations</dt><dd>Flyway</dd></div>
+        <div><dt>Cache</dt><dd>Spring Cache (<code>@Cacheable</code>)</dd></div>
+        <div><dt>Authentification</dt><dd>Spring Security, OAuth2 (Google Sign-In)</dd></div>
+        <div><dt>Build</dt><dd>Maven multi-modules</dd></div>
+        <div><dt>Environnement</dt><dd>Docker Compose</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="choix" class="choices">
+    <div class="wrap">
+      <div class="split head">
+        <h2>Les choix derrière le code</h2>
+        <p class="muted">Chic Overdose repose sur une pile Java moderne, structurée pour rester lisible, sûre et rapide à mesure que le projet grandit.</p>
+      </div>
+
+      <article class="split choice">
+        <h3>Une pile technologique à jour</h3>
+        <div>
+          <p>Java 21 et Spring Boot 3.4 permettent de profiter des dernières évolutions du langage, comme les threads virtuels et le pattern matching avancé.</p>
+          <p>Avec Vaadin 25, l’interface web s’écrit entièrement en Java, sans framework JavaScript lourd comme React ou Angular à maintenir à côté.</p>
+        </div>
+      </article>
+
+      <article class="split choice">
+        <h3>Une architecture en couches</h3>
+        <div>
+          <p>Le projet est un multi-module Maven qui sépare la logique métier (<code>recordz-core</code>) de la partie web (<code>recordz-web</code>).</p>
+          <p>Les répertoires suivent le même découpage : <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> et <code>ui</code>. Le code reste facile à maintenir et à faire évoluer.</p>
+        </div>
+      </article>
+
+      <article class="split choice">
+        <h3>Des données maîtrisées</h3>
+        <div>
+          <p>jOOQ (3.19) place le SQL au premier plan : contrôle total, précision et performance des requêtes, ce qui compte pour une application d’enchères.</p>
+          <p>Les tables de référence, comme les cantons suisses et les catégories, sont mises en cache avec <code>@Cacheable</code> pour éviter des accès inutiles à MySQL 9.</p>
+          <p>Flyway versionne le schéma de la base et fiabilise chaque mise en production.</p>
+        </div>
+      </article>
+
+      <article class="split choice">
+        <h3>Une authentification moderne</h3>
+        <div>
+          <p>Spring Security et OAuth2 permettent de se connecter avec Google (Google Sign-In). Les profils utilisateurs sont synchronisés automatiquement par <code>CustomOAuth2UserService</code>, sans mot de passe classique à gérer.</p>
+        </div>
+      </article>
+
+      <article class="split choice">
+        <h3>Un projet simple à reprendre</h3>
+        <div>
+          <p>Un fichier <code>docker-compose.yml</code> orchestre les services, MySQL en tête : un nouveau développeur démarre le projet en quelques minutes.</p>
+          <p>Le README détaille le schéma de données (marché suisse, enchères, cantons) et propose un guide de démarrage pas à pas.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="fondateur" class="founder">
+    <div class="wrap split">
+      <h2>Derrière le projet</h2>
+      <div>
+        <p class="name">Alexandre Jaquet</p>
+        <p class="muted">Fondateur et responsable technique</p>
+        <p>Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap split">
+    <p class="wordmark">Chic Overdose</p>
+    <p>Projet en développement, porté par Avant-Garde Technologies à Belfaux (Fribourg).</p>
+  </div>
+</footer>
+
+</body>
+</html>
