@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chic Overdose – La place de marché suisse du luxe</title>
-<meta name="description" content="Chic Overdose : enchères et ventes directes d'articles de luxe en Suisse, sans frais de mise en ligne et sans commission.">
+<title>Chic Overdose – La place de marché suisse du luxe et de l'immobilier</title>
+<meta name="description" content="Chic Overdose : enchères et ventes directes de produits de luxe et d'immobilier en Suisse (vêtements, automobile, vins, jeux vidéo, informatique…), sans frais ni commission.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -162,6 +162,22 @@
   }
   .concept-grid > div { border-top: 1px solid var(--rule); padding-top: 1.1rem; }
   .concept-grid h3 { margin-bottom: .5rem; }
+  .concept-grid .cats { grid-column: 1 / -1; }
+  .cats ul {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+  .cats li {
+    padding: .35rem .95rem;
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    font-size: 1rem;
+    font-weight: 500;
+  }
 
   /* Démonstrations */
   .demo-list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
@@ -261,7 +277,7 @@
 <main>
   <div class="intro">
     <div class="wrap split">
-      <p class="lede">La place de marché suisse du luxe : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
+      <p class="lede">La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
       <div class="actions" style="align-self:end">
         <a class="btn" href="#concept">Découvrir le concept</a>
         <a class="link" href="#demos">Voir les démonstrations</a>
@@ -272,7 +288,7 @@
 
   <section id="concept">
     <div class="wrap split">
-      <h2>Une place de marché pensée pour le luxe suisse</h2>
+      <h2>Une place de marché pensée pour le luxe et l’immobilier en Suisse</h2>
       <div class="concept-grid">
         <div>
           <h3>Enchères</h3>
@@ -289,6 +305,19 @@
         <div>
           <h3>Conçue pour la Suisse</h3>
           <p>Le catalogue s’organise par catégories et par canton.</p>
+        </div>
+        <div class="cats">
+          <h3>Tous les produits de luxe, et bien plus</h3>
+          <p>La place de marché accueille l’ensemble des produits de luxe ainsi que l’immobilier, à travers de nombreuses catégories :</p>
+          <ul>
+            <li>Vêtements</li>
+            <li>Automobile</li>
+            <li>Immobilier</li>
+            <li>Vins</li>
+            <li>Jeux vidéo</li>
+            <li>Informatique</li>
+            <li>Et bien d’autres</li>
+          </ul>
         </div>
       </div>
     </div>
