@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chic Overdose – La place de marché suisse du luxe et de l'immobilier</title>
-<meta name="description" content="Chic Overdose : enchères et ventes directes de produits de luxe et d'immobilier en Suisse (vêtements, automobile, vins, jeux vidéo, informatique…), sans frais ni commission.">
+<meta name="description" id="meta-description" content="Chic Overdose : enchères et ventes directes de produits de luxe et d'immobilier en Suisse (vêtements, automobile, vins, jeux vidéo, informatique…), sans frais ni commission.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -81,6 +81,13 @@
     padding-top: 1.5rem;
     overflow: hidden;
   }
+  .hero-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem 1.75rem;
+  }
   .hero nav ul {
     list-style: none;
     margin: 0;
@@ -92,6 +99,28 @@
   }
   .hero nav a { text-decoration: none; padding: .25rem 0; border-bottom: 1px solid transparent; }
   .hero nav a:hover { border-bottom-color: var(--gold); }
+
+  .lang-switch {
+    display: inline-flex;
+    border: 1px solid var(--gold);
+    flex: none;
+  }
+  .lang-switch button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--on-forest);
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    padding: .35rem .7rem;
+    cursor: pointer;
+  }
+  .lang-switch button[aria-pressed="true"] {
+    background: var(--gold);
+    color: var(--forest);
+  }
 
   .mark {
     margin-top: clamp(3rem, 9vw, 7rem);
@@ -279,16 +308,22 @@
 
 <header class="hero">
   <div class="wrap">
-    <nav aria-label="Sections de la page">
-      <ul>
-        <li><a href="#concept">Concept</a></li>
-        <li><a href="#demos">Démonstrations</a></li>
-        <li><a href="#technique">Fiche technique</a></li>
-        <li><a href="#choix">Choix techniques</a></li>
-        <li><a href="#fondateur">Fondateur</a></li>
-        <li><a href="#beta">Bêta privée</a></li>
-      </ul>
-    </nav>
+    <div class="hero-top">
+      <nav aria-label="Sections de la page">
+        <ul>
+          <li><a href="#concept" data-i18n="nav.concept">Concept</a></li>
+          <li><a href="#demos" data-i18n="nav.demos">Démonstrations</a></li>
+          <li><a href="#technique" data-i18n="nav.technique">Fiche technique</a></li>
+          <li><a href="#choix" data-i18n="nav.choix">Choix techniques</a></li>
+          <li><a href="#fondateur" data-i18n="nav.fondateur">Fondateur</a></li>
+          <li><a href="#beta" data-i18n="nav.beta">Bêta privée</a></li>
+        </ul>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Langue / Language">
+        <button type="button" id="lang-fr" aria-pressed="true">FR</button>
+        <button type="button" id="lang-en" aria-pressed="false">EN</button>
+      </div>
+    </div>
     <div class="mark">
       <h1>Chic<br>Overdose</h1>
       <div class="echo" aria-hidden="true"><span>Overdose</span><span>Overdose</span></div>
@@ -299,47 +334,47 @@
 <main>
   <div class="intro">
     <div class="wrap split">
-      <p class="lede">La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
+      <p class="lede" data-i18n="intro.lede">La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
       <div class="actions" style="align-self:end">
-        <a class="btn" href="#beta">Rejoindre la bêta privée</a>
-        <a class="link" href="#concept">Découvrir le concept</a>
-        <a class="link" href="#demos">Voir les démonstrations</a>
-        <a class="link" href="#technique">Voir la fiche technique</a>
+        <a class="btn" href="#beta" data-i18n="intro.cta.beta">Rejoindre la bêta privée</a>
+        <a class="link" href="#concept" data-i18n="intro.cta.concept">Découvrir le concept</a>
+        <a class="link" href="#demos" data-i18n="intro.cta.demos">Voir les démonstrations</a>
+        <a class="link" href="#technique" data-i18n="intro.cta.technique">Voir la fiche technique</a>
       </div>
     </div>
   </div>
 
   <section id="concept">
     <div class="wrap split">
-      <h2>Une place de marché pensée pour le luxe et l’immobilier en Suisse</h2>
+      <h2 data-i18n="concept.title">Une place de marché pensée pour le luxe et l’immobilier en Suisse</h2>
       <div class="concept-grid">
         <div>
-          <h3>Enchères</h3>
-          <p>Les acheteurs misent jusqu’à la clôture, et l’offre la plus élevée l’emporte.</p>
+          <h3 data-i18n="concept.auctions.title">Enchères</h3>
+          <p data-i18n="concept.auctions.desc">Les acheteurs misent jusqu’à la clôture, et l’offre la plus élevée l’emporte.</p>
         </div>
         <div>
-          <h3>Ventes directes</h3>
-          <p>Le vendeur fixe son prix, l’acheteur achète immédiatement, neuf ou d’occasion.</p>
+          <h3 data-i18n="concept.direct.title">Ventes directes</h3>
+          <p data-i18n="concept.direct.desc">Le vendeur fixe son prix, l’acheteur achète immédiatement, neuf ou d’occasion.</p>
         </div>
         <div>
-          <h3>Zéro frais, zéro commission</h3>
-          <p>Mettre un article en ligne ne coûte rien, et aucune commission n’est prélevée sur la vente.</p>
+          <h3 data-i18n="concept.fees.title">Zéro frais, zéro commission</h3>
+          <p data-i18n="concept.fees.desc">Mettre un article en ligne ne coûte rien, et aucune commission n’est prélevée sur la vente.</p>
         </div>
         <div>
-          <h3>Conçue pour la Suisse</h3>
-          <p>Le catalogue s’organise par catégories et par canton.</p>
+          <h3 data-i18n="concept.ch.title">Conçue pour la Suisse</h3>
+          <p data-i18n="concept.ch.desc">Le catalogue s’organise par catégories et par canton.</p>
         </div>
         <div class="cats">
-          <h3>Tous les produits de luxe, et bien plus</h3>
-          <p>La place de marché accueille l’ensemble des produits de luxe ainsi que l’immobilier, à travers de nombreuses catégories :</p>
+          <h3 data-i18n="concept.cats.title">Tous les produits de luxe, et bien plus</h3>
+          <p data-i18n="concept.cats.desc">La place de marché accueille l’ensemble des produits de luxe ainsi que l’immobilier, à travers de nombreuses catégories :</p>
           <ul>
-            <li>Vêtements</li>
-            <li>Automobile</li>
-            <li>Immobilier</li>
-            <li>Vins</li>
-            <li>Jeux vidéo</li>
-            <li>Informatique</li>
-            <li>Et bien d’autres</li>
+            <li data-i18n="concept.cats.clothing">Vêtements</li>
+            <li data-i18n="concept.cats.automotive">Automobile</li>
+            <li data-i18n="concept.cats.realestate">Immobilier</li>
+            <li data-i18n="concept.cats.wine">Vins</li>
+            <li data-i18n="concept.cats.videogames">Jeux vidéo</li>
+            <li data-i18n="concept.cats.computing">Informatique</li>
+            <li data-i18n="concept.cats.more">Et bien d’autres</li>
           </ul>
         </div>
       </div>
@@ -348,29 +383,29 @@
 
   <section id="demos">
     <div class="wrap split">
-      <h2>Voir Chic Overdose en action</h2>
+      <h2 data-i18n="demos.title">Voir Chic Overdose en action</h2>
       <ul class="demo-list">
         <!-- Remplace « Démonstration 1/2/3 » par le sujet réel de chaque vidéo -->
         <li>
-          <h3>Démonstration 1</h3>
-          <video controls playsinline preload="metadata" aria-label="Démonstration 1" src="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3#t=0.001">
-            Votre navigateur ne peut pas lire cette vidéo. <a href="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3">Ouvrir la vidéo sur GitHub</a>.
+          <h3 data-i18n="demos.item1">Démonstration 1</h3>
+          <video controls playsinline preload="metadata" data-i18n-aria-label="demos.item1" aria-label="Démonstration 1" src="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3#t=0.001">
+            <span data-i18n="demos.fallback">Votre navigateur ne peut pas lire cette vidéo.</span> <a href="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3" data-i18n="demos.open">Ouvrir la vidéo sur GitHub</a>.
           </video>
-          <a class="link" href="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3" target="_blank" rel="noopener noreferrer">Ouvrir sur GitHub<span class="sr-only"> (s’ouvre dans un nouvel onglet)</span></a>
+          <a class="link" href="https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3" target="_blank" rel="noopener noreferrer"><span data-i18n="demos.openGithub">Ouvrir sur GitHub</span><span class="sr-only" data-i18n="demos.newTab"> (s’ouvre dans un nouvel onglet)</span></a>
         </li>
         <li>
-          <h3>Démonstration 2</h3>
-          <video controls playsinline preload="metadata" aria-label="Démonstration 2" src="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac#t=0.001">
-            Votre navigateur ne peut pas lire cette vidéo. <a href="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac">Ouvrir la vidéo sur GitHub</a>.
+          <h3 data-i18n="demos.item2">Démonstration 2</h3>
+          <video controls playsinline preload="metadata" data-i18n-aria-label="demos.item2" aria-label="Démonstration 2" src="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac#t=0.001">
+            <span data-i18n="demos.fallback">Votre navigateur ne peut pas lire cette vidéo.</span> <a href="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac" data-i18n="demos.open">Ouvrir la vidéo sur GitHub</a>.
           </video>
-          <a class="link" href="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac" target="_blank" rel="noopener noreferrer">Ouvrir sur GitHub<span class="sr-only"> (s’ouvre dans un nouvel onglet)</span></a>
+          <a class="link" href="https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac" target="_blank" rel="noopener noreferrer"><span data-i18n="demos.openGithub">Ouvrir sur GitHub</span><span class="sr-only" data-i18n="demos.newTab"> (s’ouvre dans un nouvel onglet)</span></a>
         </li>
         <li>
-          <h3>Démonstration 3</h3>
-          <video controls playsinline preload="metadata" aria-label="Démonstration 3" src="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620#t=0.001">
-            Votre navigateur ne peut pas lire cette vidéo. <a href="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620">Ouvrir la vidéo sur GitHub</a>.
+          <h3 data-i18n="demos.item3">Démonstration 3</h3>
+          <video controls playsinline preload="metadata" data-i18n-aria-label="demos.item3" aria-label="Démonstration 3" src="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620#t=0.001">
+            <span data-i18n="demos.fallback">Votre navigateur ne peut pas lire cette vidéo.</span> <a href="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620" data-i18n="demos.open">Ouvrir la vidéo sur GitHub</a>.
           </video>
-          <a class="link" href="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620" target="_blank" rel="noopener noreferrer">Ouvrir sur GitHub<span class="sr-only"> (s’ouvre dans un nouvel onglet)</span></a>
+          <a class="link" href="https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620" target="_blank" rel="noopener noreferrer"><span data-i18n="demos.openGithub">Ouvrir sur GitHub</span><span class="sr-only" data-i18n="demos.newTab"> (s’ouvre dans un nouvel onglet)</span></a>
         </li>
       </ul>
     </div>
@@ -378,18 +413,18 @@
 
   <section id="technique">
     <div class="wrap split">
-      <h2>Fiche technique</h2>
+      <h2 data-i18n="technique.title">Fiche technique</h2>
       <dl class="spec">
-        <div><dt>Langage</dt><dd>Java 21 (LTS)</dd></div>
-        <div><dt>Framework</dt><dd>Spring Boot 3.4</dd></div>
-        <div><dt>Interface web</dt><dd>Vaadin 25</dd></div>
-        <div><dt>Base de données</dt><dd>MySQL 9</dd></div>
-        <div><dt>Accès aux données</dt><dd>jOOQ 3.19</dd></div>
-        <div><dt>Migrations</dt><dd>Flyway</dd></div>
-        <div><dt>Cache</dt><dd>Spring Cache (<code>@Cacheable</code>)</dd></div>
-        <div><dt>Authentification</dt><dd>Spring Security, OAuth2 (Google Sign-In)</dd></div>
-        <div><dt>Build</dt><dd>Maven multi-modules</dd></div>
-        <div><dt>Environnement</dt><dd>Docker Compose</dd></div>
+        <div><dt data-i18n="technique.language">Langage</dt><dd>Java 21 (LTS)</dd></div>
+        <div><dt data-i18n="technique.framework">Framework</dt><dd>Spring Boot 3.4</dd></div>
+        <div><dt data-i18n="technique.webui">Interface web</dt><dd>Vaadin 25</dd></div>
+        <div><dt data-i18n="technique.database">Base de données</dt><dd>MySQL 9</dd></div>
+        <div><dt data-i18n="technique.dataaccess">Accès aux données</dt><dd>jOOQ 3.19</dd></div>
+        <div><dt data-i18n="technique.migrations">Migrations</dt><dd>Flyway</dd></div>
+        <div><dt data-i18n="technique.cache">Cache</dt><dd>Spring Cache (<code>@Cacheable</code>)</dd></div>
+        <div><dt data-i18n="technique.auth">Authentification</dt><dd data-i18n="technique.auth.value">Spring Security, OAuth2 (Google Sign-In)</dd></div>
+        <div><dt data-i18n="technique.build">Build</dt><dd data-i18n="technique.build.value">Maven multi-modules</dd></div>
+        <div><dt data-i18n="technique.env">Environnement</dt><dd>Docker Compose</dd></div>
       </dl>
     </div>
   </section>
@@ -397,47 +432,47 @@
   <section id="choix" class="choices">
     <div class="wrap">
       <div class="split head">
-        <h2>Les choix derrière le code</h2>
-        <p class="muted">Chic Overdose repose sur une pile Java moderne, structurée pour rester lisible, sûre et rapide à mesure que le projet grandit.</p>
+        <h2 data-i18n="choix.title">Les choix derrière le code</h2>
+        <p class="muted" data-i18n="choix.desc">Chic Overdose repose sur une pile Java moderne, structurée pour rester lisible, sûre et rapide à mesure que le projet grandit.</p>
       </div>
 
       <article class="split choice">
-        <h3>Une pile technologique à jour</h3>
+        <h3 data-i18n="choice1.title">Une pile technologique à jour</h3>
         <div>
-          <p>Java 21 et Spring Boot 3.4 permettent de profiter des dernières évolutions du langage, comme les threads virtuels et le pattern matching avancé.</p>
-          <p>Avec Vaadin 25, l’interface web s’écrit entièrement en Java, sans framework JavaScript lourd comme React ou Angular à maintenir à côté.</p>
+          <p data-i18n="choice1.p1">Java 21 et Spring Boot 3.4 permettent de profiter des dernières évolutions du langage, comme les threads virtuels et le pattern matching avancé.</p>
+          <p data-i18n="choice1.p2">Avec Vaadin 25, l’interface web s’écrit entièrement en Java, sans framework JavaScript lourd comme React ou Angular à maintenir à côté.</p>
         </div>
       </article>
 
       <article class="split choice">
-        <h3>Une architecture en couches</h3>
+        <h3 data-i18n="choice2.title">Une architecture en couches</h3>
         <div>
-          <p>Le projet est un multi-module Maven qui sépare la logique métier (<code>recordz-core</code>) de la partie web (<code>recordz-web</code>).</p>
-          <p>Les répertoires suivent le même découpage : <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> et <code>ui</code>. Le code reste facile à maintenir et à faire évoluer.</p>
+          <p data-i18n="choice2.p1">Le projet est un multi-module Maven qui sépare la logique métier (<code>recordz-core</code>) de la partie web (<code>recordz-web</code>).</p>
+          <p data-i18n="choice2.p2">Les répertoires suivent le même découpage : <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> et <code>ui</code>. Le code reste facile à maintenir et à faire évoluer.</p>
         </div>
       </article>
 
       <article class="split choice">
-        <h3>Des données maîtrisées</h3>
+        <h3 data-i18n="choice3.title">Des données maîtrisées</h3>
         <div>
-          <p>jOOQ (3.19) place le SQL au premier plan : contrôle total, précision et performance des requêtes, ce qui compte pour une application d’enchères.</p>
-          <p>Les tables de référence, comme les cantons suisses et les catégories, sont mises en cache avec <code>@Cacheable</code> pour éviter des accès inutiles à MySQL 9.</p>
-          <p>Flyway versionne le schéma de la base et fiabilise chaque mise en production.</p>
+          <p data-i18n="choice3.p1">jOOQ (3.19) place le SQL au premier plan : contrôle total, précision et performance des requêtes, ce qui compte pour une application d’enchères.</p>
+          <p data-i18n="choice3.p2">Les tables de référence, comme les cantons suisses et les catégories, sont mises en cache avec <code>@Cacheable</code> pour éviter des accès inutiles à MySQL 9.</p>
+          <p data-i18n="choice3.p3">Flyway versionne le schéma de la base et fiabilise chaque mise en production.</p>
         </div>
       </article>
 
       <article class="split choice">
-        <h3>Une authentification moderne</h3>
+        <h3 data-i18n="choice4.title">Une authentification moderne</h3>
         <div>
-          <p>Spring Security et OAuth2 permettent de se connecter avec Google (Google Sign-In). Les profils utilisateurs sont synchronisés automatiquement par <code>CustomOAuth2UserService</code>, sans mot de passe classique à gérer.</p>
+          <p data-i18n="choice4.p1">Spring Security et OAuth2 permettent de se connecter avec Google (Google Sign-In). Les profils utilisateurs sont synchronisés automatiquement par <code>CustomOAuth2UserService</code>, sans mot de passe classique à gérer.</p>
         </div>
       </article>
 
       <article class="split choice">
-        <h3>Un projet simple à reprendre</h3>
+        <h3 data-i18n="choice5.title">Un projet simple à reprendre</h3>
         <div>
-          <p>Un fichier <code>docker-compose.yml</code> orchestre les services, MySQL en tête : un nouveau développeur démarre le projet en quelques minutes.</p>
-          <p>Le README détaille le schéma de données (marché suisse, enchères, cantons) et propose un guide de démarrage pas à pas.</p>
+          <p data-i18n="choice5.p1">Un fichier <code>docker-compose.yml</code> orchestre les services, MySQL en tête : un nouveau développeur démarre le projet en quelques minutes.</p>
+          <p data-i18n="choice5.p2">Le README détaille le schéma de données (marché suisse, enchères, cantons) et propose un guide de démarrage pas à pas.</p>
         </div>
       </article>
     </div>
@@ -446,13 +481,13 @@
   <section id="beta" class="beta">
     <div class="wrap split">
       <div>
-        <h2>Bêta privée</h2>
-        <p class="muted">Inscription réservée aux adresses Gmail.</p>
+        <h2 data-i18n="beta.title">Bêta privée</h2>
+        <p class="muted" data-i18n="beta.subtitle">Inscription réservée aux adresses Gmail.</p>
       </div>
       <div>
-        <p>Laissez votre adresse Gmail pour recevoir votre accès à la version privée de la bêta dès qu'une place se libère.</p>
+        <p data-i18n="beta.desc">Laissez votre adresse Gmail pour recevoir votre accès à la version privée de la bêta dès qu'une place se libère.</p>
         <form id="beta-form" class="beta-form" novalidate>
-          <label for="beta-email" class="sr-only">Adresse Gmail</label>
+          <label for="beta-email" class="sr-only" data-i18n="beta.label">Adresse Gmail</label>
           <input
             type="email"
             id="beta-email"
@@ -463,21 +498,21 @@
             inputmode="email"
             required
           >
-          <button type="submit" class="btn">S'inscrire</button>
+          <button type="submit" class="btn" data-i18n="beta.submit">S'inscrire</button>
         </form>
         <p id="beta-msg" class="beta-msg" role="status" aria-live="polite"></p>
-        <noscript><p class="muted">Activez JavaScript pour vous inscrire à la bêta.</p></noscript>
+        <noscript><p class="muted" data-i18n="beta.noscript">Activez JavaScript pour vous inscrire à la bêta.</p></noscript>
       </div>
     </div>
   </section>
 
   <section id="fondateur" class="founder">
     <div class="wrap split">
-      <h2>Derrière le projet</h2>
+      <h2 data-i18n="founder.title">Derrière le projet</h2>
       <div>
         <p class="name">Alexandre Jaquet</p>
-        <p class="muted">Fondateur et responsable technique</p>
-        <p>Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.</p>
+        <p class="muted" data-i18n="founder.role">Fondateur et responsable technique</p>
+        <p data-i18n="founder.desc">Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.</p>
       </div>
     </div>
   </section>
@@ -486,22 +521,243 @@
 <footer>
   <div class="wrap split">
     <p class="wordmark">Chic Overdose</p>
-    <p>Projet en développement, porté par Avant-Garde Technologies à Belfaux (Fribourg).</p>
+    <p data-i18n="footer.tagline">Projet en développement, porté par Avant-Garde Technologies à Belfaux (Fribourg).</p>
   </div>
 </footer>
 
 <script>
   (function () {
-    // Formspree (temporaire, en attendant l'endpoint Spring Boot /api/beta-signup).
-    var ENDPOINT = 'https://formspree.io/f/xdekgdrp';
+    // ---------- i18n ----------
+    var translations = {
+      fr: {
+        'nav.concept': 'Concept',
+        'nav.demos': 'Démonstrations',
+        'nav.technique': 'Fiche technique',
+        'nav.choix': 'Choix techniques',
+        'nav.fondateur': 'Fondateur',
+        'nav.beta': 'Bêta privée',
+        'intro.lede': 'La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.',
+        'intro.cta.beta': 'Rejoindre la bêta privée',
+        'intro.cta.concept': 'Découvrir le concept',
+        'intro.cta.demos': 'Voir les démonstrations',
+        'intro.cta.technique': 'Voir la fiche technique',
+        'concept.title': 'Une place de marché pensée pour le luxe et l’immobilier en Suisse',
+        'concept.auctions.title': 'Enchères',
+        'concept.auctions.desc': 'Les acheteurs misent jusqu’à la clôture, et l’offre la plus élevée l’emporte.',
+        'concept.direct.title': 'Ventes directes',
+        'concept.direct.desc': 'Le vendeur fixe son prix, l’acheteur achète immédiatement, neuf ou d’occasion.',
+        'concept.fees.title': 'Zéro frais, zéro commission',
+        'concept.fees.desc': 'Mettre un article en ligne ne coûte rien, et aucune commission n’est prélevée sur la vente.',
+        'concept.ch.title': 'Conçue pour la Suisse',
+        'concept.ch.desc': 'Le catalogue s’organise par catégories et par canton.',
+        'concept.cats.title': 'Tous les produits de luxe, et bien plus',
+        'concept.cats.desc': 'La place de marché accueille l’ensemble des produits de luxe ainsi que l’immobilier, à travers de nombreuses catégories :',
+        'concept.cats.clothing': 'Vêtements',
+        'concept.cats.automotive': 'Automobile',
+        'concept.cats.realestate': 'Immobilier',
+        'concept.cats.wine': 'Vins',
+        'concept.cats.videogames': 'Jeux vidéo',
+        'concept.cats.computing': 'Informatique',
+        'concept.cats.more': 'Et bien d’autres',
+        'demos.title': 'Voir Chic Overdose en action',
+        'demos.item1': 'Démonstration 1',
+        'demos.item2': 'Démonstration 2',
+        'demos.item3': 'Démonstration 3',
+        'demos.fallback': 'Votre navigateur ne peut pas lire cette vidéo.',
+        'demos.open': 'Ouvrir la vidéo sur GitHub',
+        'demos.openGithub': 'Ouvrir sur GitHub',
+        'demos.newTab': ' (s’ouvre dans un nouvel onglet)',
+        'technique.title': 'Fiche technique',
+        'technique.language': 'Langage',
+        'technique.framework': 'Framework',
+        'technique.webui': 'Interface web',
+        'technique.database': 'Base de données',
+        'technique.dataaccess': 'Accès aux données',
+        'technique.migrations': 'Migrations',
+        'technique.cache': 'Cache',
+        'technique.auth': 'Authentification',
+        'technique.auth.value': 'Spring Security, OAuth2 (Google Sign-In)',
+        'technique.build': 'Build',
+        'technique.build.value': 'Maven multi-modules',
+        'technique.env': 'Environnement',
+        'choix.title': 'Les choix derrière le code',
+        'choix.desc': 'Chic Overdose repose sur une pile Java moderne, structurée pour rester lisible, sûre et rapide à mesure que le projet grandit.',
+        'choice1.title': 'Une pile technologique à jour',
+        'choice1.p1': 'Java 21 et Spring Boot 3.4 permettent de profiter des dernières évolutions du langage, comme les threads virtuels et le pattern matching avancé.',
+        'choice1.p2': 'Avec Vaadin 25, l’interface web s’écrit entièrement en Java, sans framework JavaScript lourd comme React ou Angular à maintenir à côté.',
+        'choice2.title': 'Une architecture en couches',
+        'choice2.p1': 'Le projet est un multi-module Maven qui sépare la logique métier (<code>recordz-core</code>) de la partie web (<code>recordz-web</code>).',
+        'choice2.p2': 'Les répertoires suivent le même découpage : <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> et <code>ui</code>. Le code reste facile à maintenir et à faire évoluer.',
+        'choice3.title': 'Des données maîtrisées',
+        'choice3.p1': 'jOOQ (3.19) place le SQL au premier plan : contrôle total, précision et performance des requêtes, ce qui compte pour une application d’enchères.',
+        'choice3.p2': 'Les tables de référence, comme les cantons suisses et les catégories, sont mises en cache avec <code>@Cacheable</code> pour éviter des accès inutiles à MySQL 9.',
+        'choice3.p3': 'Flyway versionne le schéma de la base et fiabilise chaque mise en production.',
+        'choice4.title': 'Une authentification moderne',
+        'choice4.p1': 'Spring Security et OAuth2 permettent de se connecter avec Google (Google Sign-In). Les profils utilisateurs sont synchronisés automatiquement par <code>CustomOAuth2UserService</code>, sans mot de passe classique à gérer.',
+        'choice5.title': 'Un projet simple à reprendre',
+        'choice5.p1': 'Un fichier <code>docker-compose.yml</code> orchestre les services, MySQL en tête : un nouveau développeur démarre le projet en quelques minutes.',
+        'choice5.p2': 'Le README détaille le schéma de données (marché suisse, enchères, cantons) et propose un guide de démarrage pas à pas.',
+        'beta.title': 'Bêta privée',
+        'beta.subtitle': 'Inscription réservée aux adresses Gmail.',
+        'beta.desc': 'Laissez votre adresse Gmail pour recevoir votre accès à la version privée de la bêta dès qu\u2019une place se libère.',
+        'beta.label': 'Adresse Gmail',
+        'beta.submit': 'S\u2019inscrire',
+        'beta.noscript': 'Activez JavaScript pour vous inscrire à la bêta.',
+        'beta.msg.invalid': 'Merci d\u2019indiquer une adresse Gmail valide (ex. nom@gmail.com).',
+        'beta.msg.sending': 'Inscription en cours…',
+        'beta.msg.ok': 'Merci ! Votre adresse a bien été enregistrée pour la bêta privée.',
+        'beta.msg.error': 'Une erreur est survenue. Réessayez dans un instant.',
+        'founder.title': 'Derrière le projet',
+        'founder.role': 'Fondateur et responsable technique',
+        'founder.desc': 'Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.',
+        'footer.tagline': 'Projet en développement, porté par Avant-Garde Technologies à Belfaux (Fribourg).',
+        'meta.title': 'Chic Overdose – La place de marché suisse du luxe et de l\u2019immobilier',
+        'meta.description': 'Chic Overdose : enchères et ventes directes de produits de luxe et d\u2019immobilier en Suisse (vêtements, automobile, vins, jeux vidéo, informatique…), sans frais ni commission.'
+      },
+      en: {
+        'nav.concept': 'Concept',
+        'nav.demos': 'Demos',
+        'nav.technique': 'Tech sheet',
+        'nav.choix': 'Tech choices',
+        'nav.fondateur': 'Founder',
+        'nav.beta': 'Private beta',
+        'intro.lede': 'Switzerland’s marketplace for luxury and real estate: auctions and direct sales, no listing fees, no commission.',
+        'intro.cta.beta': 'Join the private beta',
+        'intro.cta.concept': 'Discover the concept',
+        'intro.cta.demos': 'Watch the demos',
+        'intro.cta.technique': 'View the tech sheet',
+        'concept.title': 'A marketplace built for luxury and real estate in Switzerland',
+        'concept.auctions.title': 'Auctions',
+        'concept.auctions.desc': 'Buyers bid until the close, and the highest offer wins.',
+        'concept.direct.title': 'Direct sales',
+        'concept.direct.desc': 'The seller sets the price, the buyer purchases instantly, new or used.',
+        'concept.fees.title': 'Zero fees, zero commission',
+        'concept.fees.desc': 'Listing an item costs nothing, and no commission is taken on the sale.',
+        'concept.ch.title': 'Built for Switzerland',
+        'concept.ch.desc': 'The catalogue is organised by category and by canton.',
+        'concept.cats.title': 'Every luxury category, and more',
+        'concept.cats.desc': 'The marketplace covers the full range of luxury goods as well as real estate, across many categories:',
+        'concept.cats.clothing': 'Clothing',
+        'concept.cats.automotive': 'Automotive',
+        'concept.cats.realestate': 'Real estate',
+        'concept.cats.wine': 'Wine',
+        'concept.cats.videogames': 'Video games',
+        'concept.cats.computing': 'Computing',
+        'concept.cats.more': 'And many more',
+        'demos.title': 'See Chic Overdose in action',
+        'demos.item1': 'Demo 1',
+        'demos.item2': 'Demo 2',
+        'demos.item3': 'Demo 3',
+        'demos.fallback': 'Your browser can\u2019t play this video.',
+        'demos.open': 'Open the video on GitHub',
+        'demos.openGithub': 'Open on GitHub',
+        'demos.newTab': ' (opens in a new tab)',
+        'technique.title': 'Tech sheet',
+        'technique.language': 'Language',
+        'technique.framework': 'Framework',
+        'technique.webui': 'Web UI',
+        'technique.database': 'Database',
+        'technique.dataaccess': 'Data access',
+        'technique.migrations': 'Migrations',
+        'technique.cache': 'Cache',
+        'technique.auth': 'Authentication',
+        'technique.auth.value': 'Spring Security, OAuth2 (Google Sign-In)',
+        'technique.build': 'Build',
+        'technique.build.value': 'Multi-module Maven',
+        'technique.env': 'Environment',
+        'choix.title': 'The choices behind the code',
+        'choix.desc': 'Chic Overdose runs on a modern Java stack, structured to stay readable, safe and fast as the project grows.',
+        'choice1.title': 'An up-to-date tech stack',
+        'choice1.p1': 'Java 21 and Spring Boot 3.4 make it possible to take advantage of the latest language features, such as virtual threads and advanced pattern matching.',
+        'choice1.p2': 'With Vaadin 25, the web interface is written entirely in Java, with no heavy JavaScript framework like React or Angular to maintain alongside it.',
+        'choice2.title': 'A layered architecture',
+        'choice2.p1': 'The project is a multi-module Maven build that separates business logic (<code>recordz-core</code>) from the web layer (<code>recordz-web</code>).',
+        'choice2.p2': 'The directories follow the same split: <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> and <code>ui</code>. The code stays easy to maintain and evolve.',
+        'choice3.title': 'Well-managed data',
+        'choice3.p1': 'jOOQ (3.19) puts SQL front and centre: full control, precision and query performance, which matters for an auction application.',
+        'choice3.p2': 'Reference tables, such as Swiss cantons and categories, are cached with <code>@Cacheable</code> to avoid unnecessary calls to MySQL 9.',
+        'choice3.p3': 'Flyway versions the database schema and makes every production deployment reliable.',
+        'choice4.title': 'Modern authentication',
+        'choice4.p1': 'Spring Security and OAuth2 let users sign in with Google (Google Sign-In). User profiles are synced automatically by <code>CustomOAuth2UserService</code>, with no classic password to manage.',
+        'choice5.title': 'A project that\u2019s easy to pick up',
+        'choice5.p1': 'A <code>docker-compose.yml</code> file orchestrates the services, MySQL included: a new developer can get the project running in a few minutes.',
+        'choice5.p2': 'The README covers the data schema (Swiss marketplace, auctions, cantons) and offers a step-by-step getting-started guide.',
+        'beta.title': 'Private beta',
+        'beta.subtitle': 'Sign-up limited to Gmail addresses.',
+        'beta.desc': 'Leave your Gmail address to get access to the private beta as soon as a spot opens up.',
+        'beta.label': 'Gmail address',
+        'beta.submit': 'Sign up',
+        'beta.noscript': 'Enable JavaScript to sign up for the beta.',
+        'beta.msg.invalid': 'Please enter a valid Gmail address (e.g. name@gmail.com).',
+        'beta.msg.sending': 'Signing up…',
+        'beta.msg.ok': 'Thanks! Your address has been registered for the private beta.',
+        'beta.msg.error': 'Something went wrong. Please try again in a moment.',
+        'founder.title': 'Behind the project',
+        'founder.role': 'Founder and technical lead',
+        'founder.desc': 'A senior, rigorous and pragmatic software engineer, Alexandre builds robust, secure and high-performing enterprise applications. He handles the full stack: from database modelling to the interface, through security and containerised deployment.',
+        'footer.tagline': 'Project in development, run by Avant-Garde Technologies in Belfaux (Fribourg).',
+        'meta.title': 'Chic Overdose – Switzerland\u2019s marketplace for luxury and real estate',
+        'meta.description': 'Chic Overdose: auctions and direct sales of luxury goods and real estate in Switzerland (clothing, automotive, wine, video games, computing…), no fees, no commission.'
+      }
+    };
+
+    var STORAGE_KEY = 'chicoverdose-lang';
+    var htmlEl = document.documentElement;
+    var titleEl = document.querySelector('title');
+    var metaDescEl = document.getElementById('meta-description');
+    var btnFr = document.getElementById('lang-fr');
+    var btnEn = document.getElementById('lang-en');
+
+    function applyLang(lang) {
+      var dict = translations[lang] || translations.fr;
+
+      document.querySelectorAll('[data-i18n]').forEach(function (el) {
+        var key = el.getAttribute('data-i18n');
+        if (dict[key] !== undefined) el.innerHTML = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(function (el) {
+        var key = el.getAttribute('data-i18n-aria-label');
+        if (dict[key] !== undefined) el.setAttribute('aria-label', dict[key]);
+      });
+
+      titleEl.textContent = dict['meta.title'];
+      metaDescEl.setAttribute('content', dict['meta.description']);
+      htmlEl.setAttribute('lang', lang);
+
+      btnFr.setAttribute('aria-pressed', String(lang === 'fr'));
+      btnEn.setAttribute('aria-pressed', String(lang === 'en'));
+
+      htmlEl.setAttribute('data-lang', lang);
+      try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+    }
+
+    function initialLang() {
+      var stored = null;
+      try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+      if (stored === 'fr' || stored === 'en') return stored;
+      return (navigator.language || '').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en';
+    }
+
+    btnFr.addEventListener('click', function () { applyLang('fr'); });
+    btnEn.addEventListener('click', function () { applyLang('en'); });
+
+    applyLang(initialLang());
+
+    // ---------- Bêta form ----------
+    var ENDPOINT = 'https://formspree.io/f/xdekgdrp'; // Formspree (temporaire, en attendant /api/beta-signup)
     var GMAIL_RE = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
 
     var form = document.getElementById('beta-form');
     var input = document.getElementById('beta-email');
     var msg = document.getElementById('beta-msg');
 
-    function showMessage(text, state) {
-      msg.textContent = text;
+    function currentLang() {
+      return htmlEl.getAttribute('data-lang') || 'fr';
+    }
+
+    function showMessage(key, state) {
+      var dict = translations[currentLang()] || translations.fr;
+      msg.textContent = dict[key] || '';
       msg.setAttribute('data-state', state);
     }
 
@@ -510,14 +766,14 @@
       var email = input.value.trim();
 
       if (!GMAIL_RE.test(email)) {
-        showMessage('Merci d\u2019indiquer une adresse Gmail valide (ex. nom@gmail.com).', 'error');
+        showMessage('beta.msg.invalid', 'error');
         input.focus();
         return;
       }
 
       var submitBtn = form.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
-      showMessage('Inscription en cours…', '');
+      showMessage('beta.msg.sending', '');
 
       fetch(ENDPOINT, {
         method: 'POST',
@@ -529,11 +785,11 @@
       })
         .then(function (res) {
           if (!res.ok) throw new Error('bad status');
-          showMessage('Merci ! Votre adresse a bien été enregistrée pour la bêta privée.', 'ok');
+          showMessage('beta.msg.ok', 'ok');
           form.reset();
         })
         .catch(function () {
-          showMessage('Une erreur est survenue. Réessayez dans un instant.', 'error');
+          showMessage('beta.msg.error', 'error');
         })
         .finally(function () {
           submitBtn.disabled = false;
