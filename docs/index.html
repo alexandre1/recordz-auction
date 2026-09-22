@@ -285,6 +285,8 @@
   /* Fondateur */
   .founder { background: var(--panel); }
   .founder .name { font-family: var(--display); font-size: 1.5rem; margin: 0 0 .15rem; }
+  .team { display: flex; flex-direction: column; gap: 2rem; }
+  .person + .person { border-top: 1px solid var(--rule); padding-top: 1.75rem; }
 
   /* Footer */
   footer {
@@ -509,10 +511,17 @@
   <section id="fondateur" class="founder">
     <div class="wrap split">
       <h2 data-i18n="founder.title">Derrière le projet</h2>
-      <div>
-        <p class="name">Alexandre Jaquet</p>
-        <p class="muted" data-i18n="founder.role">Fondateur et responsable technique</p>
-        <p data-i18n="founder.desc">Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.</p>
+      <div class="team">
+        <div class="person">
+          <p class="name">Alexandre Jaquet</p>
+          <p class="muted" data-i18n="founder.role">Fondateur et responsable technique</p>
+          <p data-i18n="founder.desc">Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.</p>
+        </div>
+        <div class="person">
+          <p class="name">Meekat Mahmud</p>
+          <p class="muted" data-i18n="founder2.role">Monteur vidéo et spécialiste du contenu numérique</p>
+          <p data-i18n="founder2.desc">Meekat soutient le projet à travers un montage vidéo professionnel, la création de contenu et la communication visuelle, en aidant à transformer des idées complexes en contenus clairs et engageants pour les investisseurs, partenaires et audiences.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -610,6 +619,8 @@
         'founder.title': 'Derrière le projet',
         'founder.role': 'Fondateur et responsable technique',
         'founder.desc': 'Ingénieur logiciel senior, rigoureux et pragmatique, Alexandre conçoit des applications d’entreprise robustes, sûres et performantes. Il maîtrise toute la chaîne : de la modélisation de la base de données à l’interface, en passant par la sécurité et le déploiement en conteneurs.',
+        'founder2.role': 'Monteur vidéo et spécialiste du contenu numérique',
+        'founder2.desc': 'Meekat soutient le projet à travers un montage vidéo professionnel, la création de contenu et la communication visuelle, en aidant à transformer des idées complexes en contenus clairs et engageants pour les investisseurs, partenaires et audiences.',
         'footer.tagline': 'Projet en développement, porté par Avant-Garde Technologies à Belfaux (Fribourg).',
         'meta.title': 'Chic Overdose – La place de marché suisse du luxe et de l\u2019immobilier',
         'meta.description': 'Chic Overdose : enchères et ventes directes de produits de luxe et d\u2019immobilier en Suisse (vêtements, automobile, vins, jeux vidéo, informatique…), sans frais ni commission.'
@@ -695,6 +706,8 @@
         'founder.title': 'Behind the project',
         'founder.role': 'Founder and technical lead',
         'founder.desc': 'A senior, rigorous and pragmatic software engineer, Alexandre builds robust, secure and high-performing enterprise applications. He handles the full stack: from database modelling to the interface, through security and containerised deployment.',
+        'founder2.role': 'Video Editor & Digital Content Specialist',
+        'founder2.desc': 'Meekat supports the project through professional video editing, content creation, and visual communication, helping transform complex ideas into clear and engaging content for investors, partners, and audiences.',
         'footer.tagline': 'Project in development, run by Avant-Garde Technologies in Belfaux (Fribourg).',
         'meta.title': 'Chic Overdose – Switzerland\u2019s marketplace for luxury and real estate',
         'meta.description': 'Chic Overdose: auctions and direct sales of luxury goods and real estate in Switzerland (clothing, automotive, wine, video games, computing…), no fees, no commission.'
