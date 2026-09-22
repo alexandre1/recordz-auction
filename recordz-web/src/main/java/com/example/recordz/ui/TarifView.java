@@ -31,7 +31,7 @@ public class TarifView extends VerticalLayout {
         String[][] rows = {
                 {"Mise en vente standard", "Gratuit"},
                 {"Commission sur vente", "0%"},
-                {"Article mis en vedette", "0 CHF"},
+                {"Article mis en vedette", "1000 CHF"},
                 {"Publicité", "Sur devis"}
         };
         for (String[] r : rows) {
