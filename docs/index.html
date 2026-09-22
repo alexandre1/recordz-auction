@@ -232,6 +232,27 @@
     border-radius: 3px;
   }
 
+  /* Bêta privée */
+  .beta-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.25rem 0 .6rem;
+  }
+  .beta-input {
+    flex: 1 1 18rem;
+    padding: .8rem 1rem;
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+  }
+  .beta-input:invalid:not(:placeholder-shown) { border-color: #B3402E; }
+  .beta-form .btn { border: none; cursor: pointer; }
+  .beta-msg { margin: 0; font-size: .95rem; }
+  .beta-msg[data-state="ok"] { color: var(--forest); }
+  .beta-msg[data-state="error"] { color: #B3402E; }
+
   /* Fondateur */
   .founder { background: var(--panel); }
   .founder .name { font-family: var(--display); font-size: 1.5rem; margin: 0 0 .15rem; }
@@ -265,6 +286,7 @@
         <li><a href="#technique">Fiche technique</a></li>
         <li><a href="#choix">Choix techniques</a></li>
         <li><a href="#fondateur">Fondateur</a></li>
+        <li><a href="#beta">Bêta privée</a></li>
       </ul>
     </nav>
     <div class="mark">
@@ -279,7 +301,8 @@
     <div class="wrap split">
       <p class="lede">La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
       <div class="actions" style="align-self:end">
-        <a class="btn" href="#concept">Découvrir le concept</a>
+        <a class="btn" href="#beta">Rejoindre la bêta privée</a>
+        <a class="link" href="#concept">Découvrir le concept</a>
         <a class="link" href="#demos">Voir les démonstrations</a>
         <a class="link" href="#technique">Voir la fiche technique</a>
       </div>
@@ -420,6 +443,34 @@
     </div>
   </section>
 
+  <section id="beta" class="beta">
+    <div class="wrap split">
+      <div>
+        <h2>Bêta privée</h2>
+        <p class="muted">Inscription réservée aux adresses Gmail.</p>
+      </div>
+      <div>
+        <p>Laissez votre adresse Gmail pour recevoir votre accès à la version privée de la bêta dès qu'une place se libère.</p>
+        <form id="beta-form" class="beta-form" novalidate>
+          <label for="beta-email" class="sr-only">Adresse Gmail</label>
+          <input
+            type="email"
+            id="beta-email"
+            name="email"
+            class="beta-input"
+            placeholder="prenom.nom@gmail.com"
+            autocomplete="email"
+            inputmode="email"
+            required
+          >
+          <button type="submit" class="btn">S'inscrire</button>
+        </form>
+        <p id="beta-msg" class="beta-msg" role="status" aria-live="polite"></p>
+        <noscript><p class="muted">Activez JavaScript pour vous inscrire à la bêta.</p></noscript>
+      </div>
+    </div>
+  </section>
+
   <section id="fondateur" class="founder">
     <div class="wrap split">
       <h2>Derrière le projet</h2>
@@ -439,5 +490,56 @@
   </div>
 </footer>
 
+<script>
+  (function () {
+    // Formspree (temporaire, en attendant l'endpoint Spring Boot /api/beta-signup).
+    var ENDPOINT = 'https://formspree.io/f/xdekgdrp';
+    var GMAIL_RE = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+
+    var form = document.getElementById('beta-form');
+    var input = document.getElementById('beta-email');
+    var msg = document.getElementById('beta-msg');
+
+    function showMessage(text, state) {
+      msg.textContent = text;
+      msg.setAttribute('data-state', state);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = input.value.trim();
+
+      if (!GMAIL_RE.test(email)) {
+        showMessage('Merci d\u2019indiquer une adresse Gmail valide (ex. nom@gmail.com).', 'error');
+        input.focus();
+        return;
+      }
+
+      var submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      showMessage('Inscription en cours…', '');
+
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' // sans ça, Formspree redirige au lieu de répondre en JSON
+        },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('bad status');
+          showMessage('Merci ! Votre adresse a bien été enregistrée pour la bêta privée.', 'ok');
+          form.reset();
+        })
+        .catch(function () {
+          showMessage('Une erreur est survenue. Réessayez dans un instant.', 'error');
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+        });
+    });
+  })();
+</script>
 </body>
 </html>
