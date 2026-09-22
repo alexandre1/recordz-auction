@@ -122,11 +122,28 @@
     color: var(--forest);
   }
 
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    margin-top: clamp(2.5rem, 7vw, 4.5rem);
+    padding: .4rem .9rem .4rem .6rem;
+    border: 1px solid rgba(201,166,107,.45);
+    font-size: .9rem;
+    color: var(--on-forest);
+  }
+  .badge .dot {
+    width: .5rem;
+    height: .5rem;
+    background: var(--gold);
+    flex: none;
+  }
+
   .mark {
-    margin-top: clamp(3rem, 9vw, 7rem);
+    margin-top: 1.1rem;
     font-family: var(--display);
     font-weight: 500;
-    font-size: clamp(3.4rem, 15vw, 13rem);
+    font-size: clamp(3rem, 12vw, 9.5rem);
     line-height: .86;
     letter-spacing: -.03em;
   }
@@ -140,29 +157,37 @@
   .echo span:first-child { opacity: .75; }
   .echo span:last-child { opacity: .3; }
 
-  /* ---------- Intro ---------- */
-  .intro { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(1.5rem, 3vw, 2.5rem); }
-  .intro .lede {
+  /* ---------- Sections (paper) ---------- */
+  main { padding-top: clamp(2.5rem, 6vw, 4.5rem); }
+
+  /* ---------- Hero pitch + lot card ---------- */
+  .hero-grid {
+    margin-top: clamp(2.5rem, 6vw, 4.5rem);
+    padding-bottom: clamp(3rem, 7vw, 5.5rem);
+  }
+  .hero-grid .lede {
     margin: 0;
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-    line-height: 1.25;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    line-height: 1.3;
     letter-spacing: -.01em;
-    max-width: 34ch;
+    max-width: 32ch;
   }
-  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 1.75rem; }
   .btn {
     display: inline-block;
     padding: .8rem 1.5rem;
-    background: var(--forest);
-    color: var(--on-forest);
-    border: 1px solid var(--accent);
+    background: var(--gold);
+    color: var(--forest);
+    border: 1px solid var(--gold);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
   }
-  .btn:hover { background: #124a39; }
+  .btn:hover { background: #d8b980; }
   .link { text-decoration-thickness: 1px; text-underline-offset: .3em; font-weight: 500; }
+  .hero-grid .link { color: var(--on-forest); opacity: .85; }
+  .hero-grid .link:hover { opacity: 1; }
 
   /* ---------- Sections ---------- */
   section { padding-block: clamp(2.5rem, 6vw, 5rem); }
@@ -302,7 +327,8 @@
     .split { grid-template-columns: minmax(0, 1fr); }
     .concept-grid { grid-template-columns: minmax(0, 1fr); }
     .spec > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
-    .intro .lede { max-width: none; }
+    .hero-grid { align-items: start; }
+    .hero-grid .lede { max-width: none; }
   }
 </style>
 </head>
@@ -326,18 +352,14 @@
         <button type="button" id="lang-en" aria-pressed="false">EN</button>
       </div>
     </div>
+    <p class="badge"><span class="dot" aria-hidden="true"></span><span data-i18n="badge.status">Bêta privée · inscriptions ouvertes · Suisse romande</span></p>
     <div class="mark">
       <h1>Chic<br>Overdose</h1>
       <div class="echo" aria-hidden="true"><span>Overdose</span><span>Overdose</span></div>
     </div>
-  </div>
-</header>
-
-<main>
-  <div class="intro">
-    <div class="wrap split">
+    <div class="hero-grid">
       <p class="lede" data-i18n="intro.lede">La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.</p>
-      <div class="actions" style="align-self:end">
+      <div class="actions">
         <a class="btn" href="#beta" data-i18n="intro.cta.beta">Rejoindre la bêta privée</a>
         <a class="link" href="#concept" data-i18n="intro.cta.concept">Découvrir le concept</a>
         <a class="link" href="#demos" data-i18n="intro.cta.demos">Voir les démonstrations</a>
@@ -345,7 +367,9 @@
       </div>
     </div>
   </div>
+</header>
 
+<main>
   <section id="concept">
     <div class="wrap split">
       <h2 data-i18n="concept.title">Une place de marché pensée pour le luxe et l’immobilier en Suisse</h2>
@@ -545,6 +569,7 @@
         'nav.choix': 'Choix techniques',
         'nav.fondateur': 'Fondateur',
         'nav.beta': 'Bêta privée',
+        'badge.status': 'Bêta privée · inscriptions ouvertes · Suisse romande',
         'intro.lede': 'La place de marché suisse du luxe et de l’immobilier : enchères et ventes directes, sans frais de mise en ligne, sans commission.',
         'intro.cta.beta': 'Rejoindre la bêta privée',
         'intro.cta.concept': 'Découvrir le concept',
@@ -632,6 +657,7 @@
         'nav.choix': 'Tech choices',
         'nav.fondateur': 'Founder',
         'nav.beta': 'Private beta',
+        'badge.status': 'Private beta · sign-ups open · French-speaking Switzerland',
         'intro.lede': 'Switzerland’s marketplace for luxury and real estate: auctions and direct sales, no listing fees, no commission.',
         'intro.cta.beta': 'Join the private beta',
         'intro.cta.concept': 'Discover the concept',
