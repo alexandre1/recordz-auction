@@ -1,16 +1,13 @@
 import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
 
 import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';
-import $cssFromFile_0 from 'Frontend/styles/shared-styles.css?inline';
-import $cssFromFile_1 from 'Frontend/styles/vaadin-text-field-styles.css?inline';
-import $cssFromFile_2 from 'Frontend/generated/jar-resources/vaadin-full-calendar/full-calendar-styles.css?inline';
-import '@vaadin/vertical-layout/src/vaadin-vertical-layout.js';
-import '@vaadin/app-layout/src/vaadin-app-layout.js';
+import $cssFromFile_0 from 'Frontend/generated/jar-resources/vaadin-full-calendar/full-calendar-styles.css?inline';
 import '@vaadin/field-highlighter/src/vaadin-field-highlighter.js';
 import '@vaadin/common-frontend/ConnectionIndicator.js';
 import '@vaadin/accordion/src/vaadin-accordion.js';
 import '@vaadin/details/src/vaadin-details.js';
 import '@vaadin/accordion/src/vaadin-accordion-panel.js';
+import '@vaadin/app-layout/src/vaadin-app-layout.js';
 import '@vaadin/button/src/vaadin-button.js';
 import '@vaadin/app-layout/src/vaadin-drawer-toggle.js';
 import '@vaadin/avatar/src/vaadin-avatar.js';
@@ -71,6 +68,7 @@ import '@vaadin/message-list/src/vaadin-message-list.js';
 import '@vaadin/notification/src/vaadin-notification.js';
 import '@vaadin/horizontal-layout/src/vaadin-horizontal-layout.js';
 import '@vaadin/scroller/src/vaadin-scroller.js';
+import '@vaadin/vertical-layout/src/vaadin-vertical-layout.js';
 import '@vaadin/popover/src/vaadin-popover.js';
 import 'Frontend/generated/jar-resources/vaadin-popover/popover.ts';
 import '@vaadin/progress-bar/src/vaadin-progress-bar.js';
@@ -116,10 +114,6 @@ import '@fullcalendar/moment';
 import '@fullcalendar/moment-timezone';
 
 injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);
-const $css_1 = typeof $cssFromFile_1  === 'string' ? unsafeCSS($cssFromFile_1) : $cssFromFile_1;
-registerStyles('vaadin-text-field', $css_1, {moduleId: 'flow_css_mod_1'});
-
-injectGlobalCss($cssFromFile_2.toString(), 'CSSImport end', document);
 const loadOnDemand = (key) => { return Promise.resolve(0); }
 window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
