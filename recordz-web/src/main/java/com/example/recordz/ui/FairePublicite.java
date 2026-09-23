@@ -35,9 +35,15 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
     private final Grid<Article> grid = new Grid<>(Article.class, false);
     private static final int PAGE_SIZE = 10;
 
+    // Champs ajoutés : email et page courante ne sont connus qu'à l'intérieur
+    // de setParameter() à l'origine ; on les garde ici pour pouvoir
+    // rafraîchir la grille depuis faireUnePub() sans tout reconstruire.
+    private String email;
+    private int currentPage = 1;
+
     public FairePublicite(ArticleService articleService,
-                        EnchereService enchereService,
-                        AuthenticatedUser authenticatedUser,ReferenceService  referenceService) {
+                          EnchereService enchereService,
+                          AuthenticatedUser authenticatedUser,ReferenceService  referenceService) {
         add(new H2("🔨 Faire de la publicite"));
         this.articleService    = articleService;
         this.enchereService    = enchereService;
@@ -49,12 +55,12 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
 
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter Integer page) {
-        int currentPage = (page != null && page > 0) ? page : 1;
+        this.currentPage = (page != null && page > 0) ? page : 1;
 
         // Récupérer l'email de l'utilisateur connecté
         OidcUser user = (OidcUser) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
-        String email = user.getAttribute("email");
+        this.email = user.getAttribute("email");
 
         int total = articleService.countActiveArticlesByVendeur(email);
         int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
@@ -297,6 +303,13 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
     // ── Grille ────────────────────────────────────────────────
 
     private Grid<Article> buildGrid() {
+        // CORRECTION : sans ce removeAllColumns(), chaque appel à buildGrid()
+        // empile un nouveau jeu de colonnes par-dessus les précédentes, puisque
+        // `grid` est un champ unique réutilisé et non recréé à chaque appel.
+        // C'est ce qui provoquait le dédoublement visible à l'écran
+        // (Article/Marque/... répétés deux fois) au moindre rafraîchissement.
+        grid.removeAllColumns();
+
         grid.getStyle()
                 .set("border-radius", "20px")
                 .set("border", "1px solid #6100C1")
@@ -341,17 +354,21 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
         Button annuler = new Button("Annuler", e -> dialog.close());
 
         confirmer.addClickListener(e -> {
-            // ta logique métier ici
-            // ex: pubService.activerPub(article.getIdArticle());
             this.articleService.updateFaitDeLapublicite(article.getIdArticle().intValue());
             Notification.show("Publicité activée pour : " + article.getNom());
             dialog.close();
+
+            // CORRECTION : on ne reconstruit plus les colonnes (buildGrid()),
+            // seulement les lignes affichées. L'article dont la pub vient
+            // d'être activée sort naturellement de la liste, puisque
+            // findActiveArticlesByVendeurSansPub() ne renvoie que les
+            // articles sans publicité active.
+            refreshGridItems();
         });
 
         dialog.add(info);
         dialog.getFooter().add(annuler, confirmer);
         dialog.open();
-        buildGrid();
     }
 
     private Button styledButton(String label) {
@@ -372,8 +389,13 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
 
     // ── Helpers ───────────────────────────────────────────────
 
-    private void refreshGrid(int page) {
-        List<Article> articles = articleService.findAll(page, PAGE_SIZE);
+    // Remplace l'ancien refreshGrid(int) — inutilisé et basé sur
+    // articleService.findAll(), qui ne correspond pas à cette vue (liste des
+    // articles du vendeur connecté sans publicité active, paginée).
+    private void refreshGridItems() {
+        List<Article> articles = articleService.findActiveArticlesByVendeurSansPub(
+                email, currentPage, PAGE_SIZE
+        );
         grid.setItems(articles);
     }
 
@@ -388,6 +410,3 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
     }
 
 }
-
-
-

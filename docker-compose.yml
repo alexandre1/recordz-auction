@@ -20,19 +20,6 @@ services:
       retries: 5
       start_period: 30s
 
-  redis:
-    image: redis:7-alpine
-    container_name: recordz-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   app:
     build:
       context: .
@@ -42,20 +29,13 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/new_db_recordzv3?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_USER: ${DB_USER:root}
+      DB_PASSWORD: ${DB_PASSWORD:}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SPRING_PROFILES_ACTIVE: production
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      ENTRUPY_BROADCASTER_TYPE: ${ENTRUPY_BROADCASTER_TYPE:-redis}
-      ENTRUPY_API_TOKEN: ${ENTRUPY_API_TOKEN}
-      ENTRUPY_WEBHOOK_SECRET: ${ENTRUPY_WEBHOOK_SECRET}
     ports:
       - "8098:8098"
 
