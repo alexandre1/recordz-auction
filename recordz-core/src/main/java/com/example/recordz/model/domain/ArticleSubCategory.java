@@ -53,7 +53,7 @@ public enum ArticleSubCategory {
 
     // ✅ Vêtements
     public static final Set<Integer> WEAR_SIZE_SUBCATS =
-            Set.of(1, 2, 3, 4, 6, 13, 28, 29, 30, 32, 311);
+            Set.of(1, 2, 3, 4, 6, 7, 13, 28, 29, 30, 32, 311);
 
     ArticleSubCategory(int id, String label) {
         this.id = id;

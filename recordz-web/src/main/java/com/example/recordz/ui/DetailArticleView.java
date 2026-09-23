@@ -582,6 +582,22 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 );
             }
 
+            else if (cat == ArticleCategory.FASHION_FEMME) {
+                col.add(
+                        fieldRow("Taille",               str(article.getTaille())))
+                ;
+            }
+            else if (cat == ArticleCategory.FASHION_HOMME) {
+                col.add(
+                        fieldRow("Taille",               str(article.getTaille())))
+                ;
+            }
+            else if (cat == ArticleCategory.LINGERIE) {
+                col.add(
+                        fieldRow("Taille",               str(article.getTaille())))
+                ;
+            }
+
             else if (cat == ArticleCategory.VINS) {
                 col.add(fieldRow("Millésime", article.getMillesime()));
 
@@ -630,9 +646,6 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                             fieldRow("RAM (Go)",          article.getRam()),
                             fieldRow("Disque dur (Go)",   article.getDisqueDur())
                     );
-                }
-                if (ArticleSubCategory.WEAR_SIZE_SUBCATS.contains(subcatId)) {
-                    col.add(fieldRow("Taille", article.getTaille()));
                 }
             }
         }
