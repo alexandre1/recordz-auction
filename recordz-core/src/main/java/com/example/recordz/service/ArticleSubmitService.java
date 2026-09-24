@@ -1,6 +1,7 @@
 package com.example.recordz.service;
 
 import com.example.recordz.model.domain.dto.ArticleFormData;
+import com.example.recordz.model.domain.dto.ArticleSaveResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,13 +15,34 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * Persistance d'un article depuis le formulaire d'ajout.
  * Équivalent du bloc d'INSERT dans le Perl loadAddArticle().
+ *
+ * Intégration Entrupy :
+ *  - seules les catégories listées dans CATEGORIES_REQUIRANT_ENTRUPY déclenchent
+ *    le circuit d'authentification (customer_item_id + statut "pending").
+ *  - les autres catégories sont publiées immédiatement (pas de modération).
  */
 @Service
 public class ArticleSubmitService {
+
+    // TODO: remplacer par les véritables id de ref_categorie nécessitant Entrupy
+    // (typiquement maroquinerie/montres/bijoux — à confirmer selon votre référentiel)
+    private static final Set<Integer> CATEGORIES_REQUIRANT_ENTRUPY = Set.of(
+            1, // FASHION_FEMME.
+            2,  //FASHION_HOMME
+            34, //MONTRE
+            35 //BIJOUX
+    );
+
+    // TODO: remplacer par les véritables id dans ref_statut
+    private static final int STATUT_PUBLIE = 1;
+    private static final int STATUT_EN_ATTENTE_AUTH_ENTRUPY = 2;
+
+    private static final String CUSTOMER_ITEM_ID_PREFIX = "CHIC-";
 
     private final DataSource dataSource;
     private final Path uploadDir;
@@ -34,9 +56,11 @@ public class ArticleSubmitService {
     /**
      * Insère un article en base et retourne son id_article.
      */
-    public int save(ArticleFormData data) {
+    public ArticleSaveResult save(ArticleFormData data) {
 
         long owned = resolveCurrentUserId();
+        boolean requiresEntrupy = requiresEntrupyAuthentication(data);
+        int statutInitial = requiresEntrupy ? STATUT_EN_ATTENTE_AUTH_ENTRUPY : STATUT_PUBLIE;
 
         String sql = """
             INSERT INTO article (
@@ -64,7 +88,7 @@ public class ArticleSubmitService {
                 ?,?,
                 ?,?,?,
                 ?,?,?,?,
-                ?,?,1,9,0,
+                ?,?,?,9,0,
                 1,?,?,
                 ?,?,?,
                 ?,?,
@@ -107,6 +131,7 @@ public class ArticleSubmitService {
             // pochette = '' provisoire, mis à jour juste après avec l'id généré
             ps.setString(i++, "");
             ps.setLong(i++, owned);
+            ps.setInt(i++, statutInitial);
             ps.setString(i++, "fr");
             ps.setString(i++, LocalDate.now().toString());
 
@@ -172,6 +197,17 @@ public class ArticleSubmitService {
                     upd.executeUpdate();
                 }
 
+                if (requiresEntrupy) {
+                    String customerItemId = CUSTOMER_ITEM_ID_PREFIX + newId;
+                    try (PreparedStatement updEntrupy = conn.prepareStatement(
+                            "UPDATE article SET entrupy_customer_item_id = ?, entrupy_status = 'pending' " +
+                                    "WHERE id_article = ?")) {
+                        updEntrupy.setString(1, customerItemId);
+                        updEntrupy.setInt(2, newId);
+                        updEntrupy.executeUpdate();
+                    }
+                }
+
                 // ✅ Lier l'article au vendeur
                 try (PreparedStatement mv = conn.prepareStatement(
                         "INSERT INTO met_en_vente (ref_vendeur, ref_article, date_stock) VALUES (?, ?, CURDATE())")) {
@@ -184,11 +220,26 @@ public class ArticleSubmitService {
                     saveImage(data.pochetteStream, pochette);
                 }
             }
-            return newId;
+            return new ArticleSaveResult(newId, requiresEntrupy);
 
         } catch (SQLException e) {
             throw new RuntimeException("Erreur insertion article", e);
         }
+    }
+
+    /**
+     * Détermine si la catégorie de l'article nécessite une authentification Entrupy.
+     */
+    private boolean requiresEntrupyAuthentication(ArticleFormData data) {
+        return CATEGORIES_REQUIRANT_ENTRUPY.contains(data.refCategorie);
+    }
+
+    /**
+     * Utilitaire pour l'UI : reconstruit le customer_item_id sans round-trip DB
+     * (utile juste après save() pour afficher le QR code à l'instant T).
+     */
+    public static String toCustomerItemId(int articleId) {
+        return CUSTOMER_ITEM_ID_PREFIX + articleId;
     }
 
     /**
@@ -221,7 +272,6 @@ public class ArticleSubmitService {
     // Résolution de l'utilisateur connecté via Spring Security
     // -------------------------------------------------------------------------
 
-    // ── 1. Remplace resolveCurrentUserId() ───────────────────────
     private long resolveCurrentUserId() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -230,7 +280,6 @@ public class ArticleSubmitService {
                 if (principal instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidc) {
                     String email = oidc.getAttribute("email");
                     if (email != null) {
-                        // Récupérer l'id depuis la DB via email
                         try (Connection conn = dataSource.getConnection();
                              PreparedStatement ps = conn.prepareStatement(
                                      "SELECT id_personne FROM personne WHERE email = ?")) {
@@ -245,6 +294,7 @@ public class ArticleSubmitService {
         } catch (Exception ignored) {}
         return 0L;
     }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------

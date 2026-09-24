@@ -1,6 +1,7 @@
 package com.example.recordz.ui;
 
 import com.example.recordz.model.domain.dto.ArticleFormData;
+import com.example.recordz.model.domain.dto.ArticleSaveResult;
 import com.example.recordz.service.ArticleDynamicDataService;
 import com.example.recordz.service.ArticleSubmitService;
 import com.example.recordz.ui.layouts.MainLayout;
@@ -45,25 +46,28 @@ public class ArticleFormView extends VerticalLayout {
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         saveButton.addClickListener(e -> {
-            // 1. Validationa
+            // 1. Validation
             if (!form.isValid()) {
                 Notification.show("Veuillez corriger les erreurs avant de publier.",
-                    3000, Notification.Position.TOP_CENTER);
+                        3000, Notification.Position.TOP_CENTER);
                 return;
             }
 
             // 2. Collecte + persistance
             try {
                 ArticleFormData data = form.collectValues();
-                int newId = submitService.save(data);
+                ArticleSaveResult result = submitService.save(data);
+
+                String message = result.pendingEntrupyAuthentication()
+                        ? "Article #" + result.articleId() + " enregistré — en attente de vérification d'authenticité."
+                        : "Article #" + result.articleId() + " publié avec succès !";
 
                 Notification notif = Notification.show(
-                    "Article #" + newId + " publié avec succès !",
-                    4000, Notification.Position.TOP_CENTER);
+                        message, 4000, Notification.Position.TOP_CENTER);
                 notif.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
                 // Redirection vers la fiche de l'article
-                saveButton.getUI().ifPresent(ui -> ui.navigate("detail/" + newId));
+                saveButton.getUI().ifPresent(ui -> ui.navigate("detail/" + result.articleId()));
 
             } catch (Exception ex) {
                 // Afficher la cause racine
@@ -76,7 +80,7 @@ public class ArticleFormView extends VerticalLayout {
         });
 
         cancelButton.addClickListener(e ->
-            cancelButton.getUI().ifPresent(ui -> ui.navigate(""))
+                cancelButton.getUI().ifPresent(ui -> ui.navigate(""))
         );
 
         add(form, new HorizontalLayout(saveButton, cancelButton));
