@@ -82,6 +82,13 @@ recordz-core/                                      # Logique métier — indépe
 └── src/main/java/com/example/recordz/
     ├── config/
     │   └── JooqConfig.java                         # DSL settings + @EnableCaching
+    │   └── EntrupyProperties.java                  # Propriétés de connexion a Entrupy
+    │   └── RestClientConfig.java                   # CLient REST a Entrupy
+    ├── entrupy/
+    │   └── EntrupySessionPayload.java              # Variable pour la validation par Entrupy
+    │   └── EntrupyStatus.java                      # Statut de la validation
+    │   └── EntrupyWebhookEvent.java                # Webhook Entrupy
+    │   └── EntrupyWebhookService.java              # Service Entrupy
     ├── model/domain/
     │   ├── Article.java                            # Annonce marketplace (table plate multi-catégories)
     │   ├── Personne.java                           # Utilisateur / membre
@@ -114,9 +121,10 @@ recordz-core/                                      # Logique métier — indépe
 recordz-web/                                        # Point d'entrée Spring Boot + UI Vaadin
 └── src/main/java/com/example/recordz/
     ├── RecordzApplication.java
-    ├── EnchereScheduler.java                         # Job planifié : clôture des enchères expirées
+    ├── EnchereScheduler.java                       # Job planifié : clôture des enchères expirées
     ├── config/
-    │   └── WebMvcConfig.java
+    │   └── WebMvcConfig.java                       # ComfgurationMvc
+    │   └── CacheConfig.java                        # Création du cache pour Jackson  
     ├── security/
     │   ├── SecurityConfig.java                       # Vaadin + OAuth2 Google
     │   ├── CustomOAuth2UserService.java              # Sync OAuth → personne (upsert par email)
