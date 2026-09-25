@@ -25,6 +25,13 @@ import java.util.Set;
  *  - seules les catégories listées dans CATEGORIES_REQUIRANT_ENTRUPY déclenchent
  *    le circuit d'authentification (customer_item_id + statut "pending").
  *  - les autres catégories sont publiées immédiatement (pas de modération).
+ *
+ * Intégration vidéo :
+ *  - si data.videoPath pointe vers un fichier temporaire (déposé par
+ *    VideoUploadController dans app.video-temp.dir via le flux QR code /
+ *    Redis Pub/Sub côté ArticleFormView), il est déplacé vers app.video.dir
+ *    une fois l'id_article connu, et la colonne video_path mise à jour.
+ *  - data.videoPath == null/blank : article sans vidéo, comportement inchangé.
  */
 @Service
 public class ArticleSubmitService {
@@ -46,11 +53,14 @@ public class ArticleSubmitService {
 
     private final DataSource dataSource;
     private final Path uploadDir;
+    private final Path videoDir;
 
     public ArticleSubmitService(DataSource dataSource,
-                                @Value("${app.upload.dir}") String uploadDirPath) {
+                                @Value("${app.upload.dir}") String uploadDirPath,
+                                @Value("${app.video.dir}") String videoDirPath) {
         this.dataSource = dataSource;
         this.uploadDir  = Paths.get(uploadDirPath);
+        this.videoDir   = Paths.get(videoDirPath);
     }
 
     /**
@@ -208,6 +218,22 @@ public class ArticleSubmitService {
                     }
                 }
 
+                // Vidéo : déplace le fichier temporaire (déposé par
+                // VideoUploadController) vers le stockage définitif, puis met
+                // à jour la colonne video_path. Rien ne se passe si aucune
+                // vidéo n'a été reçue (data.videoPath null/blank).
+                if (data.videoPath != null && !data.videoPath.isBlank()) {
+                    String finalVideoPath = moveVideoToFinalStorage(data.videoPath, newId);
+                    if (finalVideoPath != null) {
+                        try (PreparedStatement updVideo = conn.prepareStatement(
+                                "UPDATE article SET video_path = ? WHERE id_article = ?")) {
+                            updVideo.setString(1, finalVideoPath);
+                            updVideo.setInt(2, newId);
+                            updVideo.executeUpdate();
+                        }
+                    }
+                }
+
                 // ✅ Lier l'article au vendeur
                 try (PreparedStatement mv = conn.prepareStatement(
                         "INSERT INTO met_en_vente (ref_vendeur, ref_article, date_stock) VALUES (?, ?, CURDATE())")) {
@@ -253,6 +279,47 @@ public class ArticleSubmitService {
             Files.copy(stream, dest, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             throw new RuntimeException("Erreur écriture image : " + filename, e);
+        }
+    }
+
+    /**
+     * Déplace le fichier vidéo temporaire (app.video-temp.dir, déposé par
+     * VideoUploadController) vers le stockage définitif (app.video.dir),
+     * renommé selon l'id_article généré. Retourne le chemin final, ou null
+     * si le déplacement échoue — dans ce cas l'article est quand même créé,
+     * simplement sans vidéo, plutôt que de faire échouer toute la publication
+     * pour un problème de fichier.
+     */
+    private String moveVideoToFinalStorage(String tempVideoPath, int articleId) {
+        try {
+            Path source = Paths.get(tempVideoPath);
+            if (!Files.exists(source)) {
+                return null; // fichier temporaire déjà nettoyé ou chemin invalide
+            }
+
+            Files.createDirectories(videoDir);
+
+            String ext = resolveExtension(source.getFileName().toString());
+            String filename = "article_" + articleId + ext;
+            Path dest = videoDir.resolve(filename);
+
+            try {
+                Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.FileSystemException fsEx) {
+                // Cas où temp et stockage définitif sont sur des systèmes de
+                // fichiers différents (Files.move atomique impossible) :
+                // repli sur copie + suppression.
+                Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+                Files.deleteIfExists(source);
+            }
+
+            return dest.toString();
+
+        } catch (Exception e) {
+            // Ne fait pas échouer la publication de l'article pour un souci
+            // de déplacement de fichier vidéo — l'article reste utilisable
+            // sans vidéo, à ré-uploader manuellement si besoin.
+            return null;
         }
     }
 

@@ -20,6 +20,11 @@
             <groupId>com.example</groupId>
             <artifactId>recordz-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!--  Vaadin  -->
         <dependency>
             <groupId>com.vaadin</groupId>

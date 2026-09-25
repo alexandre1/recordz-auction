@@ -84,4 +84,6 @@ public class ArticleFormData {
 
     // ---- Vêtements ----
     public String  taille;
+
+    public String videoPath;
 }

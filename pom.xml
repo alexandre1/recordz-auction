@@ -1,180 +1,196 @@
-    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion>
-        <groupId>com.example</groupId>
-        <artifactId>recordz-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <packaging>pom</packaging>
-        <parent>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-parent</artifactId>
-            <version>4.0.1</version>
-            <relativePath/>
-        </parent>
-        <modules>
-            <module>recordz-core</module>
-            <module>recordz-web</module>
-        </modules>
-        <repositories>
-            <repository>
-                <id>vaadin-prereleases</id>
-                <url>https://maven.vaadin.com</url>
-            </repository>
-             <repository>
-                 <id>vaadin-pro</id>
-                 <url>https://maven.vaadin.com/vaadin-pro</url>
-             </repository>
-        </repositories>
-        <properties>
-            <java.version>21</java.version>
-            <maven.compiler.source>21</maven.compiler.source>
-            <maven.compiler.target>21</maven.compiler.target>
-            <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
-            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-            <!--
-                    ✅ STRATÉGIE DE VERSIONS VAADIN :
-                    Le BOM vaadin-bom:25.0.3 pointe vers flow-bom:25.0.4 → flow-server:25.0.4.
-                    Or le plugin vaadin-maven-plugin:25.0.3 appelle EndpointRequestUtil.isHillaAvailable(ClassFinder)
-                    qui n'existe que dans flow-server >= 25.0.5.
-                    Solution : utiliser vaadin-bom:25.0.6 (dont le flow-bom pointe vers flow-server:25.0.7)
-                    et forcer toutes les dépendances flow/* à 25.0.7 pour cohérence.
-                     -->
-            <vaadin.version>25.0.6</vaadin.version>
-            <!--  flow-server et dérivés : version qui contient isHillaAvailable(ClassFinder)  -->
-            <vaadin.flow.version>25.0.6</vaadin.flow.version>
-            <!--
-                    jOOQ : Spring Boot 4.0.1 référence jooq-bom:3.19.15 inexistant sur Central.
-                    On surcharge avec la dernière version stable.
-                     -->
-            <jooq.version>3.20.11</jooq.version>
-            <mysql.version>9.1.0</mysql.version>
-            <testcontainers.version>1.20.4</testcontainers.version>
-        </properties>
-        <dependencyManagement>
-            <dependencies>
-                <!--
-                            ✅ jooq-bom en premier pour surcharger la référence Spring Boot 4.0.1
-                            vers jooq-bom:3.19.15 qui n'existe pas sur Maven Central.
-                             -->
-                <dependency>
-                    <groupId>org.jooq</groupId>
-                    <artifactId>jooq-bom</artifactId>
-                    <version>${jooq.version}</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
-                <!--  BOM Vaadin  -->
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>vaadin-bom</artifactId>
-                    <version>${vaadin.version}</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
-                <!--
-                            ✅ CORRECTIONS DE VERSIONS FLOW :
-                            Le BOM vaadin-bom:25.0.6 résout flow-server et ses dérivés en 25.0.7 via flow-bom:25.0.7.
-                            On les confirme explicitement ici pour s'assurer qu'aucun autre BOM ne les redescend.
-                            Ces versions contiennent la méthode isHillaAvailable(ClassFinder) requise par le plugin.
-                             -->
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>vaadin-spring</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-lit-template</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-push</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>signals</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <!--
-                            vaadin-dev-server chaîne vers flow-build-tools:shaded:25.0.7.
-                            Le classifier :shaded ne peut pas être forcé via dependencyManagement,
-                            donc on force vaadin-dev-server à la même version que flow-server.
-                             -->
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>vaadin-dev-server</artifactId>
-                    <version>${vaadin.flow.version}</version>
-                </dependency>
-                <!--  ✅ Référence interne entre modules  -->
-                <dependency>
-                    <groupId>com.example</groupId>
-                    <artifactId>recordz-core</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </dependencyManagement>
-        <!--  Dépendances communes à tous les modules  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>recordz-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.1</version>
+        <relativePath/>
+    </parent>
+    <modules>
+        <module>recordz-core</module>
+        <module>recordz-web</module>
+    </modules>
+    <repositories>
+        <repository>
+            <id>vaadin-prereleases</id>
+            <url>https://maven.vaadin.com</url>
+        </repository>
+        <repository>
+            <id>vaadin-pro</id>
+            <url>https://maven.vaadin.com/vaadin-pro</url>
+        </repository>
+    </repositories>
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--
+                ✅ STRATÉGIE DE VERSIONS VAADIN :
+                Le BOM vaadin-bom:25.0.3 pointe vers flow-bom:25.0.4 → flow-server:25.0.4.
+                Or le plugin vaadin-maven-plugin:25.0.3 appelle EndpointRequestUtil.isHillaAvailable(ClassFinder)
+                qui n'existe que dans flow-server >= 25.0.5.
+                Solution : utiliser vaadin-bom:25.0.6 (dont le flow-bom pointe vers flow-server:25.0.7)
+                et forcer toutes les dépendances flow/* à 25.0.7 pour cohérence.
+                 -->
+        <vaadin.version>25.0.6</vaadin.version>
+        <!--  flow-server et dérivés : version qui contient isHillaAvailable(ClassFinder)  -->
+        <vaadin.flow.version>25.0.6</vaadin.flow.version>
+        <!--
+                jOOQ : Spring Boot 4.0.1 référence jooq-bom:3.19.15 inexistant sur Central.
+                On surcharge avec la dernière version stable.
+                 -->
+        <jooq.version>3.20.11</jooq.version>
+        <mysql.version>9.1.0</mysql.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
+    </properties>
+    <dependencyManagement>
         <dependencies>
+            <!--
+                        ✅ jooq-bom en premier pour surcharger la référence Spring Boot 4.0.1
+                        vers jooq-bom:3.19.15 qui n'existe pas sur Maven Central.
+                         -->
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <scope>test</scope>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-bom</artifactId>
+                <version>${jooq.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--  BOM Vaadin  -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--
+                        ✅ CORRECTIONS DE VERSIONS FLOW :
+                        Le BOM vaadin-bom:25.0.6 résout flow-server et ses dérivés en 25.0.7 via flow-bom:25.0.7.
+                        On les confirme explicitement ici pour s'assurer qu'aucun autre BOM ne les redescend.
+                        Ces versions contiennent la méthode isHillaAvailable(ClassFinder) requise par le plugin.
+                         -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-spring</artifactId>
+                <version>${vaadin.flow.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-test</artifactId>
-                <scope>test</scope>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-server</artifactId>
+                <version>${vaadin.flow.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>${testcontainers.version}</version>
-                <scope>test</scope>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-lit-template</artifactId>
+                <version>${vaadin.flow.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>mysql</artifactId>
-                <version>${testcontainers.version}</version>
-                <scope>test</scope>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+                <version>${vaadin.flow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>signals</artifactId>
+                <version>${vaadin.flow.version}</version>
+            </dependency>
+            <!-- spring-boot-starter-data-redis : PAS d'entrée ici — elle est
+                 déjà correctement gérée par spring-boot-starter-parent
+                 (grand-parent, via son propre BOM spring-boot-dependencies).
+                 Une entrée sans <version> avait été ajoutée par erreur ici et
+                 écrasait silencieusement cette version héritée, d'où l'erreur
+                 "version is missing" rencontrée. -->
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>core</artifactId>
+                <version>3.5.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>javase</artifactId>
+                <version>3.5.3</version>
+            </dependency>
+            <!--
+                        vaadin-dev-server chaîne vers flow-build-tools:shaded:25.0.7.
+                        Le classifier :shaded ne peut pas être forcé via dependencyManagement,
+                        donc on force vaadin-dev-server à la même version que flow-server.
+                         -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-dev-server</artifactId>
+                <version>${vaadin.flow.version}</version>
+            </dependency>
+            <!--  ✅ Référence interne entre modules  -->
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>recordz-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
-        <build>
-            <pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.13.0</version>
-                        <configuration>
-                            <source>${java.version}</source>
-                            <target>${java.version}</target>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${maven.surefire.plugin.version}</version>
-                        <configuration>
-                            <trimStackTrace>false</trimStackTrace>
-                            <enableAssertions>true</enableAssertions>
-                            <failIfNoTests>false</failIfNoTests>
-                            <systemPropertyVariables>
-                                <maven.home>${maven.home}</maven.home>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jooq</groupId>
-                        <artifactId>jooq-codegen-maven</artifactId>
-                        <version>${jooq.version}</version>
-                    </plugin>
-                </plugins>
-            </pluginManagement>
-        </build>
-    </project>
+    </dependencyManagement>
+    <!--  Dépendances communes à tous les modules  -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <trimStackTrace>false</trimStackTrace>
+                        <enableAssertions>true</enableAssertions>
+                        <failIfNoTests>false</failIfNoTests>
+                        <systemPropertyVariables>
+                            <maven.home>${maven.home}</maven.home>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jooq</groupId>
+                    <artifactId>jooq-codegen-maven</artifactId>
+                    <version>${jooq.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

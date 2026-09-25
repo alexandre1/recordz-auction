@@ -4,40 +4,90 @@ services:
     image: mysql:9.1
     container_name: recordz-mysql
     restart: unless-stopped
+
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
-      MYSQL_DATABASE: recordz_correction
-      MYSQL_USER: ${DB_USER:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-}
+      MYSQL_DATABASE: new_db_recordzv3
+      MYSQL_USER: ${DB_USER:-recordz}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-recordzsecret}
+
     ports:
-      - "3306:3306"
+      - "3307:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
+
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASSWORD:-rootsecret}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: recordz-redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 10s
+
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+
     container_name: recordz-app
     restart: unless-stopped
+
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
     environment:
+      # IMPORTANT :
+      # mysql est le nom du service Docker
+      # 3306 est le port INTERNE du conteneur MySQL
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/new_db_recordzv3?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-      DB_USER: ${DB_USER:root}
-      DB_PASSWORD: ${DB_PASSWORD:}
+
+      DB_USER: ${DB_USER:-recordz}
+      DB_PASSWORD: ${DB_PASSWORD:-recordzsecret}
+
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
       SPRING_PROFILES_ACTIVE: production
+
     ports:
-      - "8098:8098"
+      - "8098:8081"
+
 
 volumes:
   mysql_data:
+  redis_data:

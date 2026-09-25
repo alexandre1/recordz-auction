@@ -4,19 +4,28 @@ spring:
 
   # ── DataSource ────────────────────────────────────────────────
   datasource:
-    url: jdbc:mysql://localhost:3306/new_db_recordzv3?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/new_db_recordzv3?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}
+    username: ${DB_USER:recordz}
+    password: ${DB_PASSWORD:recordzsecret}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # ── Hikari ────────────────────────────────────────────────
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 20          # selon formule ci-dessus, par instance
+      minimum-idle: 10
+      connection-timeout: 3000       # ms — échoue vite plutôt que d'accumuler les threads bloqués
+      idle-timeout: 600000           # 10 min
+      max-lifetime: 1800000          # 30 min, < wait_timeout MySQL/idle timeout DB
+      validation-timeout: 5000
+      leak-detection-threshold: 60000 # détecte les connexions non relâchées
+      pool-name: HikariPool-App
+      auto-commit: false
 
   # ── Flyway ───────────────────────────────────────────────────
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    # The original schema already exists — set baseline version to 0
     baseline-version: 0
 
   # ── jOOQ ─────────────────────────────────────────────────────
@@ -31,12 +40,8 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - openid
-              - email
-              - profile
+            scope: [openid, email, profile]
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
@@ -44,19 +49,61 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
 
-# ── Vaadin ─────────────────────────────────────────────────────
+  # ── Redis (Pub/Sub Entrupy + vidéo article) ───────────────────
+  # Autoconfiguré par spring-boot-starter-data-redis ; laissé pointer sur
+  # localhost par défaut. En dev sans Redis lancé, aucun souci : les deux
+  # broadcasters restent sur leur implémentation "memory" par défaut
+  # (voir entrupy.broadcaster.type / article.video.broadcaster.type
+  # ci-dessous), donc RedisConnectionFactory ne sera simplement pas utilisé.
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
+  # ── Upload (image pochette + vidéo article) ───────────────────
+  # Par défaut Spring limite les uploads multipart à 1 Mo — bien trop peu
+  # pour une vidéo. Augmenté ici ; ajustez selon la durée/qualité voulue.
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# ── Entrupy ────────────────────────────────────────────────────
+entrupy:
+  api-token: ${ENTRUPY_API_TOKEN:}
+  webhook-secret: ${ENTRUPY_WEBHOOK_SECRET:}
+  broadcaster:
+    type: ${ENTRUPY_BROADCASTER_TYPE:memory}   # memory (dev) | redis (multi-pods)
+
+# ── Stockage fichiers ──────────────────────────────────────────
+app:
+  upload:
+    dir: ${APP_UPLOAD_DIR:/tmp/recordz/uploads}
+  video-temp:
+    dir: ${APP_VIDEO_TEMP_DIR:/tmp/recordz/video-temp}
+  video:
+    dir: ${APP_VIDEO_DIR:/tmp/recordz/videos}   # stockage définitif, distinct du temp ci-dessus
+    broadcaster:
+      type: ${ARTICLE_VIDEO_BROADCASTER_TYPE:memory}   # memory (dev) | redis (multi-pods)
+
+# ── Vaadin ───────────────────────────────────────────────────
 vaadin:
   launch-browser: false
 
-# ── Server ─────────────────────────────────────────────────────
+# ── Server ───────────────────────────────────────────────────
 server:
   port: 8081
-  forward-headers-strategy: framework
   servlet:
     session:
       timeout: 30m
+  # Nécessaire derrière un reverse proxy (ngrok, OpenShift Route/Ingress) :
+  # sans ça, Spring reconstruit les URLs absolues (dont le redirect_uri
+  # OAuth2 envoyé à Google) avec le schéma/host vus en interne (souvent
+  # http://localhost:...) au lieu du schéma/host publics réels, d'où le
+  # redirect_uri_mismatch rencontré avec ngrok.
+  forward-headers-strategy: framework
 
-# ── Logging ────────────────────────────────────────────────────
+# ── Logging ──────────────────────────────────────────────────
 logging:
   level:
     root: INFO
@@ -65,11 +112,37 @@ logging:
     org.springframework.security: DEBUG
 
 ---
-# ── Production profile ─────────────────────────────────────────
 spring:
   config:
     activate:
       on-profile: production
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
+# En production (plusieurs pods OpenShift), on bascule les deux broadcasters
+# sur Redis pour que le pod qui reçoit le webhook Entrupy ou l'upload vidéo
+# ne soit pas forcément celui qui héberge la session Vaadin concernée.
+entrupy:
+  broadcaster:
+    type: ${ENTRUPY_BROADCASTER_TYPE:redis}
+
+app:
+  video:
+    broadcaster:
+      type: ${ARTICLE_VIDEO_BROADCASTER_TYPE:redis}
 
 logging:
   level:
