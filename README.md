@@ -68,7 +68,15 @@ mvn generate-sources -P codegen -pl recordz-core \
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
 export GOOGLE_CLIENT_SECRET=...
+export ENTRUPY_API_TOKEN=...
+export ENTRUPY_WEBHOOK_SECRET=...
+
+mvn clean install
+docker compose ps
+docker compose up -d mysql redis
+
 mvn spring-boot:run -pl recordz-web
+
 ```
 
 → [http://localhost:8081](http://localhost:8081)
@@ -83,6 +91,7 @@ recordz-core/                                      # Logique métier — indépe
     ├── config/
     │   └── JooqConfig.java                         # DSL settings + @EnableCaching
     │   └── EntrupyProperties.java                  # Propriétés de connexion a Entrupy
+    │   └── RedisListenerConfig.java                # Listener de Redis pour la configuration
     │   └── RestClientConfig.java                   # CLient REST a Entrupy
     ├── entrupy/
     │   └── EntrupySessionPayload.java              # Variable pour la validation par Entrupy
@@ -103,6 +112,8 @@ recordz-core/                                      # Logique métier — indépe
     │   ├── EvenementCalendrier.java                  # Événement du calendrier vendeur
     │   ├── Referentiel.java                          # Agrégat de tous les référentiels (cantons, tailles...)
     │   └── dto/ArticleFormData.java                  # DTO du formulaire de dépôt d'annonce
+    ├── redis/
+    │   ├── PreAnalysisSession.java                   # Analyse de la session Redis     
     ├── repository/                                   # jOOQ DSL brut (table()/field())
     │   ├── ArticleRepository.java                    # Articles : recherche, filtres, cycle vente/livraison
     │   ├── PersonneRepository.java                   # Utilisateurs
@@ -111,6 +122,7 @@ recordz-core/                                      # Logique métier — indépe
     │   └── ReferentielRepository.java                # Tables de référence, @Cacheable
     └── service/
         ├── ArticleService.java                       # Logique métier articles (lecture/recherche)
+        ├── ArticleAuthenticationService.java         # Logic métier relative à l'authentification Entrupy
         ├── ArticleDynamicDataService.java            # Résolution des champs dynamiques par catégorie
         ├── ArticleSubmitService.java                 # Validation + dépôt d'une nouvelle annonce
         ├── EnchereService.java                       # Logique enchères avec validation
@@ -124,25 +136,20 @@ recordz-web/                                        # Point d'entrée Spring Boo
     ├── EnchereScheduler.java                       # Job planifié : clôture des enchères expirées
     ├── config/
     │   └── WebMvcConfig.java                       # ComfgurationMvc
-    │   └── CacheConfig.java                        # Création du cache pour Jackson  
+    │   └── CacheConfig.java                        # Création du cache pour Jackson
+    │   └── RedisConfig.java                        # Configruation Redis      
+    ├── integration.video/
+    │   └── AbstractArticleVideoBroadcaster.java    # Gère le registre local des composants Vaadin
+    │   └── ArticleVideoBroadcaster.java            # Même principe que EntrupyStatusBroadcaster, mais pour la vidéo capturée
+    │   └── ArticleVideoMessage.java                # Message échangé sur le canal Redis "article:video"      
+    │   └── InMemoryArticleVideoBroadcaster.java    # Broadcast de la vidéo
+    │   └── RedisArticleVideoBroadcaster.java       # Broadcast de la vidéo por Redis
+    │   └── VideoUploadController.java              # Controller de la diffusion de la vidéo    
     ├── security/
     │   ├── SecurityConfig.java                       # Vaadin + OAuth2 Google
-    │   ├── CustomOAuth2UserService.java              # Sync OAuth → personne (upsert par email)
-    │   └── AuthenticatedUser.java                    # Accès à l'utilisateur courant depuis les vues
-    └── ui/
-        ├── layouts/MainLayout.java                   # Shell + nav drawer
-        ├── LoginView.java / NouvelUtilisateurView.java     # Connexion & inscription
-        ├── MainView.java / CatalogueView.java / CategorieView.java  # Accueil, catalogue, navigation catégories
-        ├── ResultatsRechercheView.java                # Résultats de recherche
-        ├── EncheresView.java                          # Enchères actives
-        ├── ArticleFormView.java / DynamicArticleForm.java   # Dépôt d'annonce (formulaire dynamique par catégorie)
-        ├── DetailArticleView.java                     # Fiche détail d'une annonce
-        ├── FairePublicite.java / TarifView.java       # Mise en avant payante d'une annonce (Stripe)
-        ├── MonCompteView.java / MonCompteHelper.java / InformationsPersonnellesView.java   # Espace membre
-        ├── ProfilView.java / ProfilVendeurView.java   # Profil public / profil vendeur
-        ├── CalendrierView.java                        # Calendrier vendeur
-        ├── AProposView.java / OtherViews.java / TestUi.java  # Pages annexes et vues de test
-        └── StyleHelper.java                           # Utilitaires de style Vaadin partagés
+    │   ├── CustomOAuth2UserService.java              # Sync OAuth → personne (upsert par email) 
+    ├── web
+    │   ├── MediaPrecheckController.java              # API consommée par l'app mobile pendant la capture, AVANT l'appel final 
 ```
 
 ---
@@ -162,24 +169,24 @@ L'application suit une architecture en couches classique :
 
 ```
 ┌─────────────────────────────────────┐
-│   UI (Vaadin Views)                  │  recordz-web/ui
-│   MainView, CatalogueView, ...       │
+│   UI (Vaadin Views)                 │  recordz-web/ui
+│   MainView, CatalogueView, ...      │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼────────────────────────┐
+│   Service (logique métier)            │  recordz-core/service
+│   ArticleService, EnchereService,Redis│
+│   @Transactional                      │
 └──────────────┬────────────────────────┘
                │
 ┌──────────────▼────────────────────────┐
-│   Service (logique métier)           │  recordz-core/service
-│   ArticleService, EnchereService...  │
-│   @Transactional                     │
+│   Repository (accès données)          │  recordz-core/repository
+│   DSL jOOQ brut, Config Entrupy       │
 └──────────────┬────────────────────────┘
                │
 ┌──────────────▼────────────────────────┐
-│   Repository (accès données)         │  recordz-core/repository
-│   DSL jOOQ brut                      │
-└──────────────┬────────────────────────┘
-               │
-┌──────────────▼────────────────────────┐
-│   MySQL/MariaDB (new_db_recordzv3)   │  via HikariCP
-└─────────────────────────────────────┘
+│   MySQL/MariaDB (new_db_recordzv3)    │  via HikariCP
+└───────────────────────────────────────
 ```
 
 Chaque couche ne dépend que de la couche immédiatement inférieure : les vues Vaadin n'appellent jamais un repository directement, elles passent systématiquement par un service.
