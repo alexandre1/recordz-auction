@@ -6,7 +6,7 @@ ou de l'achat d'un article.
 
 Le financement se fera par la mise en évidence des articles sur les pages principales.
 
-Stack : **Java 21 · Vaadin 25.0.6 · Spring Boot 4.0.1 · Spring Security · OAuth2 Google · jOOQ 3.20.11 · MySQL / MariaDB · Flyway · Docker · Stripe**
+Stack : **Java 21 · Vaadin 25.0.6 · Spring Boot 4.0.1 · Spring Security · OAuth2 Google · jOOQ 3.20.11 · MySQL / MariaDB · Flyway · Docker · Redis - Entrupy**
 
 Base de données : schéma **`new_db_recordzv3`** (marketplace suisse — vêtements, électronique, automobile, immobilier, vins, jeux vidéo, instruments de musique, enchères…). Migration Flyway de référence : `recordz-core/src/main/resources/db/migration/new_db_recordzv3.sql`.
 
@@ -49,21 +49,6 @@ Le schéma `new_db_recordzv3` est fortement dénormalisé sur la table `article`
 ## Démarrage rapide
 
 ```bash
-# 1. Variables d'environnement
-cp .env.example .env
-# Remplir GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DB_*
-
-# 2. Démarrer MySQL
-docker compose up mysql -d
-
-# 3. Générer le code jOOQ (après que Flyway ait créé les tables) — profil "codegen"
-mvn generate-sources -P codegen -pl recordz-core \
-  -Djooq.codegen.url=jdbc:mysql://localhost:3306/new_db_recordzv3 \
-  -Djooq.codegen.user=root \
-  -Djooq.codegen.password=
-
-
-(Ou alors importer le fichier .sql dans PhpMyAdmin sans passer par l'étape numéro 3)
 
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
