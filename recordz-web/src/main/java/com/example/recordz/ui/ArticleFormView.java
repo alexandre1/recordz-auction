@@ -129,7 +129,7 @@ public class ArticleFormView extends VerticalLayout {
         );
 
         add(form, new HorizontalLayout(saveButton, cancelButton));
-        add(buildVideoCapturePanel());
+        //add(buildVideoCapturePanel());
         addAttachListener(ev -> videoSubscription = videoBroadcaster.register(
                 videoSessionToken, UI.getCurrent(), this::onVideoReceived));
         addDetachListener(ev -> {

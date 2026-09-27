@@ -4180,6 +4180,25 @@ ALTER TABLE article
 
 ALTER TABLE `wish_list`
     ADD CONSTRAINT `fk_wl_user` FOREIGN KEY (`ref_user`) REFERENCES `personne` (`id_personne`);
+
+
+
+
+-- 2. Vider les tables liées pour éviter les données orphelines (Optionnel mais recommandé)
+TRUNCATE TABLE `article_ip`;
+TRUNCATE TABLE `article_visite`;
+TRUNCATE TABLE `a_livre`;
+TRUNCATE TABLE `a_paye`;
+TRUNCATE TABLE `commentaire`;
+TRUNCATE TABLE `enchere`;
+TRUNCATE TABLE `evaluation_article`;
+TRUNCATE TABLE `met_en_vente`;
+
+-- 3. Vider la table des articles et remettre le compteur d'AUTO_INCREMENT à 0
+TRUNCATE TABLE `article`;
+
+-- 4. Réactiver la vérification des clés étrangères
+
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
