@@ -22,6 +22,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DynamicArticleForm extends VerticalLayout {
 
@@ -56,6 +57,11 @@ public class DynamicArticleForm extends VerticalLayout {
     private TextField auctionStartField;
     private Select<Integer> auctionDurationSelect;
     private TextField auctionEndField;
+
+    // ---- Notifie le parent (ArticleFormView) des changements de catégorie —
+    // utilisé notamment pour afficher/masquer le panneau de capture vidéo
+    // selon que la catégorie sélectionnée en nécessite une ou non.
+    private Consumer<Integer> onCategoryChanged;
 
     // ---- Champs dynamiques (références gardées pour collecte) ----
     // Voiture/Moto
@@ -106,26 +112,30 @@ public class DynamicArticleForm extends VerticalLayout {
         dynamicFieldsContainer.getStyle().set("width", "100%");
 
         add(
-            new H3("Ajouter un article"),
-            buildCommonForm(),
-            categorySelect,
-            subCategorySelect,
-            dynamicFieldsContainer,
-            buildAuctionSection()
+                new H3("Ajouter un article"),
+                buildCommonForm(),
+                categorySelect,
+                subCategorySelect,
+                dynamicFieldsContainer,
+                buildAuctionSection()
         );
 
         categorySelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 refreshSubCategories(e.getValue().label());
-                refreshDynamicFields(Integer.parseInt(e.getValue().value()), -1);
+                int catId = Integer.parseInt(e.getValue().value());
+                refreshDynamicFields(catId, -1);
+                if (onCategoryChanged != null) onCategoryChanged.accept(catId);
+            } else if (onCategoryChanged != null) {
+                onCategoryChanged.accept(null);
             }
         });
 
         subCategorySelect.addValueChangeListener(e -> {
             if (e.getValue() != null && categorySelect.getValue() != null) {
                 refreshDynamicFields(
-                    Integer.parseInt(categorySelect.getValue().value()),
-                    Integer.parseInt(e.getValue().value())
+                        Integer.parseInt(categorySelect.getValue().value()),
+                        Integer.parseInt(e.getValue().value())
                 );
             }
         });
@@ -135,6 +145,16 @@ public class DynamicArticleForm extends VerticalLayout {
             auctionDetailsContainer.setVisible(isAuction);
             quantityField.setVisible(!isAuction);
         });
+    }
+
+    /**
+     * Enregistre un callback appelé à chaque changement de catégorie, avec
+     * l'id de la catégorie sélectionnée (ou null si aucune). Utilisé par
+     * ArticleFormView pour afficher le panneau de capture vidéo uniquement
+     * sur les catégories qui le nécessitent.
+     */
+    public void setOnCategoryChanged(Consumer<Integer> listener) {
+        this.onCategoryChanged = listener;
     }
 
     // =========================================================================
@@ -280,8 +300,8 @@ public class DynamicArticleForm extends VerticalLayout {
     private FormLayout buildCommonForm() {
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
-            new FormLayout.ResponsiveStep("0", 1),
-            new FormLayout.ResponsiveStep("600px", 2)
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("600px", 2)
         );
 
         nameField.setRequired(true);
@@ -351,7 +371,7 @@ public class DynamicArticleForm extends VerticalLayout {
         auctionDurationSelect = new Select<>();
         auctionDurationSelect.setLabel("Durée (jours)");
         auctionDurationSelect.setItems(
-            java.util.stream.IntStream.rangeClosed(1, 30).boxed().toList()
+                java.util.stream.IntStream.rangeClosed(1, 30).boxed().toList()
         );
 
         auctionEndField = new TextField("Date de fin");
@@ -392,7 +412,7 @@ public class DynamicArticleForm extends VerticalLayout {
 
     private void refreshSubCategories(String categoryLabel) {
         List<ArticleDynamicDataService.LabelValue> subs =
-            dataService.loadSubCategories(categoryLabel, lang);
+                dataService.loadSubCategories(categoryLabel, lang);
         subCategorySelect.setItems(subs);
         subCategorySelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
         subCategorySelect.setVisible(!subs.isEmpty());
@@ -410,8 +430,8 @@ public class DynamicArticleForm extends VerticalLayout {
         ArticleCategory cat = ArticleCategory.fromId(catId);
         FormLayout form = new FormLayout();
         form.setResponsiveSteps(
-            new FormLayout.ResponsiveStep("0", 1),
-            new FormLayout.ResponsiveStep("600px", 2)
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("600px", 2)
         );
 
         if (cat != ArticleCategory.LINGERIE && cat != ArticleCategory.IMMOBILIER
@@ -472,8 +492,8 @@ public class DynamicArticleForm extends VerticalLayout {
         carClimaCheck = new Checkbox("Climatisation");
 
         form.add(carHorseField, carCylinderField, carKmField,
-                 carYearFabField, carYearServiceField,
-                 carFuelSelect, carGearboxSelect, carClimaCheck);
+                carYearFabField, carYearServiceField,
+                carFuelSelect, carGearboxSelect, carClimaCheck);
     }
 
     private void addBookFields(FormLayout form) {
@@ -528,8 +548,8 @@ public class DynamicArticleForm extends VerticalLayout {
         immoBuildYearField = new TextField("Année de construction");
 
         form.add(immoTypeSelect, immoCountrySelect, immoRegionSelect,
-                 immoCityField, immoAddressField, immoPostalField,
-                 immoRoomsField, immoSurfaceField, immoTerrainField, immoBuildYearField);
+                immoCityField, immoAddressField, immoPostalField,
+                immoRoomsField, immoSurfaceField, immoTerrainField, immoBuildYearField);
     }
 
     private void addVinFields(FormLayout form) {
@@ -556,7 +576,7 @@ public class DynamicArticleForm extends VerticalLayout {
         wineCountrySelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 List<ArticleDynamicDataService.LabelValue> regions =
-                    dataService.loadWineRegions(e.getValue().label());
+                        dataService.loadWineRegions(e.getValue().label());
                 wineRegionSelect.setItems(regions);
                 wineRegionSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
                 wineRegionSelect.setVisible(!regions.isEmpty());

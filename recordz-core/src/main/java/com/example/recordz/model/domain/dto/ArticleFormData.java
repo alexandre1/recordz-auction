@@ -73,7 +73,7 @@ public class ArticleFormData {
     public String  realisateur;
     public String  duree;
 
-    // ---- TV / Écran ----
+    // ---- TV /a Écran ----
     public Integer refTypeEcran;
     public Integer dimension;
 

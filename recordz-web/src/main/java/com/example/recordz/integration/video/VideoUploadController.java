@@ -20,15 +20,15 @@ import java.util.regex.Pattern;
  *
  * Endpoint volontairement non authentifié (le mobile n'est pas connecté au
  * compte du vendeur) : la sécurité repose sur l'imprévisibilité du token
- * (UUID), généré côté serveur et jamais réutilisable après consommation.
- * Pour aller plus loin, on pourrait ajouter une expiration (ex. 15 minutes)
- * et invalider le token après le premier upload réussi — non fait ici.
+ * (UUID) et sur VideoTokenRegistry, qui invalide ce token après expiration
+ * (voir app.video.token-ttl-minutes) ou dès le premier upload réussi.
  */
 @RestController
 @RequestMapping("/api/article-video")
 public class VideoUploadController {
 
     private final ArticleVideoBroadcaster broadcaster;
+    private final VideoTokenRegistry tokenRegistry;
     private final Path videoTempDir;
 
     // N'accepte que des tokens de la forme d'un UUID, pour éviter qu'un chemin
@@ -37,8 +37,10 @@ public class VideoUploadController {
             Pattern.compile("^[0-9a-fA-F-]{36}$");
 
     public VideoUploadController(ArticleVideoBroadcaster broadcaster,
+                                 VideoTokenRegistry tokenRegistry,
                                  @Value("${app.video-temp.dir}") String videoTempDirPath) {
         this.broadcaster = broadcaster;
+        this.tokenRegistry = tokenRegistry;
         this.videoTempDir = Paths.get(videoTempDirPath);
     }
 
@@ -48,6 +50,10 @@ public class VideoUploadController {
 
         if (!TOKEN_PATTERN.matcher(sessionToken).matches()) {
             return ResponseEntity.badRequest().build();
+        }
+        if (!tokenRegistry.isValid(sessionToken)) {
+            // Lien expiré, ou vidéo déjà envoyée une première fois sur ce token.
+            return ResponseEntity.status(HttpStatus.GONE).build();
         }
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -68,6 +74,10 @@ public class VideoUploadController {
             // ArticleSubmitService pour être déplacé/rattaché à l'article
             // définitif. À ce stade ce n'est qu'un fichier temporaire.
             broadcaster.broadcast(sessionToken, dest.toString());
+
+            // Usage unique : une fois la vidéo bien reçue, ce lien ne doit
+            // plus permettre un second upload (ni resservir la page mobile).
+            tokenRegistry.consume(sessionToken);
 
             return ResponseEntity.ok().build();
 

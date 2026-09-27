@@ -1,6 +1,7 @@
 package com.example.recordz.ui;
 
 import com.example.recordz.integration.video.ArticleVideoBroadcaster;
+import com.example.recordz.integration.video.VideoTokenRegistry;
 import com.example.recordz.integration.video.VideoUploadController;
 import com.example.recordz.model.domain.dto.ArticleFormData;
 import com.example.recordz.model.domain.dto.ArticleSaveResult;
@@ -16,22 +17,28 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Set;
 
 @PermitAll
 @Route(value = "ajouter-article", layout = MainLayout.class)
@@ -51,11 +58,22 @@ public class ArticleFormView extends VerticalLayout {
     private final Span videoStatusLabel = new Span();
     private ArticleVideoBroadcaster.Registration videoSubscription;
 
+    private static final Set<Integer> CATEGORIES_REQUIRANT_VIDEO = Set.of(1, 2, 35);
+
+    private VerticalLayout waitingState;
+    private HorizontalLayout confirmedState;
+
+    private final VerticalLayout videoPanel;
+    
     public ArticleFormView(ArticleDynamicDataService dataService,
                            ArticleSubmitService submitService,
-                           ArticleVideoBroadcaster videoBroadcaster) {
+                           ArticleVideoBroadcaster videoBroadcaster,
+                           VideoTokenRegistry tokenRegistry) {
 
         this.videoBroadcaster = videoBroadcaster;
+        tokenRegistry.issue(videoSessionToken);
+        this.videoPanel = buildVideoCapturePanel();
+        this.videoPanel.setVisible(false); // masqué tant qu'aucune catégorie pertinente n'est choisie
 
         String lang = resolveLang();
 
@@ -66,6 +84,8 @@ public class ArticleFormView extends VerticalLayout {
         add((buildSecondaryNav()));
 
         DynamicArticleForm form = new DynamicArticleForm(dataService, lang);
+        form.setOnCategoryChanged(catId ->
+                videoPanel.setVisible(catId != null && CATEGORIES_REQUIRANT_VIDEO.contains(catId)));
         form.getStyle()
                 .set("border-radius", "20px")
                 .set("border", "1px solid #6100C1")
@@ -91,14 +111,13 @@ public class ArticleFormView extends VerticalLayout {
 
                 ArticleFormData data = form.collectValues();
 
-                // TODO : ajouter un champ videoPath (ou équivalent) à
-                // ArticleFormData, ainsi qu'une colonne correspondante sur la
-                // table article, pour qu'ArticleSubmitService.save() déplace
-                // ce fichier temporaire vers le stockage définitif et
-                // l'associe à l'id_article généré. Non fait ici faute de
-                // visibilité sur ArticleFormData / le schéma exact.
-                // data.setVideoPath(receivedVideoPath);
-
+                // Synchronisation avec le flux vidéo Redis/mémoire (voir
+                // videoBroadcaster.register() plus bas dans le constructeur) :
+                // si une vidéo a été reçue avant que le vendeur ne clique sur
+                // "Publier", son chemin temporaire est transmis ici. Champ
+                // public simple, pas de setter — receivedVideoPath reste null
+                // si aucune vidéo n'a été envoyée (cas normal, vidéo optionnelle).
+                data.videoPath = receivedVideoPath;
 
                 ArticleSaveResult result = submitService.save(data);
 
@@ -129,7 +148,7 @@ public class ArticleFormView extends VerticalLayout {
         );
 
         add(form, new HorizontalLayout(saveButton, cancelButton));
-        //add(buildVideoCapturePanel());
+        add(videoPanel);
         addAttachListener(ev -> videoSubscription = videoBroadcaster.register(
                 videoSessionToken, UI.getCurrent(), this::onVideoReceived));
         addDetachListener(ev -> {
@@ -140,35 +159,97 @@ public class ArticleFormView extends VerticalLayout {
         });
     }
 
+
+
+
     /**
-     * Panneau QR affiché en haut du formulaire : le vendeur scanne pour
-     * ouvrir la page mobile de capture vidéo (à construire séparément,
-     * elle POST le fichier sur /api/article-video/{token}).
+     * Panneau de type "Vérifiez sur votre téléphone" (comme la connexion
+     * Google par QR code) : carte centrée, QR sur fond blanc, indicateur
+     * d'attente animé, puis bascule vers une confirmation verte une fois la
+     * vidéo reçue via videoBroadcaster.
      */
     private VerticalLayout buildVideoCapturePanel() {
         VerticalLayout panel = new VerticalLayout();
         panel.setPadding(true);
-        panel.setSpacing(true);
-        panel.setWidth("310px");
+        panel.setSpacing(false);
+        panel.setWidth("340px");
+        panel.setAlignItems(Alignment.CENTER);
         panel.getStyle()
                 .set("border", "1px solid var(--lumo-contrast-20pct)")
                 .set("border-radius", "var(--lumo-border-radius-l)")
-                .set("margin-bottom", "16px");
+                .set("margin-bottom", "16px")
+                .set("box-shadow", "0 1px 4px rgba(0,0,0,0.08)")
+                .set("text-align", "center");
 
-        panel.add(new Span("Vidéo de l'article (optionnel)"));
+        Icon phoneIcon = VaadinIcon.MOBILE_RETRO.create();
+        phoneIcon.setSize("32px");
+        phoneIcon.getStyle().set("color", "#6100C1").set("margin-bottom", "8px");
+        panel.add(phoneIcon);
 
+        Span title = new Span("Confirmez depuis votre téléphone");
+        title.getStyle().set("font-weight", "600").set("font-size", "1rem").set("margin-bottom", "4px");
+        panel.add(title);
+
+        Span subtitle = new Span("Scannez ce code avec l'appareil photo de votre téléphone pour filmer l'article.");
+        subtitle.getStyle()
+                .set("font-size", "0.82rem")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("margin-bottom", "16px")
+                .set("max-width", "280px");
+        panel.add(subtitle);
+
+        // QR sur fond blanc avec léger cadre, comme la boîte QR de Google.
+        Div qrBox = new Div();
+        qrBox.getStyle()
+                .set("background", "white")
+                .set("padding", "12px")
+                .set("border-radius", "12px")
+                .set("border", "1px solid var(--lumo-contrast-10pct)");
         Image qr = new Image(buildQrResource(buildMobileUploadUrl()), "QR code capture vidéo");
         qr.setWidth(QR_SIZE_PX + "px");
         qr.setHeight(QR_SIZE_PX + "px");
-        panel.add(qr);
+        qrBox.add(qr);
+        panel.add(qrBox);
 
-        panel.add(new Span("Scannez pour filmer l'article depuis votre téléphone."));
+        // État "en attente" : petite barre de progression indéterminée
+        // (spinner) + texte — visible par défaut.
+        waitingState = new VerticalLayout();
+        waitingState.setPadding(false);
+        waitingState.setSpacing(false);
+        waitingState.setAlignItems(Alignment.CENTER);
+        waitingState.getStyle().set("margin-top", "16px").set("width", "100%");
 
-        videoStatusLabel.setText("En attente d'une vidéo…");
-        panel.add(videoStatusLabel);
+        ProgressBar spinner = new ProgressBar();
+        spinner.setIndeterminate(true);
+        spinner.setWidth("160px");
+        waitingState.add(spinner);
+
+        Span waitingLabel = new Span("En attente de confirmation…");
+        waitingLabel.getStyle().set("font-size", "0.82rem").set("color", "var(--lumo-secondary-text-color)")
+                .set("margin-top", "6px");
+        waitingState.add(waitingLabel);
+
+        panel.add(waitingState);
+
+        // État "confirmé" : coche verte + texte — masqué par défaut, affiché
+        // à la réception de la vidéo (onVideoReceived), le QR et le spinner
+        // disparaissant à ce moment-là (même logique que Google qui replace
+        // le QR par une confirmation une fois le téléphone approuvé).
+        Icon checkIcon = VaadinIcon.CHECK_CIRCLE.create();
+        checkIcon.setSize("22px");
+        checkIcon.getStyle().set("color", "#1a7f37");
+        Span confirmedLabel = new Span("Vidéo confirmée");
+        confirmedLabel.getStyle().set("font-weight", "600").set("color", "#1a7f37");
+        confirmedState = new HorizontalLayout(checkIcon, confirmedLabel);
+        confirmedState.setAlignItems(Alignment.CENTER);
+        confirmedState.setSpacing(true);
+        confirmedState.getStyle().set("margin-top", "16px");
+        confirmedState.setVisible(false);
+        panel.add(confirmedState);
 
         return panel;
     }
+
 
     private void onVideoReceived(String videoPath) {
         this.receivedVideoPath = videoPath;
