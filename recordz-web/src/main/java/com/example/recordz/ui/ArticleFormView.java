@@ -64,7 +64,7 @@ public class ArticleFormView extends VerticalLayout {
     private HorizontalLayout confirmedState;
 
     private final VerticalLayout videoPanel;
-    
+
     public ArticleFormView(ArticleDynamicDataService dataService,
                            ArticleSubmitService submitService,
                            ArticleVideoBroadcaster videoBroadcaster,

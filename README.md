@@ -1,14 +1,35 @@
-# Recordz — Marketplace
+# Recordz --- Marketplace de luxe
 
-Cette application Web Java Full Stack représente une place de marché Suisse permettant aux vendeurs et aux acheteurs
-d'acheter et de vendre des articles de luxe sans frais de transaction. Aucun coût n'est facturé lors de la mise en vente
-ou de l'achat d'un article.
+Cette application Web Java Full Stack constitue la base technique d'une
+marketplace suisse spécialisée dans les produits de luxe. Le business
+plan joint présente le produit sous le nom **Chic Overdose** ; le dépôt
+et l'application restent documentés sous le nom technique **Recordz**.
 
-Le financement se fera par la mise en évidence des articles sur les pages principales.
+La plateforme combine :
 
-Stack : **Java 21 · Vaadin 25.0.6 · Spring Boot 4.0.1 · Spring Security · OAuth2 Google · jOOQ 3.20.11 · MySQL / MariaDB · Flyway · Docker · Redis - Entrupy**
+-   **ventes directes** à prix fixe ;
+-   **ventes aux enchères** à durée limitée ;
+-   publication gratuite des annonces ;
+-   **0 % de frais de transaction** ;
+-   recherche avancée et catégorisation des articles ;
+-   données et statistiques de marché destinées aux vendeurs ;
+-   options de mise en avant et autres services de monétisation.
 
-Base de données : schéma **`new_db_recordzv3`** (marketplace suisse — vêtements, électronique, automobile, immobilier, vins, jeux vidéo, instruments de musique, enchères…). Migration Flyway de référence : `recordz-core/src/main/resources/db/migration/new_db_recordzv3.sql`.
+Le modèle économique du business plan repose principalement sur la
+**publicité**, les **annonces sponsorisées**, les **partenariats avec
+les marques** et, à terme, les **comptes vendeurs premium**.
+
+**Marché initial : Suisse** · **Frais d'inscription : 0 CHF** · **Frais
+de transaction : 0 %**
+
+Stack : **Java 21 · Vaadin 25.0.6 · Spring Boot 4.0.1 · Spring Security
+· OAuth2 Google · jOOQ 3.20.11 · MySQL / MariaDB · Flyway · Docker ·
+Redis · Entrupy · Stripe**
+
+Base de données : schéma **`new_db_recordzv3`** (marketplace suisse ---
+vêtements, électronique, automobile, immobilier, vins, jeux vidéo,
+instruments de musique, enchères...). Migration Flyway de référence :
+`recordz-core/src/main/resources/db/migration/new_db_recordzv3.sql`.
 
 https://github.com/user-attachments/assets/3d7bcc19-9083-4080-a51e-5fcf0e230eb3
 
@@ -16,39 +37,516 @@ https://github.com/user-attachments/assets/502e66e0-90f8-4fb0-b37f-e65362d9bcac
 
 https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620
 
----
+------------------------------------------------------------------------
+
+## Positionnement produit et business
+
+> **Nom technique du projet :** Recordz\
+> **Nom utilisé dans le business plan joint :** Chic Overdose\
+> **Marché initial :** Suisse\
+> **Positionnement :** marketplace spécialisée dans les produits de
+> luxe, combinant ventes directes et enchères.
+>
+> Cette section aligne la documentation du dépôt avec le business plan
+> fourni. Le dépôt conserve son nom technique **Recordz**, tandis que le
+> business plan présente le produit sous le nom **Chic Overdose**.
+
+### Proposition de valeur
+
+Recordz/Chic Overdose est conçu comme une marketplace suisse spécialisée
+dans les produits de luxe neufs et d'occasion.
+
+Le modèle décrit dans le business plan repose sur deux formats de
+transaction :
+
+-   **Ventes aux enchères** : enchères à durée limitée pour les objets
+    rares, de collection ou de valeur élevée, avec conservation de
+    l'historique des enchères.
+-   **Ventes directes** : annonces à prix fixe pour les articles de luxe
+    neufs ou d'occasion.
+
+Le principe commercial central est le suivant :
+
+-   **0 CHF de frais d'inscription** ;
+-   **0 % de commission sur les transactions** ;
+-   publication gratuite des annonces ;
+-   monétisation principalement par la publicité, les annonces
+    sponsorisées et, à terme, les partenariats avec les marques ;
+-   possibilité de proposer des **comptes vendeurs premium** pour les
+    vendeurs à fort volume.
+
+### Fonctionnalités produit alignées avec le business plan
+
+  -----------------------------------------------------------------------
+  Fonctionnalité          Description             Statut documentaire
+  ----------------------- ----------------------- -----------------------
+  Vente directe           Annonces à prix fixe de Cœur du produit
+                          produits de luxe        
+
+  Enchères                Enchères limitées dans  Cœur du produit
+                          le temps avec           
+                          historique              
+
+  Référencement gratuit   Publication sans frais  Cœur du modèle
+                                                  économique
+
+  0 % de commission       Aucun prélèvement sur   Cœur du modèle
+                          la transaction          économique
+
+  Recherche avancée       Filtres adaptés aux     Cœur du produit
+                          catégories, marque,     
+                          prix, canton et état    
+
+  Statistiques vendeur    Données de vente par    Différenciation /
+                          marque et canton        roadmap
+
+  Liste de souhaits       Demande d'articles non  Prévue
+                          encore disponibles      
+
+  Messagerie              Communication intégrée  Prévue dans le business
+  acheteur/vendeur                                plan
+
+  Vendeur vérifié         Vérification d'identité Prévue
+                          et réputation           
+
+  Authentification        Authentification tierce Prévue dans le business
+  d'articles              pour les articles de    plan ; **Entrupy est
+                          grande valeur           déjà intégré
+                                                  techniquement au
+                                                  dépôt**
+
+  Import professionnel    Import CSV/API pour les Prévu
+                          vendeurs disposant d'un 
+                          stock important         
+
+  Application mobile      Applications iOS /      Prévue en phase 5
+                          Android                 
+
+  Multilingue             FR / DE / IT / EN       Architecture prévue
+                                                  pour l'international
+  -----------------------------------------------------------------------
+
+### Catégories et marché cible
+
+Le business plan positionne le lancement sur le marché suisse et cible
+notamment :
+
+-   mode et vêtements ;
+-   montres et bijoux ;
+-   art et design ;
+-   vins et spiritueux ;
+-   automobile et motos ;
+-   immobilier ;
+-   jeux vidéo ;
+-   sport ;
+-   parfumerie ;
+-   instruments de musique ;
+-   collections ;
+-   autres segments premium compatibles avec le modèle marketplace.
+
+Le document de plan d'affaires identifie également comme publics :
+
+**Vendeurs** - boutiques et détaillants de luxe ; - propriétaires
+individuels d'articles de luxe ; - galeries d'art et maisons de vente
+aux enchères ; - horlogers et bijoutiers ; - marchands et
+collectionneurs de vins.
+
+**Acheteurs** - consommateurs suisses intéressés par le luxe ; -
+passionnés et collectionneurs ; - acheteurs recherchant des articles de
+luxe d'occasion ; - expatriés et acheteurs internationaux.
+
+### Différenciation par la donnée
+
+Le business plan fait des données de marché un axe stratégique du
+produit :
+
+-   tendances de volumes de vente et de prix par marque ;
+-   cartographie de la demande par canton suisse ;
+-   indicateurs de performance par catégorie ;
+-   analyse du comportement des enchères ;
+-   données agrégées pouvant, à terme, soutenir les partenariats avec
+    les marques.
+
+Ces objectifs sont cohérents avec les capacités déjà documentées côté
+application : suivi des visites, recherches, enchères, catégories et
+référentiels.
+
+------------------------------------------------------------------------
+
+## Modèle économique
+
+Le business plan décrit un modèle **sans frais pour les acheteurs et
+vendeurs**, financé par plusieurs flux complémentaires.
+
+### Sources de revenus
+
+1.  **Publicité display**
+    -   CPM/CPC ;
+    -   emplacements premium ;
+    -   placement d'un article premium sur la page d'accueil ;
+    -   hypothèse du business plan : **1 000 CHF par placement** pour ce
+        format premium.
+2.  **Annonces sponsorisées**
+    -   mise en évidence des annonces dans les résultats de recherche ;
+    -   mise en évidence dans les pages de catégories.
+3.  **Partenariats avec les marques**
+    -   ventes directes de marques ;
+    -   sponsoring de catégories ;
+    -   accès à des données de marché agrégées.
+4.  **Comptes vendeurs premium**
+    -   analyses avancées ;
+    -   assistance prioritaire ;
+    -   badges de vendeur vedette ;
+    -   outils de mise en ligne en masse.
+
+### Projections de chiffre d'affaires
+
+Les valeurs ci-dessous sont reproduites du business plan joint et ne
+constituent pas des résultats réalisés.
+
+  --------------------------------------------------------------------------
+  Flux                  Année 1        Année 2        Année 3        Année 4
+  -------------- -------------- -------------- -------------- --------------
+  Annonces           90 000 CHF     65 000 CHF    145 000 CHF    255 000 CHF
+  display                                                     
+
+  Annonces            5 000 CHF     36 000 CHF     75 000 CHF    135 000 CHF
+  sponsorisées                                                
+
+  Partenariats            0 CHF     20 000 CHF     55 000 CHF    100 000 CHF
+  de marque                                                   
+
+  Comptes             2 000 CHF     13 000 CHF     36 000 CHF     65 000 CHF
+  premium                                                     
+
+  **Total        **97 000 CHF**      **126 000      **311 000      **545 000
+  indiqué dans                           CHF**          CHF**          CHF**
+  le business                                                 
+  plan**                                                      
+  --------------------------------------------------------------------------
+
+> **Attention :** les totaux affichés dans le business plan ne
+> correspondent pas tous à la somme des quatre lignes de revenus. Par
+> exemple, l'Année 2 donne 134 000 CHF par addition des lignes et non
+> 126 000 CHF, et l'Année 4 donne 555 000 CHF et non 545 000 CHF. Le
+> README conserve volontairement les **totaux tels qu'ils figurent dans
+> le document source** plutôt que de les corriger silencieusement.
+
+Le business plan indique un objectif de seuil de rentabilité vers la fin
+de la deuxième année, sous réserve notamment de l'acquisition
+d'utilisateurs et d'annonceurs.
+
+------------------------------------------------------------------------
+
+## Stratégie marketing et lancement
+
+Le plan d'affaires identifie plusieurs canaux d'acquisition :
+
+-   partenariats avec des influenceurs du luxe ;
+-   référencement naturel et contenu spécialisé ;
+-   Instagram et Pinterest pour le contenu visuel ;
+-   LinkedIn pour la prospection B2B ;
+-   relations publiques et médias spécialisés ;
+-   prospection directe auprès des vendeurs à fort potentiel ;
+-   programme de parrainage.
+
+### Phases de lancement prévues
+
+  -----------------------------------------------------------------------
+  Phase                   Période du business     Objectif
+                          plan                    
+  ----------------------- ----------------------- -----------------------
+  1                       T1--T2 2026             Développement du MVP :
+                                                  enchères, ventes
+                                                  directes,
+                                                  authentification et
+                                                  annonces
+
+  2                       T3 2026                 Bêta fermée avec 50 à
+                                                  100 vendeurs
+                                                  sélectionnés
+
+  3                       T4 2026                 Lancement public suisse
+                                                  et activation du réseau
+                                                  publicitaire
+
+  4                       T1--T2 2027             Croissance et
+                                                  monétisation : annonces
+                                                  sponsorisées, comptes
+                                                  premium, analytique
+
+  5                       T3--T4 2027             Liste de souhaits,
+                                                  application mobile,
+                                                  déploiement FR/DE/IT/EN
+
+  6                       2028                    Expansion vers la
+                                                  France, l'Allemagne et
+                                                  l'Italie
+  -----------------------------------------------------------------------
+
+> Ces dates sont celles du business plan joint. Elles doivent être
+> distinguées de l'état réel du dépôt au moment de sa publication.
+
+------------------------------------------------------------------------
+
+## Roadmap produit / technologie
+
+La roadmap métier et produit peut être lue conjointement avec
+l'architecture actuelle :
+
+### MVP / lancement suisse
+
+-   marketplace de vente directe ;
+-   moteur d'enchères ;
+-   gestion des annonces ;
+-   comptes utilisateurs ;
+-   authentification OAuth2 Google ;
+-   recherche et filtres par catégorie ;
+-   infrastructure MySQL/MariaDB ;
+-   suivi des enchères ;
+-   paiement des options de mise en avant ;
+-   intégration technique Redis ;
+-   intégration Entrupy pour les flux d'authentification actuellement
+    présents dans le dépôt.
+
+### Croissance et monétisation
+
+-   annonces sponsorisées ;
+-   options premium ;
+-   statistiques vendeurs ;
+-   exploitation des données par marque et canton ;
+-   outils d'import pour les vendeurs professionnels ;
+-   renforcement des mécanismes de vérification.
+
+### Extension fonctionnelle
+
+-   liste de souhaits et alertes ;
+-   messagerie intégrée ;
+-   badges de vendeurs vérifiés ;
+-   authentification tierce des articles ;
+-   application mobile ;
+-   support multilingue complet FR/DE/IT/EN.
+
+### Expansion internationale
+
+Le business plan prévoit ensuite une ouverture progressive vers les
+marchés voisins : France, Allemagne et Italie.
+
+------------------------------------------------------------------------
+
+## Besoins de financement
+
+Le business plan présente les besoins initiaux suivants :
+
+  Poste                                         Budget prévisionnel
+  ------------------------------------------ ----------------------
+  Développement du MVP                         35 000 -- 55 000 CHF
+  UX / UI                                       8 000 -- 15 000 CHF
+  Marketing et lancement                       15 000 -- 25 000 CHF
+  Juridique et conformité                        5 000 -- 8 000 CHF
+  Opérations et infrastructure --- Année 1     10 000 -- 18 000 CHF
+  Prévoyance (15 %)                            11 000 -- 18 000 CHF
+
+Le besoin de financement doit être interprété comme une hypothèse du
+business plan, et non comme une dépense déjà engagée ou un budget
+confirmé.
+
+------------------------------------------------------------------------
+
+## Risques identifiés dans le business plan
+
+  -----------------------------------------------------------------------
+  Risque                  Niveau indiqué          Principales mesures
+                                                  prévues
+  ----------------------- ----------------------- -----------------------
+  Adoption lente au       Moyen                   Vendeurs
+  lancement                                       pré-sélectionnés,
+                                                  influenceurs,
+                                                  parrainage
+
+  Revenus publicitaires   Moyen                   Diversification des
+  inférieurs aux                                  formats et partenariats
+  prévisions                                      directs
+
+  Réponse des concurrents Bas                     Spécialisation et
+                                                  modèle sans frais
+
+  Bloqueurs publicitaires Moyen                   Formats natifs et
+                                                  diversification des
+                                                  revenus
+
+  Mise à l'échelle        Bas                     Architecture cloud et
+  technique                                       tests de charge
+
+  Contrefaçons            Haut                    Vérification,
+                                                  signalement et
+                                                  authentification tierce
+
+  Réglementation /        Moyen                   Conseil juridique et
+  protection des données                          conformité RGPD/nDSG
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## Architecture logicielle actuelle
+
+Le dépôt technique reste organisé autour de deux modules Maven :
+
+-   **`recordz-core`** --- domaine, repositories et services ;
+-   **`recordz-web`** --- Spring Boot, sécurité et interface Vaadin.
+
+Le positionnement business décrit ci-dessus ne remplace donc pas
+l'architecture technique : il la complète en documentant le produit, ses
+utilisateurs, sa monétisation et sa feuille de route.
+
+### Correspondance business → technique
+
+  -----------------------------------------------------------------------
+  Besoin produit                      Composants actuellement documentés
+  ----------------------------------- -----------------------------------
+  Catalogue / annonces                `Article`, `ArticleService`,
+                                      `ArticleRepository`
+
+  Vente directe                       `ArticleSubmitService`,
+                                      `met_en_vente`, `commande`
+
+  Enchères                            `Enchere`, `EnchereService`,
+                                      `EnchereRepository`,
+                                      `EnchereScheduler`
+
+  Comptes utilisateurs                `Personne`, `PersonneService`,
+                                      OAuth2
+
+  Recherche / filtres                 `FiltreArticle`,
+                                      `ArticleDynamicDataService`
+
+  Référentiels multilingues           `ReferentielRepository`,
+                                      `ReferenceService`, tables
+                                      `_libelle_langue`
+
+  Mise en avant payante               `FairePublicite`, `TarifView`,
+                                      Stripe
+
+  Authentification d'articles         Entrupy, Redis,
+                                      `ArticleAuthenticationService` et
+                                      composants associés
+
+  Vidéo / capture                     `integration.video`, Redis et
+                                      `MediaPrecheckController`
+
+  Analytics / tracking                `article_visite`, `article_ip`,
+                                      recherches et historique des
+                                      enchères
+
+  Listes de souhaits                  `wish`, `wish_list`
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## Documentation historique d'architecture
+
+Le README précédent contenait une longue retranscription d'une
+architecture historique et de son modèle de données. Cette documentation
+reste utile comme **annexe technique/historique**, mais elle ne doit pas
+être interprétée comme la description du business actuel.
+
+La documentation de référence du produit est désormais structurée en
+trois niveaux :
+
+1.  **Positionnement et modèle économique** --- alignés sur le business
+    plan joint ;
+2.  **Architecture logicielle actuelle** --- alignée sur les classes et
+    modules du dépôt ;
+3.  **Modèle physique de données détaillé** --- conservé ci-dessous.
 
 ## Architecture du schéma (résumé)
 
-Le schéma `new_db_recordzv3` est fortement dénormalisé sur la table `article` : une seule table plate porte tous les attributs possibles (vêtements, automobile, immobilier, vins, jeux vidéo, informatique, etc.), remplis ou non selon la catégorie. Les libellés multilingues passent systématiquement par des tables `xxx_libelle_langue` qui font le lien vers la table `libelle` commune.
+Le schéma `new_db_recordzv3` est fortement dénormalisé sur la table
+`article` : une seule table plate porte tous les attributs possibles
+(vêtements, automobile, immobilier, vins, jeux vidéo, informatique,
+etc.), remplis ou non selon la catégorie. Les libellés multilingues
+passent systématiquement par des tables `xxx_libelle_langue` qui font le
+lien vers la table `libelle` commune.
 
-| Groupe | Tables clés | Rôle |
-|---|---|---|
-| Catalogue | `article`, `met_en_vente`, `article_ip`, `article_visite` | Annonce plate multi-catégories + mise en vente par vendeur + tracking visites/IP |
-| Cycle de vente | `enchere`, `a_paye`, `a_livre`, `transaction`, `commande`, `commande_article` | Enchères → paiement (`a_paye`) → livraison (`a_livre`) ; `transaction`/`commande` legacy |
-| Utilisateurs | `personne`, `app_user`, `boutique`, `boutique_a_categorie`, `visiteur`, `sessions` | Comptes (email unique), boutiques vendeur, sessions PHP legacy |
-| Souhaits & interactions | `wish`, `wish_list`, `commentaire`, `demande_visite`, `recherche` | Liste de souhaits, Q&A sur annonce, demandes de visite, recherches sauvegardées |
-| Évaluations | `evaluation_achat`, `evaluation_article`, `evaluation_vente` | Notes/commentaires acheteur ↔ vendeur ↔ article |
-| Logistique | `depot`, `condition_livraison`, `condition_livraison_libelle_langue`, `condition_payement_libelle_langue` | Dépôts physiques, modes de livraison/paiement et leurs frais |
-| Catégorisation | `categorie_libelle_langue`, `subcategorie_libelle_langue`, `main_categorie_libelle_langue`, `genre` | Arborescence catégorie → sous-catégorie, tout en `_libelle_langue` |
-| Référentiels génériques | `libelle`, `langue`, `canton_fr`, `pays`, `pays_present`, `departement`, `etat`, `taille_libelle_langue`, `pointure`, `states` | Traductions FR/DE, géographie CH/FR, tailles/pointures |
-| Automobile | `boite_de_vitesse(_libelle_langue)`, `type_essence(_libelle_langue)` | Boîte de vitesse, type de motorisation |
-| Vin | `cepage`, `pays_region_vin`, `type_de_vin(_libelle_langue)` | Cépage, région/pays, type de vin |
-| Jeux / écrans | `type_de_jeux(_libelle_langue)`, `type_ecran(_libelle_langue)` | Genre de jeu vidéo, type d'écran |
-| Immobilier | `location_ou_achat_libelle_langue` | Location vs achat |
-| Comptes/paiement | `type_de_compte(_libelle_langue)`, `mode_de_payement(_libelle_langue)`, `publication_option(_libelle_langue)` | Types de compte, options de mise en avant payante |
-| Divers / temps | `mois(_libelle_langue)`, `temps(_libelle_langue)` | Référentiels calendaires legacy |
+  ------------------------------------------------------------------------------------------
+  Groupe                  Tables clés                             Rôle
+  ----------------------- --------------------------------------- --------------------------
+  Catalogue               `article`, `met_en_vente`,              Annonce plate
+                          `article_ip`, `article_visite`          multi-catégories + mise en
+                                                                  vente par vendeur +
+                                                                  tracking visites/IP
 
-**Points d'attention connus du schéma** (visibles dans le dump et gérés explicitement côté code, cf. `ArticleRepository`) :
-- Les colonnes `date`, `enchere_date_debut`, `enchere_date_fin` sont typées `varchar`, pas `datetime` — le repository les caste et neutralise les valeurs `'0000-00-00 00:00:00'` (`NULLIF(CAST(... AS CHAR), '0000-00-00 ...')`) pour éviter l'erreur MariaDB *"Zero date value prohibited"*.
-- Plusieurs colonnes de la table `libelle` référencées en clé primaire composite ont des doublons de `ref_libelle` pour un même `ref_categorie` (ex. `categorie_libelle_langue`), à garder en tête lors de jointures strictes.
-- `article.montant`/`prix_achat` mélangent `double` et `decimal` selon les tables (`a_livre.montant` est `varchar` !) — les conversions sont faites manuellement dans les mappers (`toArticle`, requêtes `findArticlesAPaye`...).
+  Cycle de vente          `enchere`, `a_paye`, `a_livre`,         Enchères → paiement
+                          `transaction`, `commande`,              (`a_paye`) → livraison
+                          `commande_article`                      (`a_livre`) ;
+                                                                  `transaction`/`commande`
+                                                                  legacy
 
----
+  Utilisateurs            `personne`, `app_user`, `boutique`,     Comptes (email unique),
+                          `boutique_a_categorie`, `visiteur`,     boutiques vendeur,
+                          `sessions`                              sessions PHP legacy
+
+  Souhaits & interactions `wish`, `wish_list`, `commentaire`,     Liste de souhaits, Q&A sur
+                          `demande_visite`, `recherche`           annonce, demandes de
+                                                                  visite, recherches
+                                                                  sauvegardées
+
+  Évaluations             `evaluation_achat`,                     Notes/commentaires
+                          `evaluation_article`,                   acheteur ↔ vendeur ↔
+                          `evaluation_vente`                      article
+
+  Logistique              `depot`, `condition_livraison`,         Dépôts physiques, modes de
+                          `condition_livraison_libelle_langue`,   livraison/paiement et
+                          `condition_payement_libelle_langue`     leurs frais
+
+  Catégorisation          `categorie_libelle_langue`,             Arborescence catégorie →
+                          `subcategorie_libelle_langue`,          sous-catégorie, tout en
+                          `main_categorie_libelle_langue`,        `_libelle_langue`
+                          `genre`                                 
+
+  Référentiels génériques `libelle`, `langue`, `canton_fr`,       Traductions FR/DE,
+                          `pays`, `pays_present`, `departement`,  géographie CH/FR,
+                          `etat`, `taille_libelle_langue`,        tailles/pointures
+                          `pointure`, `states`                    
+
+  Automobile              `boite_de_vitesse(_libelle_langue)`,    Boîte de vitesse, type de
+                          `type_essence(_libelle_langue)`         motorisation
+
+  Vin                     `cepage`, `pays_region_vin`,            Cépage, région/pays, type
+                          `type_de_vin(_libelle_langue)`          de vin
+
+  Jeux / écrans           `type_de_jeux(_libelle_langue)`,        Genre de jeu vidéo, type
+                          `type_ecran(_libelle_langue)`           d'écran
+
+  Immobilier              `location_ou_achat_libelle_langue`      Location vs achat
+
+  Comptes/paiement        `type_de_compte(_libelle_langue)`,      Types de compte, options
+                          `mode_de_payement(_libelle_langue)`,    de mise en avant payante
+                          `publication_option(_libelle_langue)`   
+
+  Divers / temps          `mois(_libelle_langue)`,                Référentiels calendaires
+                          `temps(_libelle_langue)`                legacy
+  ------------------------------------------------------------------------------------------
+
+**Points d'attention connus du schéma** (visibles dans le dump et gérés
+explicitement côté code, cf. `ArticleRepository`) : - Les colonnes
+`date`, `enchere_date_debut`, `enchere_date_fin` sont typées `varchar`,
+pas `datetime` --- le repository les caste et neutralise les valeurs
+`'0000-00-00 00:00:00'` (`NULLIF(CAST(... AS CHAR), '0000-00-00 ...')`)
+pour éviter l'erreur MariaDB *"Zero date value prohibited"*. - Plusieurs
+colonnes de la table `libelle` référencées en clé primaire composite ont
+des doublons de `ref_libelle` pour un même `ref_categorie` (ex.
+`categorie_libelle_langue`), à garder en tête lors de jointures
+strictes. - `article.montant`/`prix_achat` mélangent `double` et
+`decimal` selon les tables (`a_livre.montant` est `varchar` !) --- les
+conversions sont faites manuellement dans les mappers (`toArticle`,
+requêtes `findArticlesAPaye`...).
+
+------------------------------------------------------------------------
 
 ## Démarrage rapide
 
-```bash
+``` bash
 
 # 4. Lancer l'application
 export GOOGLE_CLIENT_ID=...
@@ -61,166 +559,196 @@ docker compose ps
 docker compose up -d mysql redis
 
 mvn spring-boot:run -pl recordz-web
-
 ```
 
-→ [http://localhost:8081](http://localhost:8081)
+→ <http://localhost:8081>
 
----
+------------------------------------------------------------------------
 
 ## Structure du projet
 
-```
-recordz-core/                                      # Logique métier — indépendant de Vaadin/Web
-└── src/main/java/com/example/recordz/
-    ├── config/
-    │   └── JooqConfig.java                         # DSL settings + @EnableCaching
-    │   └── EntrupyProperties.java                  # Propriétés de connexion a Entrupy
-    │   └── RedisListenerConfig.java                # Listener de Redis pour la configuration
-    │   └── RestClientConfig.java                   # CLient REST a Entrupy
-    ├── entrupy/
-    │   └── EntrupySessionPayload.java              # Variable pour la validation par Entrupy
-    │   └── EntrupyStatus.java                      # Statut de la validation
-    │   └── EntrupyWebhookEvent.java                # Webhook Entrupy
-    │   └── EntrupyWebhookService.java              # Service Entrupy
-    ├── model/domain/
-    │   ├── Article.java                            # Annonce marketplace (table plate multi-catégories)
-    │   ├── Personne.java                           # Utilisateur / membre
-    │   ├── Enchere.java                             # Mise aux enchères
-    │   ├── Commande.java / Transaction.java         # Commande & transaction financière (legacy)
-    │   ├── Boutique.java                            # Boutique vendeur
-    │   ├── Wish.java / WishList.java                # Liste de souhaits
-    │   ├── Commentaire.java                         # Q&A sur une annonce
-    │   ├── Evaluations.java                          # Notes achat/vente/article
-    │   ├── FiltreArticle.java                        # Objet de filtres dynamiques (recherche/catalogue)
-    │   ├── ArticleCategory.java / ArticleSubCategory.java  # IDs de catégories/sous-catégories
-    │   ├── EvenementCalendrier.java                  # Événement du calendrier vendeur
-    │   ├── Referentiel.java                          # Agrégat de tous les référentiels (cantons, tailles...)
-    │   └── dto/ArticleFormData.java                  # DTO du formulaire de dépôt d'annonce
-    ├── redis/
-    │   ├── PreAnalysisSession.java                   # Analyse de la session Redis     
-    ├── repository/                                   # jOOQ DSL brut (table()/field())
-    │   ├── ArticleRepository.java                    # Articles : recherche, filtres, cycle vente/livraison
-    │   ├── PersonneRepository.java                   # Utilisateurs
-    │   ├── EnchereRepository.java                    # Enchères
-    │   ├── CommandeRepository.java                   # Commandes (legacy)
-    │   └── ReferentielRepository.java                # Tables de référence, @Cacheable
-    └── service/
-        ├── ArticleService.java                       # Logique métier articles (lecture/recherche)
-        ├── ArticleAuthenticationService.java         # Logic métier relative à l'authentification Entrupy
-        ├── ArticleDynamicDataService.java            # Résolution des champs dynamiques par catégorie
-        ├── ArticleSubmitService.java                 # Validation + dépôt d'une nouvelle annonce
-        ├── EnchereService.java                       # Logique enchères avec validation
-        ├── PersonneService.java                      # Logique utilisateurs
-        ├── CalendrierService.java                    # Événements du calendrier vendeur
-        └── ReferenceService.java                     # Résolution des libellés/référentiels par langue
+    recordz-core/                                      # Logique métier — indépendant de Vaadin/Web
+    └── src/main/java/com/example/recordz/
+        ├── config/
+        │   └── JooqConfig.java                         # DSL settings + @EnableCaching
+        │   └── EntrupyProperties.java                  # Propriétés de connexion a Entrupy
+        │   └── RedisListenerConfig.java                # Listener de Redis pour la configuration
+        │   └── RestClientConfig.java                   # CLient REST a Entrupy
+        ├── entrupy/
+        │   └── EntrupySessionPayload.java              # Variable pour la validation par Entrupy
+        │   └── EntrupyStatus.java                      # Statut de la validation
+        │   └── EntrupyWebhookEvent.java                # Webhook Entrupy
+        │   └── EntrupyWebhookService.java              # Service Entrupy
+        ├── model/domain/
+        │   ├── Article.java                            # Annonce marketplace (table plate multi-catégories)
+        │   ├── Personne.java                           # Utilisateur / membre
+        │   ├── Enchere.java                             # Mise aux enchères
+        │   ├── Commande.java / Transaction.java         # Commande & transaction financière (legacy)
+        │   ├── Boutique.java                            # Boutique vendeur
+        │   ├── Wish.java / WishList.java                # Liste de souhaits
+        │   ├── Commentaire.java                         # Q&A sur une annonce
+        │   ├── Evaluations.java                          # Notes achat/vente/article
+        │   ├── FiltreArticle.java                        # Objet de filtres dynamiques (recherche/catalogue)
+        │   ├── ArticleCategory.java / ArticleSubCategory.java  # IDs de catégories/sous-catégories
+        │   ├── EvenementCalendrier.java                  # Événement du calendrier vendeur
+        │   ├── Referentiel.java                          # Agrégat de tous les référentiels (cantons, tailles...)
+        │   └── dto/ArticleFormData.java                  # DTO du formulaire de dépôt d'annonce
+        ├── redis/
+        │   ├── PreAnalysisSession.java                   # Analyse de la session Redis     
+        ├── repository/                                   # jOOQ DSL brut (table()/field())
+        │   ├── ArticleRepository.java                    # Articles : recherche, filtres, cycle vente/livraison
+        │   ├── PersonneRepository.java                   # Utilisateurs
+        │   ├── EnchereRepository.java                    # Enchères
+        │   ├── CommandeRepository.java                   # Commandes (legacy)
+        │   └── ReferentielRepository.java                # Tables de référence, @Cacheable
+        └── service/
+            ├── ArticleService.java                       # Logique métier articles (lecture/recherche)
+            ├── ArticleAuthenticationService.java         # Logic métier relative à l'authentification Entrupy
+            ├── ArticleDynamicDataService.java            # Résolution des champs dynamiques par catégorie
+            ├── ArticleSubmitService.java                 # Validation + dépôt d'une nouvelle annonce
+            ├── EnchereService.java                       # Logique enchères avec validation
+            ├── PersonneService.java                      # Logique utilisateurs
+            ├── CalendrierService.java                    # Événements du calendrier vendeur
+            └── ReferenceService.java                     # Résolution des libellés/référentiels par langue
 
-recordz-web/                                        # Point d'entrée Spring Boot + UI Vaadin
-└── src/main/java/com/example/recordz/
-    ├── RecordzApplication.java
-    ├── EnchereScheduler.java                       # Job planifié : clôture des enchères expirées
-    ├── config/
-    │   └── WebMvcConfig.java                       # ComfgurationMvc
-    │   └── CacheConfig.java                        # Création du cache pour Jackson
-    │   └── RedisConfig.java                        # Configruation Redis      
-    ├── integration.video/
-    │   └── AbstractArticleVideoBroadcaster.java    # Gère le registre local des composants Vaadin
-    │   └── ArticleVideoBroadcaster.java            # Même principe que EntrupyStatusBroadcaster, mais pour la vidéo capturée
-    │   └── ArticleVideoMessage.java                # Message échangé sur le canal Redis "article:video"      
-    │   └── InMemoryArticleVideoBroadcaster.java    # Broadcast de la vidéo
-    │   └── RedisArticleVideoBroadcaster.java       # Broadcast de la vidéo por Redis
-    │   └── VideoUploadController.java              # Controller de la diffusion de la vidéo    
-    ├── security/
-    │   ├── SecurityConfig.java                       # Vaadin + OAuth2 Google
-    │   ├── CustomOAuth2UserService.java              # Sync OAuth → personne (upsert par email) 
-    ├── web
-    │   ├── MediaPrecheckController.java              # API consommée par l'app mobile pendant la capture, AVANT l'appel final 
-```
+    recordz-web/                                        # Point d'entrée Spring Boot + UI Vaadin
+    └── src/main/java/com/example/recordz/
+        ├── RecordzApplication.java
+        ├── EnchereScheduler.java                       # Job planifié : clôture des enchères expirées
+        ├── config/
+        │   └── WebMvcConfig.java                       # ComfgurationMvc
+        │   └── CacheConfig.java                        # Création du cache pour Jackson
+        │   └── RedisConfig.java                        # Configruation Redis      
+        ├── integration.video/
+        │   └── AbstractArticleVideoBroadcaster.java    # Gère le registre local des composants Vaadin
+        │   └── ArticleVideoBroadcaster.java            # Même principe que EntrupyStatusBroadcaster, mais pour la vidéo capturée
+        │   └── ArticleVideoMessage.java                # Message échangé sur le canal Redis "article:video"      
+        │   └── InMemoryArticleVideoBroadcaster.java    # Broadcast de la vidéo
+        │   └── RedisArticleVideoBroadcaster.java       # Broadcast de la vidéo por Redis
+        │   └── VideoUploadController.java              # Controller de la diffusion de la vidéo    
+        ├── security/
+        │   ├── SecurityConfig.java                       # Vaadin + OAuth2 Google
+        │   ├── CustomOAuth2UserService.java              # Sync OAuth → personne (upsert par email) 
+        ├── web
+        │   ├── MediaPrecheckController.java              # API consommée par l'app mobile pendant la capture, AVANT l'appel final 
 
----
+------------------------------------------------------------------------
 
 ## Architecture logicielle
 
 ### Modules Maven
 
-Le projet est découpé en deux modules pour séparer la logique métier de la couche web :
+Le projet est découpé en deux modules pour séparer la logique métier de
+la couche web :
 
-- **`recordz-core`** — modèles de domaine, repositories (accès données) et services (logique métier). Indépendant de Vaadin/Spring Web, réutilisable si une autre interface (API REST, batch) devait un jour consommer la même logique.
-- **`recordz-web`** — point d'entrée Spring Boot, configuration, sécurité et interface utilisateur Vaadin. Dépend de `recordz-core`.
+-   **`recordz-core`** --- modèles de domaine, repositories (accès
+    données) et services (logique métier). Indépendant de Vaadin/Spring
+    Web, réutilisable si une autre interface (API REST, batch) devait un
+    jour consommer la même logique.
+-   **`recordz-web`** --- point d'entrée Spring Boot, configuration,
+    sécurité et interface utilisateur Vaadin. Dépend de `recordz-core`.
 
 ### Couches applicatives
 
 L'application suit une architecture en couches classique :
 
-```
-┌─────────────────────────────────────┐
-│   UI (Vaadin Views)                 │  recordz-web/ui
-│   MainView, CatalogueView, ...      │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼────────────────────────┐
-│   Service (logique métier)            │  recordz-core/service
-│   ArticleService, EnchereService,Redis│
-│   @Transactional                      │
-└──────────────┬────────────────────────┘
-               │
-┌──────────────▼────────────────────────┐
-│   Repository (accès données)          │  recordz-core/repository
-│   DSL jOOQ brut, Config Entrupy       │
-└──────────────┬────────────────────────┘
-               │
-┌──────────────▼────────────────────────┐
-│   MySQL/MariaDB (new_db_recordzv3)    │  via HikariCP
-└───────────────────────────────────────
-```
+    ┌─────────────────────────────────────┐
+    │   UI (Vaadin Views)                 │  recordz-web/ui
+    │   MainView, CatalogueView, ...      │
+    └──────────────┬──────────────────────┘
+                   │
+    ┌──────────────▼────────────────────────┐
+    │   Service (logique métier)            │  recordz-core/service
+    │   ArticleService, EnchereService,Redis│
+    │   @Transactional                      │
+    └──────────────┬────────────────────────┘
+                   │
+    ┌──────────────▼────────────────────────┐
+    │   Repository (accès données)          │  recordz-core/repository
+    │   DSL jOOQ brut, Config Entrupy       │
+    └──────────────┬────────────────────────┘
+                   │
+    ┌──────────────▼────────────────────────┐
+    │   MySQL/MariaDB (new_db_recordzv3)    │  via HikariCP
+    └───────────────────────────────────────
 
-Chaque couche ne dépend que de la couche immédiatement inférieure : les vues Vaadin n'appellent jamais un repository directement, elles passent systématiquement par un service.
+Chaque couche ne dépend que de la couche immédiatement inférieure : les
+vues Vaadin n'appellent jamais un repository directement, elles passent
+systématiquement par un service.
 
 ### Sécurité et authentification
 
-L'authentification repose entièrement sur **OAuth2 Google** (pas de mot de passe local) :
+L'authentification repose entièrement sur **OAuth2 Google** (pas de mot
+de passe local) :
 
-1. `SecurityConfig` délègue la connexion à `VaadinSecurityConfigurer` + `oauth2Login`.
-2. À chaque connexion, `CustomOAuth2UserService` intercepte le flux OIDC et fait un **upsert** dans la table `personne` (email = identifiant unique). Le champ `mot_de_passe` legacy n'est pas utilisé.
-3. `AuthenticatedUser` expose ensuite l'utilisateur courant aux vues Vaadin sans qu'elles aient à connaître les détails OAuth2.
+1.  `SecurityConfig` délègue la connexion à `VaadinSecurityConfigurer` +
+    `oauth2Login`.
+2.  À chaque connexion, `CustomOAuth2UserService` intercepte le flux
+    OIDC et fait un **upsert** dans la table `personne` (email =
+    identifiant unique). Le champ `mot_de_passe` legacy n'est pas
+    utilisé.
+3.  `AuthenticatedUser` expose ensuite l'utilisateur courant aux vues
+    Vaadin sans qu'elles aient à connaître les détails OAuth2.
 
 ### Accès aux données
 
-- **jOOQ en DSL brut** (`table("article")`, `field("nom")`) dans tous les repositories actuels, tant que la génération de code typée n'a pas encore été branchée en continu. La génération typée existe déjà comme profil Maven désactivé par défaut (`phase: none`) et s'active avec `mvn generate-sources -P codegen -pl recordz-core` (schéma cible : `new_db_recordz`). Une fois activée, remplacer progressivement par les classes générées : `import static com.example.recordz.jooq.tables.Article.ARTICLE`.
-- **HikariCP** comme pool de connexions (`maximum-pool-size: 10`, `minimum-idle: 2`), configuré dans `application.yml` et `JooqConfig`.
-- **Flyway** pilote le schéma via `recordz-core/src/main/resources/db/migration/new_db_recordzv3.sql`, chargée en `baseline-on-migrate: true` / `baseline-version: 0` (le schéma existant sert de point de départ). Toute évolution du schéma doit passer par une nouvelle migration versionnée, jamais par une modification de ce fichier.
-- **Concurrence** : les opérations sensibles à la concurrence (ex. upsert OAuth2 dans `PersonneRepository`) s'appuient sur les contraintes `UNIQUE` en base (`personne.email`, `personne.nom_utilisateur`) plutôt que sur des vérifications applicatives, pour rester correctes sous forte charge concurrente.
-- **Paiement** : intégration Stripe (`stripe-java`) pour la mise en avant payante des annonces (`FairePublicite`, `TarifView`).
+-   **jOOQ en DSL brut** (`table("article")`, `field("nom")`) dans tous
+    les repositories actuels, tant que la génération de code typée n'a
+    pas encore été branchée en continu. La génération typée existe déjà
+    comme profil Maven désactivé par défaut (`phase: none`) et s'active
+    avec `mvn generate-sources -P codegen -pl recordz-core` (schéma
+    cible : `new_db_recordz`). Une fois activée, remplacer
+    progressivement par les classes générées :
+    `import static com.example.recordz.jooq.tables.Article.ARTICLE`.
+-   **HikariCP** comme pool de connexions (`maximum-pool-size: 10`,
+    `minimum-idle: 2`), configuré dans `application.yml` et
+    `JooqConfig`.
+-   **Flyway** pilote le schéma via
+    `recordz-core/src/main/resources/db/migration/new_db_recordzv3.sql`,
+    chargée en `baseline-on-migrate: true` / `baseline-version: 0` (le
+    schéma existant sert de point de départ). Toute évolution du schéma
+    doit passer par une nouvelle migration versionnée, jamais par une
+    modification de ce fichier.
+-   **Concurrence** : les opérations sensibles à la concurrence (ex.
+    upsert OAuth2 dans `PersonneRepository`) s'appuient sur les
+    contraintes `UNIQUE` en base (`personne.email`,
+    `personne.nom_utilisateur`) plutôt que sur des vérifications
+    applicatives, pour rester correctes sous forte charge concurrente.
+-   **Paiement** : intégration Stripe (`stripe-java`) pour la mise en
+    avant payante des annonces (`FairePublicite`, `TarifView`).
 
 ### Caching
 
-`ReferentielRepository` utilise `@Cacheable` pour les données de référence peu volatiles (cantons, catégories, libellés, etc.) — chargées une fois en mémoire au lieu d'un aller-retour DB à chaque affichage.
----
+## `ReferentielRepository` utilise `@Cacheable` pour les données de référence peu volatiles (cantons, catégories, libellés, etc.) --- chargées une fois en mémoire au lieu d'un aller-retour DB à chaque affichage.
 
 ## Document d'analyse et d'architecture
 
-> **Document source intégré :** `avant_garde__technologie_last_2026.docx`  
-> **Date indiquée dans le document source :** 22/04/2013  
+> **Document source intégré :**
+> `avant_garde__technologie_last_2026.docx`\
+> **Date indiquée dans le document source :** 22/04/2013
 >
-> Cette section reprend le document d'analyse et d'architecture fourni, converti du format DOCX vers Markdown.
-> Le contenu est conservé comme documentation complémentaire : certaines informations techniques du document
-> source décrivent des versions ou une architecture antérieures et peuvent donc différer de l'état actuel du dépôt
-> documenté plus haut.
+> Cette section reprend le document d'analyse et d'architecture fourni,
+> converti du format DOCX vers Markdown. Le contenu est conservé comme
+> documentation complémentaire : certaines informations techniques du
+> document source décrivent des versions ou une architecture antérieures
+> et peuvent donc différer de l'état actuel du dépôt documenté plus
+> haut.
 
 ## 1. Description
+
 Ce projet réside dans le fait de réaliser un site de vente aux enchères,
 ce site sera financé par la publicité ce qui rendra possible la gratuité
 de la création des comptes vendeurs et boutiques effectuées par les
 utilisateurs, une transaction sera validée par un sms.
 
 Ce site comprendra également une liste de vœux, cette liste définit les
-articles qu’un utilisateur désire mais n’est pas encore disponible dans
-les boutiques un système d’alerte sera créé ce qui permettra à
-l’utilisateur d’être informé à l’arrivée de l’article.
+articles qu'un utilisateur désire mais n'est pas encore disponible dans
+les boutiques un système d'alerte sera créé ce qui permettra à
+l'utilisateur d'être informé à l'arrivée de l'article.
 
 Ce site est unique en son genre car il propose des critères de
 recherches différents selon les catégories d'articles. Ces attributs
-seront affichés dynamiquement lors du chargement d’une catégorie.
+seront affichés dynamiquement lors du chargement d'une catégorie.
 
 Il sera également utile pour toutes les boutiques de petites et moyennes
 tailles pour pouvoir gérer ses stocks, des outils permettent de faire
@@ -238,29 +766,30 @@ article.
 Ceci est utile pour les boutiques ayant un certain nombre d'articles de
 même nature et ayant un stock.
 
-Il faut également prévoir un script permettant l’importation en masse
-d’articles provenant d’une autre source de données cette importation
+Il faut également prévoir un script permettant l'importation en masse
+d'articles provenant d'une autre source de données cette importation
 peut se faire en présentant les données sous forme de fichier texte
-formaté à l’aide de « ; »
+formaté à l'aide de « ; »
 
-Lors de la création d’un compte l’adresse ip est enregistré pour
-vérification du fournisseur d’accès avec le pays dans lequel
-l’utilisateur s’enregistre, lors de chaque login l’utilisateur peut
-consulter les dernières adresses ou pays d’où provenait les connexions
-afin d’établir si un compte a été usurpé.
+Lors de la création d'un compte l'adresse ip est enregistré pour
+vérification du fournisseur d'accès avec le pays dans lequel
+l'utilisateur s'enregistre, lors de chaque login l'utilisateur peut
+consulter les dernières adresses ou pays d'où provenait les connexions
+afin d'établir si un compte a été usurpé.
 
-Lorsque l’utilisateur qui se connecte au site à son compte celui-ci est
-informé par sms à l’accès afin que l’utilisateur puisse constater de
-l’accès à son compte.
+Lorsque l'utilisateur qui se connecte au site à son compte celui-ci est
+informé par sms à l'accès afin que l'utilisateur puisse constater de
+l'accès à son compte.
 
 ## 2. Modélisation
+
 ![A description...](docs/architecture/media/image1.png)
 
 Une boutique contient zéro ou plusieurs articles, un article fait partie
-de zéro ou une boutique. Cette cardinalité s’explique par le fait qu’un
-article ne peut faire partie que d’une seule boutique particulière.
+de zéro ou une boutique. Cette cardinalité s'explique par le fait qu'un
+article ne peut faire partie que d'une seule boutique particulière.
 
-Un article fait partie d’une catégorie, une catégorie contient de zéro
+Un article fait partie d'une catégorie, une catégorie contient de zéro
 ou plusieurs sous-catégories.
 
 Une boutique possède de zéro à plusieurs catégories.
@@ -270,7 +799,7 @@ Une boutique possède de zéro à plusieurs catégories.
 Dans cette modélisation on peut constater les relations et entités qui
 permettent de définir le mécanisme relatif aux enchères. Une personne
 dans ce contexte sera appelée enchérisseur, possède une relation à
-l’entité enchère avec les cardinalités suivantes zéro à n. Une enchère
+l'entité enchère avec les cardinalités suivantes zéro à n. Une enchère
 est quand à elle relative à un unique enchérisseur et donne donc les
 cardinalités suivantes un à un.
 
@@ -286,8 +815,8 @@ plusieurs articles. Un article est mis en vente par un vendeur.
 ![A description...](docs/architecture/media/image4.png)
 
 Ce modèle décrit les différentes relations entre les entités concernant
-le processus d’achat et de paiement relatif aux articles mis aux
-enchères. Une personne passe des commandes d’un ou plusieurs articles.
+le processus d'achat et de paiement relatif aux articles mis aux
+enchères. Une personne passe des commandes d'un ou plusieurs articles.
 1,n.
 
 Une commande contient une condition de livraison et une condition de
@@ -297,7 +826,7 @@ Une commande contient une condition de paiement et une condition de
 paiement peut être liée à plusieurs commandes.
 
 Une personne à payer un ou plusieurs articles et un article a été payée
-par une personne dans ce contexte l’acheteur.
+par une personne dans ce contexte l'acheteur.
 
 Une condition de livraison contient une langue et une langue peut
 contenir plusieurs conditions de livraisons, une condition de livraison
@@ -315,13 +844,13 @@ plusieurs articles.
 Un article peut contenir un type de compte, un type de compte peut être
 contenu par plusieurs articles.
 
-Un article peut faire partie d’un canton, un canton peut être référencé
+Un article peut faire partie d'un canton, un canton peut être référencé
 par plusieurs articles.
 
 ![A description...](docs/architecture/media/image6.png)
 
 Une boite de vitesse contient zéro ou plusieurs libellés, le zéro
-s’explique ici dans le fait qu’il n’impose pas d’ordre de création des
+s'explique ici dans le fait qu'il n'impose pas d'ordre de création des
 libellés avec les boîtes de vitesses, un libellé peut être contenu par
 zéro ou plusieurs boîtes de vitesses. Un genre contient zéro ou
 plusieurs langues, une langue peut être contenu par zéro ou plusieurs
@@ -332,10 +861,10 @@ Un type de compte contient zéro ou plusieurs libellés un libellé peut
 contient zéro ou plusieurs à plusieurs libellés, un type de compte peut
 être contenu par zéro ou plusieurs langues.
 
-Lorsqu’une personne effectue des commandes d’articles, il est possible
+Lorsqu'une personne effectue des commandes d'articles, il est possible
 de produire des factures liées aux articles commandées. Un article
 possède une taxe de valeur ajoutée selon le type de produit dont il
-s’agit, cette taxe est dépendante du pays où il est vendu et sera
+s'agit, cette taxe est dépendante du pays où il est vendu et sera
 répercutée sur la facture de la personne.
 
 ![A description...](docs/architecture/media/image7.png)
@@ -344,7 +873,7 @@ répercutée sur la facture de la personne.
 
 Un article peut contenir un ou plusieurs commentaires, un commentaire
 est contenu par un article. Un commentaire est émis par une personne. Un
-article possède une relation avec l’entité évaluation achat et article
+article possède une relation avec l'entité évaluation achat et article
 les cardinalités sont les suivantes une évaluation vente est évaluée
 pour un article.
 
@@ -353,15 +882,15 @@ article sont les suivantes: une évaluation vente est évaluée pour un
 article.
 
 Cette modélisation définit les relations entre les utilisateurs et les
-ventes et achats d’articles, un article peut contenir des commentaires,
+ventes et achats d'articles, un article peut contenir des commentaires,
 un commentaire est émis par une personne.
 
 Une relation entre personne et évaluation achat existe, elle désigne
-l’action émise par une personne sur un achat et comporte un commentaire
-ainsi qu’une note.
+l'action émise par une personne sur un achat et comporte un commentaire
+ainsi qu'une note.
 
-De la même manière une relation existe entre un article et l’entité
-évaluation article ainsi qu’une relation évaluation vente.
+De la même manière une relation existe entre un article et l'entité
+évaluation article ainsi qu'une relation évaluation vente.
 
 ![A description...](docs/architecture/media/image9.png)
 
@@ -372,13 +901,13 @@ canton et les entités langue et libellé.
 ![A description...](docs/architecture/media/image10.png)
 
 Dans cette modélisation nous pouvons constater les relations entre les
-boutiques et l’entité main catégorie, les cardinalités sont les
+boutiques et l'entité main catégorie, les cardinalités sont les
 suivantes entre boutique et main catégorie, une boutique fait partie
-d’une ou une seule main catégorie, une main catégorie peut être possédé
+d'une ou une seule main catégorie, une main catégorie peut être possédé
 par une ou plusieurs boutiques.
 
-Un article dans le contexte d’un bien immobilier peut être en relation
-avec l’entité location ou achat, les cardinalités sont les suivantes un
+Un article dans le contexte d'un bien immobilier peut être en relation
+avec l'entité location ou achat, les cardinalités sont les suivantes un
 article peut être en location de zéro à plusieurs car la personne
 possédant le bien peut changer le statut du bien immobilier pour le
 mettre en location ou vente.
@@ -402,35 +931,35 @@ peut être référé par un ou plusieurs articles. Un article a payé est
 relatif à une enchère, une enchère est relative à un article.
 
 Une personne a payé un ou plusieurs articles. Un article contient un ou
-plusieurs statuts, un statut est une entité qui définit l’état d’un
+plusieurs statuts, un statut est une entité qui définit l'état d'un
 article mis en vente par une personne. Un statut peut être de la liste
 suivante :
 
-- Temporaire
+-   Temporaire
 
-- En cours
+-   En cours
 
-- En stock
+-   En stock
 
-- Non disponible
+-   Non disponible
 
-- Vendu
+-   Vendu
 
-- Attente de paiement
+-   Attente de paiement
 
-- A payer
+-   A payer
 
-- A livrer
+-   A livrer
 
-- Livrer
+-   Livrer
 
-- Invendu
+-   Invendu
 
-- Envoyer
+-   Envoyer
 
-- Payé attente valide
+-   Payé attente valide
 
-- Livré attente valide
+-   Livré attente valide
 
 ![A description...](docs/architecture/media/image13.png)
 
@@ -456,8 +985,8 @@ présent peut être référé à un article.
 
 ![A description...](docs/architecture/media/image16.png)
 
-Un article de type vin peut être référé à une région d’un pays. Une
-région d’un pays peut être référée à un article.
+Un article de type vin peut être référé à une région d'un pays. Une
+région d'un pays peut être référée à un article.
 
 ![A description...](docs/architecture/media/image17.png)
 
@@ -469,11 +998,11 @@ Un article de type chaussure peut avoir une pointure, une pointure peut
 Un article peut contenir une option de publication, une option de
 publication représente une action proposée à un vendeur tel que :
 
-- Afficher sur la page d''accueil
+-   Afficher sur la page d''accueil
 
-- Afficher sur la page principale de la catégorie
+-   Afficher sur la page principale de la catégorie
 
-- Pack de trois photos supplémentaires
+-   Pack de trois photos supplémentaires
 
 Une publication option peut contenir de zéro à plusieurs libellés, un
 libellé peut être contenu par zéro à plusieurs publications. Une
@@ -490,7 +1019,7 @@ personnes.
 
 Une personne peut effectuer de zéro à plusieurs recherches, une
 recherche peut être effectuée par une et une seule personne. Une
-recherche est relative d’une à plusieurs catégories, une catégorie peut
+recherche est relative d'une à plusieurs catégories, une catégorie peut
 être relative de zéro à une recherche.
 
 Une catégorie peut contenir de zéro à plusieurs libellés, un libellé
@@ -503,1109 +1032,1112 @@ Un article appartient à une catégorie, une catégorie peut contenir
 plusieurs articles. Une catégorie peut contenir zéro ou plusieurs
 sous-catégories. Une sous-catégorie appartient à une catégorie.
 
-Voici la liste des différentes catégories d’articles présentés sur le
+Voici la liste des différentes catégories d'articles présentés sur le
 site internet :
 
-- Habits femmes
+-   Habits femmes
 
-- Habits hommes
+-   Habits hommes
 
-- Habits enfants
+-   Habits enfants
 
-- Mobilier
+-   Mobilier
 
-- Automobile
+-   Automobile
 
-- Motos
+-   Motos
 
-- Matériels high tech
+-   Matériels high tech
 
-- Montres et bijoux
+-   Montres et bijoux
 
-- Vins
+-   Vins
 
-- Vinyls / Cd / mp3
+-   Vinyls / Cd / mp3
 
-- Tv / vidéo / Informatique
+-   Tv / vidéo / Informatique
 
-- Sport
+-   Sport
 
-- Dvd
+-   Dvd
 
-- Livres
+-   Livres
 
-- Consoles de jeux
+-   Consoles de jeux
 
-- Diététique
+-   Diététique
 
-- Parfums
+-   Parfums
 
-- Accessoires de cuisines
+-   Accessoires de cuisines
 
-- Instruments de musique
+-   Instruments de musique
 
-- Cosmétiques
+-   Cosmétiques
 
-- Matériel dj
+-   Matériel dj
 
-- Collections
+-   Collections
 
-- Jouets
+-   Jouets
 
-- Accessoire et outils
+-   Accessoire et outils
 
-- Outillage à main
+-   Outillage à main
 
-- Outillage électrique
+-   Outillage électrique
 
-- Peinture déco
+-   Peinture déco
 
-- Jardin
+-   Jardin
 
-- Lingerie
+-   Lingerie
 
-- Calendrier
+-   Calendrier
 
-- Vêtements bébé
+-   Vêtements bébé
 
-- Electroménager
+-   Electroménager
 
-- Immobilier
+-   Immobilier
 
 Voici la liste des sous-catégories pour la catégorie habits femmes :
 
-- Jeans
+-   Jeans
 
-- T-shirts
+-   T-shirts
 
-- Jupes
+-   Jupes
 
-- Pull
+-   Pull
 
-- Robes
+-   Robes
 
-- Sacs
+-   Sacs
 
-- Chaussures
+-   Chaussures
 
-- Chaussettes
+-   Chaussettes
 
-- Lunettes de soleil
+-   Lunettes de soleil
 
 Voici la liste des sous-catégories pour la catégorie habits hommes :
 
-- Jeans
+-   Jeans
 
-- T-shirts
+-   T-shirts
 
-- Pull
+-   Pull
 
-- Sacs
+-   Sacs
 
-- Chaussures
+-   Chaussures
 
-- Lunettes de soleil
+-   Lunettes de soleil
 
 Voici la liste des sous-catégories pour la catégorie habits
 enfants filles :
 
-- De 0 à 3 mois
+-   De 0 à 3 mois
 
-- De 4 à 6 mois
+-   De 4 à 6 mois
 
-- De 7 à 12 mois
+-   De 7 à 12 mois
 
-- De 13 à 18 mois
+-   De 13 à 18 mois
 
-- Chaussures
+-   Chaussures
 
-- Chaussons
+-   Chaussons
 
 Voici la liste des sous-catégories pour la catégorie habits enfants
 garçons :
 
-- De 0 à 3 mois
+-   De 0 à 3 mois
 
+```{=html}
 <!-- -->
+```
+-   De 4 à 6 mois
 
-- De 4 à 6 mois
+-   De 7 à 12 mois
 
-- De 7 à 12 mois
+-   De 13 à 18 mois
 
-- De 13 à 18 mois
+-   Chaussures
 
-- Chaussures
-
-- Chaussons
+-   Chaussons
 
 Voici la liste des sous-catégories pour la catégorie art et design :
 
-- Peintures
+-   Peintures
 
-- Photographies
+-   Photographies
 
-- Sculpture
+-   Sculpture
 
-- Divers
+-   Divers
 
+```{=html}
 <!-- -->
+```
+-   Tables
 
-- Tables
+-   Chaises
 
-- Chaises
+-   Lits
 
-- Lits
+-   Canapés
 
-- Canapés
+-   Armoires
 
-- Armoires
+-   Meubles tv
 
-- Meubles tv
-
-- Fauteuils
+-   Fauteuils
 
 Voici la liste des sous-catégories pour la catégorie automobile :
 
-- Berline
+-   Berline
 
-- Coupé
+-   Coupé
 
-- 4x4
+-   4x4
 
-- Sport
+-   Sport
 
-- Hybride
+-   Hybride
 
-- Électrique
+-   Électrique
 
 Voici la liste des sous-catégories pour la catégorie motos :
 
-- 125cm3
+-   125cm3
 
-- 250cm3
+-   250cm3
 
-- 500cm3
+-   500cm3
 
-- 750cm3
+-   750cm3
 
-- 1000cm3
+-   1000cm3
 
-- Casques
+-   Casques
 
-- Gants
+-   Gants
 
-- Accessoires
+-   Accessoires
 
-- Vestes
+-   Vestes
 
-- Pantalons
+-   Pantalons
 
 Voici la liste des sous-catégories pour la catégorie tv vidéo
 informatique :
 
-- Télévisions
+-   Télévisions
 
-- Lecteurs dvd
+-   Lecteurs dvd
 
-- Chaines hifis
+-   Chaines hifis
 
-- Ecrans plats
+-   Ecrans plats
 
-- Lecteurs mp3
+-   Lecteurs mp3
 
-- Casques Audio
+-   Casques Audio
 
-- Enceintes
+-   Enceintes
 
-- Pc
+-   Pc
 
-- Ordinateurs portables
+-   Ordinateurs portables
 
-- Mac
+-   Mac
 
-- Tablettes
+-   Tablettes
 
-- Souris
+-   Souris
 
-- Télécommandes
+-   Télécommandes
 
-- Logiciels
+-   Logiciels
 
-- Natels
+-   Natels
 
-- Webcam
+-   Webcam
 
-- Câblages
+-   Câblages
 
-- Cartes mères
+-   Cartes mères
 
-- Scanners
+-   Scanners
 
-- Photocopieurs
+-   Photocopieurs
 
-- Routeurs
+-   Routeurs
 
-- Antenne satellite
+-   Antenne satellite
 
-- Lecteurs biométriques
+-   Lecteurs biométriques
 
-- Lecteurs de cartes à puces
+-   Lecteurs de cartes à puces
 
-- Caisses enregistreuses
+-   Caisses enregistreuses
 
 Voici la liste des sous-catégories pour la catégorie montres et bijoux
 femmes :
 
-- Montres
+-   Montres
 
-- Bracelets
+-   Bracelets
 
-- Bagues
+-   Bagues
 
-- Briquets
+-   Briquets
 
-- Chainette
+-   Chainette
 
-- Parure
+-   Parure
 
 Voici la liste des sous catégories pour la catégorie montres et bijoux
 hommes :
 
-- Montres
+-   Montres
 
-- Bracelets
+-   Bracelets
 
-- Bagues
+-   Bagues
 
-- Briquets
+-   Briquets
 
-- Chainette
+-   Chainette
 
 Voici la liste des sous-catégories pour la catégorie vinyls / cd / mp3 :
 
-- Techno
+-   Techno
 
-- Hardstyle
+-   Hardstyle
 
-- Hardcore
+-   Hardcore
 
-- Trance
+-   Trance
 
-- Hard Trance
+-   Hard Trance
 
-- House
+-   House
 
-- Tek House
+-   Tek House
 
-- Goa
+-   Goa
 
-- Rap US
+-   Rap US
 
-- Rap Français
+-   Rap Français
 
-- R&B
+-   R&B
 
-- Reggae
+-   Reggae
 
-- Dance
+-   Dance
 
-- Hits
+-   Hits
 
-- Rock
+-   Rock
 
-- HardRock
+-   HardRock
 
-- Pop
+-   Pop
 
-- Folk
+-   Folk
 
 Voici la liste des sous-catégories pour la catégorie sport
 
-- Snowboard fille
+-   Snowboard fille
 
-- Snowboard garçon
+-   Snowboard garçon
 
-- Skate
+-   Skate
 
-- Longboard
+-   Longboard
 
-- Patin à glace fille
+-   Patin à glace fille
 
-- Patin à glace garçon
+-   Patin à glace garçon
 
-- Cannes de hockey sur glace
+-   Cannes de hockey sur glace
 
-- Protection hockey sur glace
+-   Protection hockey sur glace
 
-- Gants de hockey sur glace
+-   Gants de hockey sur glace
 
-- Maillots de hockey sur glace
+-   Maillots de hockey sur glace
 
-- Puck
+-   Puck
 
-- Ski fille
+-   Ski fille
 
-- Ski garçon
+-   Ski garçon
 
-- Chaussures de courses fille
+-   Chaussures de courses fille
 
-- Chaussures de courses garçon
+-   Chaussures de courses garçon
 
-- Chaussures de trekking fille
+-   Chaussures de trekking fille
 
-- Chaussures de trekking garçon
+-   Chaussures de trekking garçon
 
-- Chaussures de danse fille
+-   Chaussures de danse fille
 
-- Chaussures de danse garçon
+-   Chaussures de danse garçon
 
-- Chaussures de tennis fille
+-   Chaussures de tennis fille
 
-- Chaussures de tennis garçon
+-   Chaussures de tennis garçon
 
-- Chaussures de basket fille
+-   Chaussures de basket fille
 
-- Chaussures de basket garçon
+-   Chaussures de basket garçon
 
-- Chaussures de football fille
+-   Chaussures de football fille
 
-- Chaussures de football garçon
+-   Chaussures de football garçon
 
-- Chaussures de rugby fille
+-   Chaussures de rugby fille
 
-- Chaussures de rugby garçon
+-   Chaussures de rugby garçon
 
-- Chaussures de surf fille
+-   Chaussures de surf fille
 
-- Chaussures de surf garçon
+-   Chaussures de surf garçon
 
-- Chaussures de snowboard fille
+-   Chaussures de snowboard fille
 
-- Chaussures de snowboard garçon
+-   Chaussures de snowboard garçon
 
-- Chaussures de training fille
+-   Chaussures de training fille
 
-- Chaussures de training garçon
+-   Chaussures de training garçon
 
-- Habits de snowboards fille
+-   Habits de snowboards fille
 
-- Habits de snowboards garçon
+-   Habits de snowboards garçon
 
-- Habits de ski fille
+-   Habits de ski fille
 
-- Habits de ski garçon
+-   Habits de ski garçon
 
-- Casques de ski fille
+-   Casques de ski fille
 
-- Casques de ski garçon
+-   Casques de ski garçon
 
-- Lunettes de ski fille
+-   Lunettes de ski fille
 
-- Lunettes de ski garçon
+-   Lunettes de ski garçon
 
-- Caméra de sport
+-   Caméra de sport
 
-- Ballon de basket
+-   Ballon de basket
 
-- Ballon de football
+-   Ballon de football
 
-- Ballon de rugby
+-   Ballon de rugby
 
-- Racket de tennis fille
+-   Racket de tennis fille
 
-- Racket de tennis garçon
+-   Racket de tennis garçon
 
-- Sacoche de tennis fille
+-   Sacoche de tennis fille
 
-- Sacoche de tennis garçon
+-   Sacoche de tennis garçon
 
-- Selles pour chevaux homme
+-   Selles pour chevaux homme
 
-- Selle pour chevaux femme
+-   Selle pour chevaux femme
 
-- Bottes de cheval femme
+-   Bottes de cheval femme
 
-- Botte de cheval homme
+-   Botte de cheval homme
 
-- Vêtements d’équitation femme
+-   Vêtements d'équitation femme
 
-- Vêtements d’équitation homme
+-   Vêtements d'équitation homme
 
 Voici la liste des sous-catégories de la catégorie dvd :
 
-- Action
+-   Action
 
-- Suspense
+-   Suspense
 
-- Policier
+-   Policier
 
-- Humour
+-   Humour
 
-- Tragédie
+-   Tragédie
 
-- Thriller
+-   Thriller
 
-- Horreur
+-   Horreur
 
-- Animations
+-   Animations
 
-- Séries
+-   Séries
 
-- Documentaire
+-   Documentaire
 
-- Dessins animés
+-   Dessins animés
 
-- Porno
+-   Porno
 
 Liste des sous-catégories de la catégorie livres :
 
-- Informatique
+-   Informatique
 
-- Médecine
+-   Médecine
 
-- Droit
+-   Droit
 
-- Mathématique
+-   Mathématique
 
-- Biologie
+-   Biologie
 
-- Physique
+-   Physique
 
-- Langue
+-   Langue
 
-- Histoire
+-   Histoire
 
-- Psychologie
+-   Psychologie
 
-- Psychiatrie
+-   Psychiatrie
 
-- Science cognitive
+-   Science cognitive
 
-- Architecture
+-   Architecture
 
-- Design
+-   Design
 
-- Art
+-   Art
 
-- Santé
+-   Santé
 
-- Nutritionnel
+-   Nutritionnel
 
-- Criminologie
+-   Criminologie
 
-- Science politique
+-   Science politique
 
-- Urbanisme
+-   Urbanisme
 
-- Enfants
+-   Enfants
 
-- Bd
+-   Bd
 
-- Mécanique
+-   Mécanique
 
-- Essais
+-   Essais
 
-- Littérature (langues)
+-   Littérature (langues)
 
-- Romans
+-   Romans
 
-- Génétique
+-   Génétique
 
 Liste des sous-catégories de la catégorie jeux-vidéos :
 
-- Action
+-   Action
 
-- Guerre
+-   Guerre
 
-- Enfants
+-   Enfants
 
-- Ludique
+-   Ludique
 
-- Sport
+-   Sport
 
-- Shoot'em up
+-   Shoot'em up
 
 Liste des sous-catégories de la catégorie diététique :
 
-- Plantes médicinales
+-   Plantes médicinales
 
-- Livres
+-   Livres
 
 Liste des sous-catégories de la catégorie parfum :
 
-- Parfums homme
+-   Parfums homme
 
-- Parfums femme
+-   Parfums femme
 
 Liste de sous-catégories pour la catégorie instruments de musique :
 
-- Piano
+-   Piano
 
-- Trompette
+-   Trompette
 
-- Bariton
+-   Bariton
 
-- Violoncelle
+-   Violoncelle
 
-- Batterie
+-   Batterie
 
-- Clarinette
+-   Clarinette
 
-- Accordéon
+-   Accordéon
 
-- Synthétiseur
+-   Synthétiseur
 
-- Saxophone
+-   Saxophone
 
-- Basse
+-   Basse
 
-- Clavecin
+-   Clavecin
 
-- Cornemuse
+-   Cornemuse
 
-- Flute
+-   Flute
 
-- Harpe
+-   Harpe
 
-- Contrebasse
+-   Contrebasse
 
-- Tuba
+-   Tuba
 
-- Alto
+-   Alto
 
-- Basson
+-   Basson
 
-- Cor
+-   Cor
 
-- Hautbois
+-   Hautbois
 
-- Violon
+-   Violon
 
-- Orgues
+-   Orgues
 
-- Table de mix
+-   Table de mix
 
-- Mixers
+-   Mixers
 
-- DJ cd mp3 players
+-   DJ cd mp3 players
 
-- DJ Controllers
+-   DJ Controllers
 
-- Phono cartdrigdes
+-   Phono cartdrigdes
 
-- Phono preamp
+-   Phono preamp
 
-- DJ FX’s
+-   DJ FX's
 
-- DJ Software
+-   DJ Software
 
-- Casques
+-   Casques
 
-- Flycase
+-   Flycase
 
-- Accessoires de dj
+-   Accessoires de dj
 
 Liste des sous-catégories pour la catégorie cosmétiques femme :
 
-- Démaquillants & Nettoyants
+-   Démaquillants & Nettoyants
 
-- Hydratation Multi-Climats
+-   Hydratation Multi-Climats
 
-- Eclat Mat
+-   Eclat Mat
 
-- Douceur
+-   Douceur
 
-- Eclat du Jour
+-   Eclat du Jour
 
-- Eclaircissant
+-   Eclaircissant
 
-- Aromaphytosoin
+-   Aromaphytosoin
 
-- Multi-Actif
+-   Multi-Actif
 
-- Multi-Régénérant
+-   Multi-Régénérant
 
-- Multi-Intensif
+-   Multi-Intensif
 
-- Capital Lumière
+-   Capital Lumière
 
-- Sérums
+-   Sérums
 
-- Exfoliants & Masques
+-   Exfoliants & Masques
 
-- Yeux, Lèvres et Cou
+-   Yeux, Lèvres et Cou
 
-- Essentiels
+-   Essentiels
 
-- AromaPhytoSoins "Bien-Etre"
+-   AromaPhytoSoins "Bien-Etre"
 
-- Embellir sa Peau
+-   Embellir sa Peau
 
-- Remodeler son Corps
+-   Remodeler son Corps
 
-- Grossesse
+-   Grossesse
 
-- Eaux De Soins
+-   Eaux De Soins
 
-- Minceur et fermeté
+-   Minceur et fermeté
 
-- Protecteurs
+-   Protecteurs
 
-- Après-Soleil
+-   Après-Soleil
 
-- Autobronzants
+-   Autobronzants
 
-- Neo Pastels
+-   Neo Pastels
 
-- Teint
+-   Teint
 
-- Yeux
+-   Yeux
 
-- Lèvres & Ongles
+-   Lèvres & Ongles
 
-- Accessoires
+-   Accessoires
 
-- Eclat Minute: Les Produits Malins
+-   Eclat Minute: Les Produits Malins
 
 Liste des sous-catégories pour la catégorie cosmétique homme :
 
-- Corps
+-   Corps
 
-- Nettoyage
+-   Nettoyage
 
-- Rasage
+-   Rasage
 
-- Hydratation
+-   Hydratation
 
-- Anti-Age
+-   Anti-Age
 
-- S.O.S Express
+-   S.O.S Express
 
 Liste des sous-catégories pour la catégorie collection :
 
-- Aviation / Aéronautique
+-   Aviation / Aéronautique
 
-- Train / Chemin de fer
+-   Train / Chemin de fer
 
-- Bistrot
+-   Bistrot
 
-- Briquet / Allumettes
+-   Briquet / Allumettes
 
-- Calendrier femmes
+-   Calendrier femmes
 
-- Calendrier hommes
+-   Calendrier hommes
 
-- Capsules
+-   Capsules
 
-- Bouchons
+-   Bouchons
 
-- Cartes / Guides / Plans
+-   Cartes / Guides / Plans
 
-- Cartes postales
+-   Cartes postales
 
-- Coquillage / Fossiles minéraux
+-   Coquillage / Fossiles minéraux
 
-- Costumes / Vêtements d'époque
+-   Costumes / Vêtements d'époque
 
-- Couteaux de poche
+-   Couteaux de poche
 
-- Couture / Tricot
+-   Couture / Tricot
 
-- Diddl
+-   Diddl
 
-- Ecriture / Dessins
+-   Ecriture / Dessins
 
-- Fèves
+-   Fèves
 
-- Gramographe / Phonographe
+-   Gramographe / Phonographe
 
-- Images / Statue animale
+-   Images / Statue animale
 
-- Incroyable voir étrange
+-   Incroyable voir étrange
 
-- Kindeer
+-   Kindeer
 
-- Lanterne / Lampe de poche
+-   Lanterne / Lampe de poche
 
-- Lettre / Vieux papier
+-   Lettre / Vieux papier
 
-- Militaire
+-   Militaire
 
 Liste des sous-catégories pour la catégorie jouet :
 
-- Cartes de collection
+-   Cartes de collection
 
-- Circuits
+-   Circuits
 
-- Figurines, Statues
+-   Figurines, Statues
 
-- Jeux de construction, Lego
+-   Jeux de construction, Lego
 
-- Jeux de plein air
+-   Jeux de plein air
 
-- Jouets, Jeux anciens
+-   Jouets, Jeux anciens
 
-- Jouets musicaux, Instruments
+-   Jouets musicaux, Instruments
 
-- Magie
+-   Magie
 
-- Maquettes
+-   Maquettes
 
-- Marionnettes
+-   Marionnettes
 
-- Minis Univers
+-   Minis Univers
 
-- Peluches, Doudous
+-   Peluches, Doudous
 
-- Petits soldats
+-   Petits soldats
 
-- Poker, Casino
+-   Poker, Casino
 
-- Puzzles
+-   Puzzles
 
-- Robots, Automates
+-   Robots, Automates
 
-- Star Wars
+-   Star Wars
 
-- Autres
+-   Autres
 
-- Cartes à jouer
+-   Cartes à jouer
 
-- Déguisements, Masques
+-   Déguisements, Masques
 
-- Jeux de rôle, de figurines
+-   Jeux de rôle, de figurines
 
-- Jeux de société
+-   Jeux de société
 
-- Jeux éducatifs, Casse-tête
+-   Jeux éducatifs, Casse-tête
 
-- Jeux électroniques
+-   Jeux électroniques
 
-- Maquettes trains électriques
+-   Maquettes trains électriques
 
-- Poupées
+-   Poupées
 
-- Radiocommandés, Modélisme
+-   Radiocommandés, Modélisme
 
-- Véhicules miniatures
+-   Véhicules miniatures
 
-- Jeux de café
+-   Jeux de café
 
 Liste des sous-catégories de la catégorie accessoires et outils :
 
-- Outils à main
+-   Outils à main
 
-- Outils de jardin
+-   Outils de jardin
 
-- Outils électriques
+-   Outils électriques
 
-- Electronique, Composants
+-   Electronique, Composants
 
-- Installation électrique
+-   Installation électrique
 
-- Matériaux
+-   Matériaux
 
-- Peinture, Accessoires
+-   Peinture, Accessoires
 
-- Plomberie, Sanitaires
+-   Plomberie, Sanitaires
 
-- Quincaillerie, Ferronnerie
+-   Quincaillerie, Ferronnerie
 
-- Revêtements de sols
+-   Revêtements de sols
 
-- Revêtements muraux
+-   Revêtements muraux
 
-- Toiture, Isolation
+-   Toiture, Isolation
 
-- Travaux du bâtiment
+-   Travaux du bâtiment
 
-- Vêtements de travail
+-   Vêtements de travail
 
-- Accessoires Animaux
+-   Accessoires Animaux
 
-- Bricolage
+-   Bricolage
 
-- Bricolage: Outils
+-   Bricolage: Outils
 
-- Chauffage, Climatisation
+-   Chauffage, Climatisation
 
-- Cuisine: Arts de la table, Accessoires
+-   Cuisine: Arts de la table, Accessoires
 
-- Cuisine: Casserolerie, Plats
+-   Cuisine: Casserolerie, Plats
 
-- Cuisine: Meubles de cuisine
+-   Cuisine: Meubles de cuisine
 
-- Cuisine: Ustensiles
+-   Cuisine: Ustensiles
 
-- Entretien, Nettoyage
+-   Entretien, Nettoyage
 
-- Linge de maison, Rideaux
+-   Linge de maison, Rideaux
 
-- Luminaires
+-   Luminaires
 
-- Meubles
+-   Meubles
 
-- Salle de bains: Accessoires
+-   Salle de bains: Accessoires
 
-- Salle de bains: Meubles
+-   Salle de bains: Meubles
 
-- Autres
+-   Autres
 
-- Cheminées, Accessoires
+-   Cheminées, Accessoires
 
-- Cuisine: Boîtes hermétiques
+-   Cuisine: Boîtes hermétiques
 
-- Décoration
+-   Décoration
 
-- Electroménager
+-   Electroménager
 
-- Jardin, Extérieur
+-   Jardin, Extérieur
 
-- Fêtes, Occasions spéciales
+-   Fêtes, Occasions spéciales
 
-- Sécurité, Domotique
+-   Sécurité, Domotique
 
-- Cuisine: Ustensiles café, Thé
+-   Cuisine: Ustensiles café, Thé
 
 Liste des sous-catégories de la catégorie peinture :
 
-- A l'huile
+-   A l'huile
 
-- A l'eau
+-   A l'eau
 
-- Mate
+-   Mate
 
-- Satinée
+-   Satinée
 
-- Brillante
+-   Brillante
 
-- Glycéro
+-   Glycéro
 
-- Acrylique
+-   Acrylique
 
-- Lavable
+-   Lavable
 
-- Lessivable
+-   Lessivable
 
-- Lasure
+-   Lasure
 
-- Spécifique
+-   Spécifique
 
 Liste des sous-catégories de la catégorie décoration :
 
-- Bougies, Bougeoirs
+-   Bougies, Bougeoirs
 
-- Cadres
+-   Cadres
 
-- Coussins, Galettes de sièges
+-   Coussins, Galettes de sièges
 
-- Décorations enfants
+-   Décorations enfants
 
-- Décorations murales, Stickers
+-   Décorations murales, Stickers
 
-- Horloges, Pendules
+-   Horloges, Pendules
 
-- Miroirs
+-   Miroirs
 
-- Objets ethniques
+-   Objets ethniques
 
-- Parfums d'intérieur
+-   Parfums d'intérieur
 
-- Peintures
+-   Peintures
 
-- Sculptures, Statues
+-   Sculptures, Statues
 
-- Tapis
+-   Tapis
 
-- Autres objets de décoration
+-   Autres objets de décoration
 
 Liste des sous-catégories de la catégorie jardinage :
 
-- Arrosage, Fontaines
+-   Arrosage, Fontaines
 
-- Barbecues
+-   Barbecues
 
-- Clôtures, Portails
+-   Clôtures, Portails
 
-- Décorations de jardin
+-   Décorations de jardin
 
-- Eclairage, Lampes
+-   Eclairage, Lampes
 
-- Energie renouvelable
+-   Energie renouvelable
 
-- Jeux de plein air
+-   Jeux de plein air
 
-- Meubles de jardin, Parasols
+-   Meubles de jardin, Parasols
 
-- Piscines, Accessoires
+-   Piscines, Accessoires
 
-- Plantes, Graines, Bulbes
+-   Plantes, Graines, Bulbes
 
-- Saunas, Bains hydromassants
+-   Saunas, Bains hydromassants
 
-- Serres, Accessoires
+-   Serres, Accessoires
 
-- Autres
+-   Autres
 
 Liste des sous-catégories de la catégorie lingerie femme :
 
-- Ensembles
+-   Ensembles
 
-- Soutiens gorges
+-   Soutiens gorges
 
-- Collants, Bas
+-   Collants, Bas
 
-- Maillots de Bain 2 Pièces
+-   Maillots de Bain 2 Pièces
 
-- Maillots de Bain 1 Pièce
+-   Maillots de Bain 1 Pièce
 
-- Strings
+-   Strings
 
-- Culottes
+-   Culottes
 
 Liste des sous-catégories de la catégorie lingerie homme :
 
-- Caleçons
+-   Caleçons
 
-- Slips
+-   Slips
 
 Liste des sous-catégories de la catégorie calendrier femme :
 
-- calendrier sexy
+-   calendrier sexy
 
-- calendrier bienfaisance
+-   calendrier bienfaisance
 
 Liste des sous-catégories de la catégorie calendrier homme :
 
-- calendrier sexy
+-   calendrier sexy
 
-- calendrier bienfaisance
+-   calendrier bienfaisance
 
 Liste des sous-catégories pour la catégorie bébé :
 
-- Chaussures filles
+-   Chaussures filles
 
-- Chaussures garçon
+-   Chaussures garçon
 
-- Chaussons filles
+-   Chaussons filles
 
-- Chaussons garçon
+-   Chaussons garçon
 
+```{=html}
 <!-- -->
+```
+-   Porte-bébé
 
-- Porte-bébé
+-   Poussettes, Systèmes combinés
 
-- Poussettes, Systèmes combinés
+-   Sacs à langer
 
-- Sacs à langer
+-   Sièges-auto, Vélo
 
-- Sièges-auto, Vélo
+-   Jouets de 0 à 6 mois fille et garçon
 
-- Jouets de 0 à 6 mois fille et garçon
+-   Jouets de 6 à 12 mois fille et garçon
 
-- Jouets de 6 à 12 mois fille et garçon
+-   Jouets de 12 à 18 mois fille et garçon
 
-- Jouets de 12 à 18 mois fille et garçon
+-   Jouets de 18 à 24 mois fille et garçon
 
-- Jouets de 18 à 24 mois fille et garçon
+-   Chambres complètes
 
-- Chambres complètes
+-   Décorations, Veilleuses
 
-- Décorations, Veilleuses
+-   Gigoteuses, Nids d'Anges
 
-- Gigoteuses, Nids d'Anges
+-   Literie
 
-- Literie
+-   Meubles
 
-- Meubles
+-   Meubles à langer
 
-- Meubles à langer
+-   Parcs
 
-- Parcs
+-   Transats, Balancelles
 
-- Transats, Balancelles
+-   Biberons
 
-- Biberons
+-   Bavoirs
 
-- Bavoirs
+-   Sucettes
 
-- Sucettes
+-   Stérilisateurs
 
-- Stérilisateurs
+-   Interphones
 
-- Interphones
+-   Barrières de Sécurité
 
-- Barrières de Sécurité
+-   Interphones avec Caméra
 
-- Interphones avec Caméra
+-   Détecteurs de Température
 
-- Détecteurs de Température
+-   Couches
 
-- Couches
+-   Produits de Toilette
 
-- Produits de Toilette
+-   Capes de Bain
 
-- Capes de Bain
+-   Thermomètres de Bain
 
-- Thermomètres de Bain
+-   Vêtements de bébés
 
-- Vêtements de bébés
-
-- Autres
+-   Autres
 
 Liste des sous-catégories de la catégorie électroménager :
 
-- Lave-vaisselle
+-   Lave-vaisselle
 
-- Lave-linge
+-   Lave-linge
 
-- Frigo
+-   Frigo
 
-- Aspirateur
+-   Aspirateur
 
-- Four
+-   Four
 
-- Four encastrable
+-   Four encastrable
 
-- Thermo mix
+-   Thermo mix
 
-- Machine a laver
+-   Machine a laver
 
-- Micro-onde
+-   Micro-onde
 
-- Sèche-linge
+-   Sèche-linge
 
 Liste des sous-catégories de la catégorie immobilière :
 
-- Immeuble
+-   Immeuble
 
-- Villa
+-   Villa
 
-- Loft
+-   Loft
 
-- Parking
+-   Parking
 
-- Parcelle de terrain
+-   Parcelle de terrain
 
-- Garage
+-   Garage
 
 ![A description...](docs/architecture/media/image21.png)
 
-Un article lorsqu’il s’agit d’un vêtement ou de chaussures peut avoir
+Un article lorsqu'il s'agit d'un vêtement ou de chaussures peut avoir
 une taille, une taille peut appartenir à un ou plusieurs articles.
 
 ![A description...](docs/architecture/media/image22.png)
 
 Une personne possède un type de compte, qui est définit lors de la
-création d’un compte. Les types de compte sont les suivants :
+création d'un compte. Les types de compte sont les suivants :
 
-- Acheteur
+-   Acheteur
 
-- Boutique
+-   Boutique
 
-- Garage
+-   Garage
 
-- Vendeur non professionnel
+-   Vendeur non professionnel
 
 Un type de compte peut contenir de zéro à une langue, une langue peut
 être contenue par zéro à un type de compte. Un libellé peut être contenu
@@ -1613,1155 +2145,1155 @@ par zéro à un type de compte.
 
 ![A description...](docs/architecture/media/image23.png)
 
-Un article tel qu’un jeu vidéo, peut avoir un type de jeu, un type de
+Un article tel qu'un jeu vidéo, peut avoir un type de jeu, un type de
 jeu peut appartenir à un ou plusieurs articles.
 
 Les types de jeux sont les suivants :
 
-- Adultes
+-   Adultes
 
-- Anime / Hentai
+-   Anime / Hentai
 
-- Classique
+-   Classique
 
-- Voitures
+-   Voitures
 
-- Sports
+-   Sports
 
-- Shoot’em up
+-   Shoot'em up
 
-- Habilité
+-   Habilité
 
-- Logique
+-   Logique
 
-- Combat
+-   Combat
 
-- Stratégie
+-   Stratégie
 
 ![A description...](docs/architecture/media/image24.png)
 
-Un article s’il est un vin peut avoir un type de vin, un type de vin
+Un article s'il est un vin peut avoir un type de vin, un type de vin
 peut appartenir à un ou plusieurs articles.
 
 Les types de vins sont les suivants :
 
-- Vin rouge
+-   Vin rouge
 
-- Vin blanc
+-   Vin blanc
 
-- Vin rosé
+-   Vin rosé
 
-- Champagne
+-   Champagne
 
 ![A description...](docs/architecture/media/image25.png)
 
-Un article s’il est de type vin peut avoir un cépage, la liste des
+Un article s'il est de type vin peut avoir un cépage, la liste des
 cépages sont les suivants :
 
-- Fendant
+-   Fendant
 
-- Malvoisie (Pinot Gris)
+-   Malvoisie (Pinot Gris)
 
-- Ermitage (Marsanne Blanche)
+-   Ermitage (Marsanne Blanche)
 
-- Amigne
+-   Amigne
 
-- Petite Arvine
+-   Petite Arvine
 
-- Sylvaner
+-   Sylvaner
 
-- Pinot Noir
+-   Pinot Noir
 
-- Gamay
+-   Gamay
 
-- Syrah
+-   Syrah
 
-- Humagne rouge
+-   Humagne rouge
 
-- Cornalin
+-   Cornalin
 
-- Chasselas
+-   Chasselas
 
-- Pinot blanc');
+-   Pinot blanc');
 
-- Chardonnay
+-   Chardonnay
 
-- Pinot gris
+-   Pinot gris
 
-- Riesling x Sylvaner
+-   Riesling x Sylvaner
 
-- Gamay
+-   Gamay
 
-- Pinot noir
+-   Pinot noir
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Merlot
+-   Merlot
 
-- Syrah
+-   Syrah
 
-- Müller-Thurgau (Riesling x Syl
+-   Müller-Thurgau (Riesling x Syl
 
-- Pinot gris (Grauburgunder
+-   Pinot gris (Grauburgunder
 
-- Pinot blanc (Weissburgunder
+-   Pinot blanc (Weissburgunder
 
-- Gewürztramine
+-   Gewürztramine
 
-- Räuschling
+-   Räuschling
 
-- Chardonnay
+-   Chardonnay
 
-- Pinot noir (Blauburgunder)
+-   Pinot noir (Blauburgunder)
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Regent
+-   Regent
 
-- Chasselas
+-   Chasselas
 
-- Pinot blanc
+-   Pinot blanc
 
-- Aligoté
+-   Aligoté
 
-- Chardonnay
+-   Chardonnay
 
-- Pinot gris
+-   Pinot gris
 
-- Müller-Thurgau
+-   Müller-Thurgau
 
-- Sauvignon blanc
+-   Sauvignon blanc
 
-- Gewürztraminer
+-   Gewürztraminer
 
-- Pinot noir
+-   Pinot noir
 
-- Gamay
+-   Gamay
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Merlot
+-   Merlot
 
-- Syrah
+-   Syrah
 
-- Merlot
+-   Merlot
 
-- Chardonnay
+-   Chardonnay
 
-- Chasselas
+-   Chasselas
 
-- Sauvignon
+-   Sauvignon
 
-- Sémillon
+-   Sémillon
 
-- Merlot
+-   Merlot
 
-- Cabernet Sauvignon
+-   Cabernet Sauvignon
 
-- Gamaret
+-   Gamaret
 
-- Chasselas
+-   Chasselas
 
-- Sauvignon blanc
+-   Sauvignon blanc
 
-- Chardonnay
+-   Chardonnay
 
-- Pinot gris
+-   Pinot gris
 
-- Riesling x Sylvaner
+-   Riesling x Sylvaner
 
-- Gewürztraminer
+-   Gewürztraminer
 
-- Riesling x Sylvaner (Müller-Thurgau)
+-   Riesling x Sylvaner (Müller-Thurgau)
 
-- Pinot noir
+-   Pinot noir
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Chasselas
+-   Chasselas
 
-- Sauvignon blanc
+-   Sauvignon blanc
 
-- Chardonnay
+-   Chardonnay
 
-- Pinot gris
+-   Pinot gris
 
-- Riesling
+-   Riesling
 
-- Gewürztraminer
+-   Gewürztraminer
 
-- Riesling x Sylvaner (Müller-Thurgau)
+-   Riesling x Sylvaner (Müller-Thurgau)
 
-- Pinot noir
+-   Pinot noir
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Chasselas
+-   Chasselas
 
-- Pinot gris
+-   Pinot gris
 
-- Traminer
+-   Traminer
 
-- Pinot noir
+-   Pinot noir
 
-- Gamaret
+-   Gamaret
 
-- Garanoir
+-   Garanoir
 
-- Alsace Chasselas (Gutedel)
+-   Alsace Chasselas (Gutedel)
 
-- Alsace Edelzwicker
+-   Alsace Edelzwicker
 
-- Alsace Grand Cru
+-   Alsace Grand Cru
 
-- Alsace Grand Cru Altenberg de Bergbieten
+-   Alsace Grand Cru Altenberg de Bergbieten
 
-- Alsace Grand Cru Altenberg de Bergheim
+-   Alsace Grand Cru Altenberg de Bergheim
 
-- Alsace Grand Cru Altenberg de Wolxheim
+-   Alsace Grand Cru Altenberg de Wolxheim
 
-- Alsace Grand Cru Brand
+-   Alsace Grand Cru Brand
 
-- Alsace Grand Cru Bruderthal
+-   Alsace Grand Cru Bruderthal
 
-- Alsace Grand Cru Eichberg
+-   Alsace Grand Cru Eichberg
 
-- Alsace Grand Cru Engelberg
+-   Alsace Grand Cru Engelberg
 
-- Alsace Grand Cru Florimont
+-   Alsace Grand Cru Florimont
 
-- Alsace Grand Cru Franckstein
+-   Alsace Grand Cru Franckstein
 
-- Alsace Grand Cru Froehn
+-   Alsace Grand Cru Froehn
 
-- Alsace Grand Cru Furstentum
+-   Alsace Grand Cru Furstentum
 
-- Alsace Grand Cru Geisberg
+-   Alsace Grand Cru Geisberg
 
-- Alsace Grand Cru Gloeckelberg
+-   Alsace Grand Cru Gloeckelberg
 
-- Alsace Grand Cru Goldert
+-   Alsace Grand Cru Goldert
 
-- Alsace Grand Cru Hatschbourg
+-   Alsace Grand Cru Hatschbourg
 
-- Alsace Grand Cru Hengst
+-   Alsace Grand Cru Hengst
 
-- Alsace Grand Cru Kanzlerberg
+-   Alsace Grand Cru Kanzlerberg
 
-- Alsace Grand Cru Kastelb
+-   Alsace Grand Cru Kastelb
 
-- Alsace Grand Cru Kessler
+-   Alsace Grand Cru Kessler
 
-- Alsace Grand Cru Kirchberg de Barr
+-   Alsace Grand Cru Kirchberg de Barr
 
-- Alsace Grand Cru Kirchberg de Ribeauvill
+-   Alsace Grand Cru Kirchberg de Ribeauvill
 
-- Alsace Grand Cru Kitterlé'
+-   Alsace Grand Cru Kitterlé'
 
-- Alsace Grand Cru Mambourg
+-   Alsace Grand Cru Mambourg
 
-- Alsace Grand Cru Mandelberg
+-   Alsace Grand Cru Mandelberg
 
-- Alsace Grand Cru Marckrain
+-   Alsace Grand Cru Marckrain
 
-- Alsace Grand Cru Moenchberg
+-   Alsace Grand Cru Moenchberg
 
-- Alsace Grand Cru Muenchberg
+-   Alsace Grand Cru Muenchberg
 
-- Alsace Grand Cru Ollwiller
+-   Alsace Grand Cru Ollwiller
 
-- Alsace Grand Cru Osterberg
+-   Alsace Grand Cru Osterberg
 
-- Alsace Grand Cru Pfersigberg
+-   Alsace Grand Cru Pfersigberg
 
-- Alsace Grand Cru Pfingstberg
+-   Alsace Grand Cru Pfingstberg
 
-- Alsace Grand Cru Praelatenberg
+-   Alsace Grand Cru Praelatenberg
 
-- Alsace Grand Cru Rangen
+-   Alsace Grand Cru Rangen
 
-- Alsace Grand Cru Rosacker
+-   Alsace Grand Cru Rosacker
 
-- Alsace Grand Cru Saering
+-   Alsace Grand Cru Saering
 
-- Alsace Grand Cru Schoenenbourg
+-   Alsace Grand Cru Schoenenbourg
 
-- Alsace Grand Cru Scholssberg
+-   Alsace Grand Cru Scholssberg
 
-- Alsace Grand Cru Sommerberg
+-   Alsace Grand Cru Sommerberg
 
-- Alsace Grand Cru Sonnenglanz
+-   Alsace Grand Cru Sonnenglanz
 
-- Alsace Grand Cru Spiegel
+-   Alsace Grand Cru Spiegel
 
-- Alsace Grand Cru Sporen
+-   Alsace Grand Cru Sporen
 
-- Alsace Grand Cru Steinert
+-   Alsace Grand Cru Steinert
 
-- Alsace Grand Cru Steingrubler
+-   Alsace Grand Cru Steingrubler
 
-- Alsace Grand Cru Steinklotz
+-   Alsace Grand Cru Steinklotz
 
-- Alsace Grand Cru Vorbourg
+-   Alsace Grand Cru Vorbourg
 
-- Alsace Grand Cru Wiebelberg
+-   Alsace Grand Cru Wiebelberg
 
-- Alsace Grand Cru Wineck-Schlossberg
+-   Alsace Grand Cru Wineck-Schlossberg
 
-- Alsace Grand Cru Winzenberg
+-   Alsace Grand Cru Winzenberg
 
-- Alsace Grand Cru Zinnkoepflé
+-   Alsace Grand Cru Zinnkoepflé
 
-- Alsace Grand Cru Zotzenberg
+-   Alsace Grand Cru Zotzenberg
 
-- Alsace Muscat
+-   Alsace Muscat
 
-- Alsace Pinot (Klevner)
+-   Alsace Pinot (Klevner)
 
-- Alsace Pinot Noir
+-   Alsace Pinot Noir
 
-- Alsace Riesling
+-   Alsace Riesling
 
-- Alsace Sylvaner
+-   Alsace Sylvaner
 
-- Alsace Tokay-Pinot Gris
+-   Alsace Tokay-Pinot Gris
 
-- Crémant d'Alsace
+-   Crémant d'Alsace
 
-- Brouilly
+-   Brouilly
 
-- Chénas
+-   Chénas
 
-- Chiroubles
+-   Chiroubles
 
-- Côte de Brouilly
+-   Côte de Brouilly
 
-- Fleurie
+-   Fleurie
 
-- Juliénas
+-   Juliénas
 
-- Morgon
+-   Morgon
 
-- Moulin-à-Vent
+-   Moulin-à-Vent
 
-- Régnié
+-   Régnié
 
-- Saint-Amour
+-   Saint-Amour
 
-- Bordeaux Haut-Benauge
+-   Bordeaux Haut-Benauge
 
-- Côtes de Bordeaux St-Macaire
+-   Côtes de Bordeaux St-Macaire
 
-- Entre-Deux-Mers
+-   Entre-Deux-Mers
 
-- Entre-Deux-Mers Haut-Benauge
+-   Entre-Deux-Mers Haut-Benauge
 
-- Graves de Vayres
+-   Graves de Vayres
 
-- Loupiac
+-   Loupiac
 
-- Premières Côtes de Bordeaux
+-   Premières Côtes de Bordeaux
 
-- Ste-Croix du Mont
+-   Ste-Croix du Mont
 
-- Ste-Foy Bordeaux
+-   Ste-Foy Bordeaux
 
-- Barsac
+-   Barsac
 
-- Cadillac
+-   Cadillac
 
-- Cérons
+-   Cérons
 
-- Graves
+-   Graves
 
-- Graves Supérieures
+-   Graves Supérieures
 
-- Pessac-Léongnan
+-   Pessac-Léongnan
 
-- Sauternes
+-   Sauternes
 
-- Blayais
+-   Blayais
 
-- Bordeaux Côtes de francs
+-   Bordeaux Côtes de francs
 
-- Canon Fronsac
+-   Canon Fronsac
 
-- Côtes de Blaye
+-   Côtes de Blaye
 
-- Côtes de Bourg
+-   Côtes de Bourg
 
-- Côtes de Castillon
+-   Côtes de Castillon
 
-- Fronsac
+-   Fronsac
 
-- Lalande de Pomerol
+-   Lalande de Pomerol
 
-- Lussac St-Emilion
+-   Lussac St-Emilion
 
-- Montagne St-Emilion
+-   Montagne St-Emilion
 
-- Néac
+-   Néac
 
-- Pomerol
+-   Pomerol
 
-- Premières Côtes de Blaye
+-   Premières Côtes de Blaye
 
-- Puisseguin St-Emilion
+-   Puisseguin St-Emilion
 
-- St-Emilion
+-   St-Emilion
 
-- St-Emilion Grand Cru
+-   St-Emilion Grand Cru
 
-- St-Georges St-Emilion
+-   St-Georges St-Emilion
 
-- Haut-Médoc
+-   Haut-Médoc
 
-- Listrac-Médoc
+-   Listrac-Médoc
 
-- Margaux
+-   Margaux
 
-- Médoc
+-   Médoc
 
-- Moulis-en-Médoc
+-   Moulis-en-Médoc
 
-- Pauillac
+-   Pauillac
 
-- St-Estèphe
+-   St-Estèphe
 
-- St-Julien
+-   St-Julien
 
-- Bourgogne Côtes d'Auxerre')
+-   Bourgogne Côtes d'Auxerre')
 
-- Bourgogne-Irancy
+-   Bourgogne-Irancy
 
-- Chablis
+-   Chablis
 
-- Chablis Grand Cru
+-   Chablis Grand Cru
 
-- Chablis Premier Cru
+-   Chablis Premier Cru
 
-- Petit Chablis
+-   Petit Chablis
 
-- Sauvignon de St-Bris
+-   Sauvignon de St-Bris
 
-- Bourgogne Côte Chalonnaise
+-   Bourgogne Côte Chalonnaise
 
-- Bouzeron
+-   Bouzeron
 
-- Givry
+-   Givry
 
-- Givry Premier Cru
+-   Givry Premier Cru
 
-- Mercurey
+-   Mercurey
 
-- Mercurey Premier Cru
+-   Mercurey Premier Cru
 
-- Montagny
+-   Montagny
 
-- Montagny Premier Cru
+-   Montagny Premier Cru
 
-- Rully
+-   Rully
 
-- Rully Premier Cru
+-   Rully Premier Cru
 
-- Aloxe-Corton
+-   Aloxe-Corton
 
-- Aloxe-Corton Premier Cru
+-   Aloxe-Corton Premier Cru
 
-- Auxey-Duresses
+-   Auxey-Duresses
 
-- Auxey-Duresses Premier Cru
+-   Auxey-Duresses Premier Cru
 
-- Batard-Montrachet
+-   Batard-Montrachet
 
-- Beaune
+-   Beaune
 
-- Beaune Premier Cru
+-   Beaune Premier Cru
 
-- Bienvenues Bâtard-Montrachet
+-   Bienvenues Bâtard-Montrachet
 
-- Blagny
+-   Blagny
 
-- Blagny Premier Cru
+-   Blagny Premier Cru
 
-- Bourgogne Hautes-Côtes de Beaune
+-   Bourgogne Hautes-Côtes de Beaune
 
-- Charlemagne
+-   Charlemagne
 
-- Chassagne-Montrachet
+-   Chassagne-Montrachet
 
-- Chassagne-Montrachet Premier Cru
+-   Chassagne-Montrachet Premier Cru
 
-- Chevalier-Montrachet
+-   Chevalier-Montrachet
 
-- Chorey-lès-Beaune
+-   Chorey-lès-Beaune
 
-- Corton
+-   Corton
 
-- Corton-Charlemagne
+-   Corton-Charlemagne
 
-- Côtes de Beaune
+-   Côtes de Beaune
 
-- Criots Bâtard-Montrachet
+-   Criots Bâtard-Montrachet
 
-- Ladoix
+-   Ladoix
 
-- Ladoix Premier Cru
+-   Ladoix Premier Cru
 
-- Ladoix-Serrigny
+-   Ladoix-Serrigny
 
-- Maranges
+-   Maranges
 
-- Maranges Premier Cru
+-   Maranges Premier Cru
 
-- Meursault
+-   Meursault
 
-- Meursault Premier Cru
+-   Meursault Premier Cru
 
-- Monthélie
+-   Monthélie
 
-- Monthélie Premier Cru
+-   Monthélie Premier Cru
 
-- Montrachet
+-   Montrachet
 
-- Pernand-Vergelesses
+-   Pernand-Vergelesses
 
-- Pernand-Vergelesses Premier Cru
+-   Pernand-Vergelesses Premier Cru
 
-- Pommard
+-   Pommard
 
-- Pommard Premier Cru
+-   Pommard Premier Cru
 
-- Puligny-Montrachet
+-   Puligny-Montrachet
 
-- Puligny-Montrachet Premier Cru
+-   Puligny-Montrachet Premier Cru
 
-- Saint-Aubin
+-   Saint-Aubin
 
-- Saint-Romain
+-   Saint-Romain
 
-- Santenay
+-   Santenay
 
-- Santenay Premier Cru
+-   Santenay Premier Cru
 
-- Savigny-lès-Beaune
+-   Savigny-lès-Beaune
 
-- Savigny-lès-Beaune Premier Cru
+-   Savigny-lès-Beaune Premier Cru
 
-- St Aubin Premier Cru
+-   St Aubin Premier Cru
 
-- Volnay
+-   Volnay
 
-- Volnay Premier Cru
+-   Volnay Premier Cru
 
-- Volnay Santenots
+-   Volnay Santenots
 
-- Bonnes Mares
+-   Bonnes Mares
 
-- Bourgogne Hautes-Côtes de Nuits
+-   Bourgogne Hautes-Côtes de Nuits
 
-- Chambertin
+-   Chambertin
 
-- Chambertin-Clos de Bèze
+-   Chambertin-Clos de Bèze
 
-- Chambolle-Musigny
+-   Chambolle-Musigny
 
-- Chambolle-Musigny Premier Cru
+-   Chambolle-Musigny Premier Cru
 
-- Chapelle-Chambertin
+-   Chapelle-Chambertin
 
-- Charmes-Chambertin
+-   Charmes-Chambertin
 
-- Clos de la Roche
+-   Clos de la Roche
 
-- Clos des Lambrays
+-   Clos des Lambrays
 
-- Clos de Tart
+-   Clos de Tart
 
-- Clos de Vougeot
+-   Clos de Vougeot
 
-- Clos Saint-Denis
+-   Clos Saint-Denis
 
-- Echezeaux
+-   Echezeaux
 
-- Fixin
+-   Fixin
 
-- Fixin Premier Cru
+-   Fixin Premier Cru
 
-- Gevrey-Chambertin
+-   Gevrey-Chambertin
 
-- Gevrey-Chambertin Premier Cru
+-   Gevrey-Chambertin Premier Cru
 
-- Grands-Echezeaux
+-   Grands-Echezeaux
 
-- Griotte-Chambertin
+-   Griotte-Chambertin
 
-- La Grande Rue
+-   La Grande Rue
 
-- La Romanée
+-   La Romanée
 
-- La Tâche
+-   La Tâche
 
-- Latricières-Chambertin
+-   Latricières-Chambertin
 
-- Marsannay
+-   Marsannay
 
-- Marsannay Rosé
+-   Marsannay Rosé
 
-- Mazis-Chambertin
+-   Mazis-Chambertin
 
-- Mazoyères-Chambertin
+-   Mazoyères-Chambertin
 
-- Morey-St-Denis
+-   Morey-St-Denis
 
-- Morey-St-Denis Premier Cru
+-   Morey-St-Denis Premier Cru
 
-- Musigny
+-   Musigny
 
-- Nuits Premier Cru ou Nuits-St-Georges
+-   Nuits Premier Cru ou Nuits-St-Georges
 
-- Nuits-Saint-Georges
+-   Nuits-Saint-Georges
 
-- Richebourg
+-   Richebourg
 
-- Romanée-Conti
+-   Romanée-Conti
 
-- Romanée-Saint-Vivant
+-   Romanée-Saint-Vivant
 
-- Ruchottes-Chambertin
+-   Ruchottes-Chambertin
 
-- Vosne-Romané
+-   Vosne-Romané
 
-- Vosne-Romanée Premier Cru
+-   Vosne-Romanée Premier Cru
 
-- Vougeot
+-   Vougeot
 
-- Vougeot Premier Cru
+-   Vougeot Premier Cru
 
-- Bourgogne Côtes du Couchois
+-   Bourgogne Côtes du Couchois
 
-- Mâcon
+-   Mâcon
 
-- Mâcon-Supérieur
+-   Mâcon-Supérieur
 
-- Mâcon-Villages
+-   Mâcon-Villages
 
-- Pouilly-Fuissé
+-   Pouilly-Fuissé
 
-- Puilly-Loché
+-   Puilly-Loché
 
-- Pouilly-Vinzelles
+-   Pouilly-Vinzelles
 
-- Saint-Véran
+-   Saint-Véran
 
-- Roussette de Bugey
+-   Roussette de Bugey
 
-- Roussette de Bugey Anglefort
+-   Roussette de Bugey Anglefort
 
-- Roussette de Bugey Arbignieu
+-   Roussette de Bugey Arbignieu
 
-- Roussette de Bugey Montagnieu
+-   Roussette de Bugey Montagnieu
 
-- Roussette de Bugey Virieu-le-Grand
+-   Roussette de Bugey Virieu-le-Grand
 
-- Roussettte de Bugey Lagnieu
+-   Roussettte de Bugey Lagnieu
 
-- Vin du Buget Montagnieu
+-   Vin du Buget Montagnieu
 
-- Vin du Bugey
+-   Vin du Bugey
 
-- Vin du Bugey Cerdon
+-   Vin du Bugey Cerdon
 
-- Vin du Bugey Cerdon Mousseux
+-   Vin du Bugey Cerdon Mousseux
 
-- Vin du Bugey Cerdon Pétillant
+-   Vin du Bugey Cerdon Pétillant
 
-- Vin du Bugey Machuraz
+-   Vin du Bugey Machuraz
 
-- Vin du Bugey Manicle
+-   Vin du Bugey Manicle
 
-- Vin du Bugey Montagnieu
+-   Vin du Bugey Montagnieu
 
-- Vin du Bugey Mousseux
+-   Vin du Bugey Mousseux
 
-- Vin du Bugey Pétillant
+-   Vin du Bugey Pétillant
 
-- Vin du Bugey Virieu-le-Grand
+-   Vin du Bugey Virieu-le-Grand
 
-- Champagne
+-   Champagne
 
-- Coteaux Champenois
+-   Coteaux Champenois
 
-- Coteaux Champenois
+-   Coteaux Champenois
 
-- Rosé des Riceys
+-   Rosé des Riceys
 
-- Ajaccio
+-   Ajaccio
 
-- Muscat du Cap Corse
+-   Muscat du Cap Corse
 
-- Patrimonio
+-   Patrimonio
 
-- Vin de Corse
+-   Vin de Corse
 
-- Vin de Corse Calvi
+-   Vin de Corse Calvi
 
-- Vin de Corse Coteaux du Cap Corse
+-   Vin de Corse Coteaux du Cap Corse
 
-- Vin de Corse Figari
+-   Vin de Corse Figari
 
-- Vin de Corse Porto-Vecchio
+-   Vin de Corse Porto-Vecchio
 
-- Vin de Corse Sartène
+-   Vin de Corse Sartène
 
-- Côtes de Toul
+-   Côtes de Toul
 
-- Vin de Moselle
+-   Vin de Moselle
 
-- Arbois
+-   Arbois
 
-- Arbois Mousseux
+-   Arbois Mousseux
 
-- Arbois Pupillin
+-   Arbois Pupillin
 
-- Château-Chalon
+-   Château-Chalon
 
-- Côtes du Jura
+-   Côtes du Jura
 
-- Côtes du Jura Mousseux
+-   Côtes du Jura Mousseux
 
-- Crémant du Jura
+-   Crémant du Jura
 
-- L'Etoile
+-   L'Etoile
 
-- L'Etoile Mousseux
+-   L'Etoile Mousseux
 
-- Blanquette de Limoux
+-   Blanquette de Limoux
 
-- Blanquette méthode ancéstrale
+-   Blanquette méthode ancéstrale
 
-- Clairette du Languedoc
+-   Clairette du Languedoc
 
-- Corbières
+-   Corbières
 
-- Coteaux de la Méjanelle ( La Méjanelle)
+-   Coteaux de la Méjanelle ( La Méjanelle)
 
-- Coteaux de Languedoc St-Saturnin
+-   Coteaux de Languedoc St-Saturnin
 
-- Coteaux de St-Cristol
+-   Coteaux de St-Cristol
 
-- Coteaux de Vérargues
+-   Coteaux de Vérargues
 
-- Coteaux du Languedoc
+-   Coteaux du Languedoc
 
-- Coteaux du Languedoc Cabrières
+-   Coteaux du Languedoc Cabrières
 
-- Coteaux du Languedoc La Clape
+-   Coteaux du Languedoc La Clape
 
-- Coteaux du Languedoc Montpeyroux
+-   Coteaux du Languedoc Montpeyroux
 
-- Coteaux du Languedoc Picpoul-de-Pinet
+-   Coteaux du Languedoc Picpoul-de-Pinet
 
-- Coteaux du Languedoc Pic-St-Loup
+-   Coteaux du Languedoc Pic-St-Loup
 
-- Coteaux du Languedoc Quatourze
+-   Coteaux du Languedoc Quatourze
 
-- Coteaux du Languedoc St-Drézéry
+-   Coteaux du Languedoc St-Drézéry
 
-- Coteaux du Languedoc St-Georges-d'Orques
+-   Coteaux du Languedoc St-Georges-d'Orques
 
-- Côtes de la Malapère
+-   Côtes de la Malapère
 
-- Côtes de Millau
+-   Côtes de Millau
 
-- Côtes du Cabardès et de l'Orbiel
+-   Côtes du Cabardès et de l'Orbiel
 
-- Crémant de Limoux
+-   Crémant de Limoux
 
-- Faugères
+-   Faugères
 
-- Fitou
+-   Fitou
 
-- Limoux
+-   Limoux
 
-- Minervois
+-   Minervois
 
-- St-Chinian
+-   St-Chinian
 
-- Anjou
+-   Anjou
 
-- Anjou Rive Droite
+-   Anjou Rive Droite
 
-- Anjou Rive Gauche
+-   Anjou Rive Gauche
 
-- Auvergne
+-   Auvergne
 
-- Centre
+-   Centre
 
-- Pays Nantais
+-   Pays Nantais
 
-- Poitou
+-   Poitou
 
-- Saumurois
+-   Saumurois
 
-- Touraine
+-   Touraine
 
-- Vendée
+-   Vendée
 
-- Coteaux du Lyonnais
+-   Coteaux du Lyonnais
 
-- Bandol
+-   Bandol
 
-- Baux de Provence
+-   Baux de Provence
 
-- Bellet
+-   Bellet
 
-- Cassis
+-   Cassis
 
-- Coteaux d'Aix-en-Provence
+-   Coteaux d'Aix-en-Provence
 
-- Coteaux du Pierrevert
+-   Coteaux du Pierrevert
 
-- Coteaux Varois
+-   Coteaux Varois
 
-- Côtes de Provence
+-   Côtes de Provence
 
-- Palette
+-   Palette
 
-- Châteaumeillant
+-   Châteaumeillant
 
-- Châtillon-en-Diois
+-   Châtillon-en-Diois
 
-- Clairette de Die
+-   Clairette de Die
 
-- Coteaux de Die
+-   Coteaux de Die
 
-- Crémant de Die
+-   Crémant de Die
 
-- Châteauneuf-du-Pape
+-   Châteauneuf-du-Pape
 
-- Clairette de Bellegarde
+-   Clairette de Bellegarde
 
-- Costières de Nîmes
+-   Costières de Nîmes
 
-- Coteaux du Tricastin
+-   Coteaux du Tricastin
 
-- Côtes du Lubéron
+-   Côtes du Lubéron
 
-- Côtes du Rhône Beaumes-de-Venise
+-   Côtes du Rhône Beaumes-de-Venise
 
-- Côtes du Rhône Cairanne
+-   Côtes du Rhône Cairanne
 
-- Côtes du Rhône Chusclan
+-   Côtes du Rhône Chusclan
 
-- Côtes du Rhône Laudun
+-   Côtes du Rhône Laudun
 
-- Côtes du Rhône Roaix
+-   Côtes du Rhône Roaix
 
-- Côtes du Rhône Rochegude
+-   Côtes du Rhône Rochegude
 
-- Côtes du Rhône Sablet
+-   Côtes du Rhône Sablet
 
-- Côtes du Rhône Séguret
+-   Côtes du Rhône Séguret
 
-- Côtes du Rhônes Rousset-Les-Vignes
+-   Côtes du Rhônes Rousset-Les-Vignes
 
-- Côtes du Rhône St-Gervais
+-   Côtes du Rhône St-Gervais
 
-- Côtes du Rhône St-Maurice-sur-Eygues
+-   Côtes du Rhône St-Maurice-sur-Eygues
 
-- Côtes du Rhône St-Pantaléon-les-Vignes
+-   Côtes du Rhône St-Pantaléon-les-Vignes
 
-- Côtes du Rhône Valréas
+-   Côtes du Rhône Valréas
 
-- Côtes du Rhône-Villages
+-   Côtes du Rhône-Villages
 
-- Côtes du Rhône Vinsobres
+-   Côtes du Rhône Vinsobres
 
-- Côtes du Rhône Visan
+-   Côtes du Rhône Visan
 
-- Côtes du Ventoux
+-   Côtes du Ventoux
 
-- Côtes du Vivarais
+-   Côtes du Vivarais
 
-- Côtes du Vivarais Orgnac l'Avent
+-   Côtes du Vivarais Orgnac l'Avent
 
-- Côtes du Vivarais St-Montant
+-   Côtes du Vivarais St-Montant
 
-- Côtes du Vivarais St-Remèze
+-   Côtes du Vivarais St-Remèze
 
-- Gigondas
+-   Gigondas
 
-- Lirac
+-   Lirac
 
-- Muscat de Beaumes-de-Venise
+-   Muscat de Beaumes-de-Venise
 
-- Rasteau
+-   Rasteau
 
-- Tavel
+-   Tavel
 
-- Vacqueyras
+-   Vacqueyras
 
-- Château Grillet
+-   Château Grillet
 
-- Condrieu
+-   Condrieu
 
-- Cornas
+-   Cornas
 
-- Côte Rôtie
+-   Côte Rôtie
 
-- St-joseph
+-   St-joseph
 
-- St-Péray
+-   St-Péray
 
-- St-Péray Mousseux
+-   St-Péray Mousseux
 
-- Crozes-Hermitage
+-   Crozes-Hermitage
 
-- Hermitage
+-   Hermitage
 
-- Côte du Rhône
+-   Côte du Rhône
 
-- Banyuls
+-   Banyuls
 
-- Collioure
+-   Collioure
 
-- Côtes du Roussillon
+-   Côtes du Roussillon
 
-- Côtes du Roussillon-villages
+-   Côtes du Roussillon-villages
 
-- Côtes du Roussillon-villages Caramany
+-   Côtes du Roussillon-villages Caramany
 
-- Côtes du Roussillon-Villages Latour-de-France
+-   Côtes du Roussillon-Villages Latour-de-France
 
-- Maury
+-   Maury
 
-- Muscat de Rivesaltes
+-   Muscat de Rivesaltes
 
-- Rivesaltes
+-   Rivesaltes
 
-- Crépy
+-   Crépy
 
-- Mousseux de Savoie
+-   Mousseux de Savoie
 
-- Pétillant de Savoie
+-   Pétillant de Savoie
 
-- Roussette de Savoie
+-   Roussette de Savoie
 
-- Roussette de Savoie Frangy
+-   Roussette de Savoie Frangy
 
-- Roussette de Savoie Marestel
+-   Roussette de Savoie Marestel
 
-- Roussette de Savoie Marestel-Altesse
+-   Roussette de Savoie Marestel-Altesse
 
-- Roussette de Savoie Monterminod
+-   Roussette de Savoie Monterminod
 
-- Roussette de Savoie Monthoux
+-   Roussette de Savoie Monthoux
 
-- Seyssel
+-   Seyssel
 
-- Seyssel Mousseux
+-   Seyssel Mousseux
 
-- Vin de Savoie
+-   Vin de Savoie
 
-- Vin de Savoie Abymes
+-   Vin de Savoie Abymes
 
-- Vin de Savoie Apremont
+-   Vin de Savoie Apremont
 
-- Vin de Savoie Arbin
+-   Vin de Savoie Arbin
 
-- Vin de Savoie Ayze
+-   Vin de Savoie Ayze
 
-- Vin de Savoie Ayze Charpignat
+-   Vin de Savoie Ayze Charpignat
 
-- Vin de Savoie Ayze Mousseux
+-   Vin de Savoie Ayze Mousseux
 
-- Vin de Savoie Ayze Pétillant
+-   Vin de Savoie Ayze Pétillant
 
-- Vin de Savoie Bergeron
+-   Vin de Savoie Bergeron
 
-- Vin de Savoie Chautagne
+-   Vin de Savoie Chautagne
 
-- Vin de Savoie Chignin
+-   Vin de Savoie Chignin
 
-- Vin de Savoie Chignin-Bergeron
+-   Vin de Savoie Chignin-Bergeron
 
-- Vin de Savoie Cruet
+-   Vin de Savoie Cruet
 
-- Vin de Savoie Jongieux
+-   Vin de Savoie Jongieux
 
-- Vin de Savoie Marignan
+-   Vin de Savoie Marignan
 
-- Vin de Savoie Marin
+-   Vin de Savoie Marin
 
-- Vin de Savoie Montmélian
+-   Vin de Savoie Montmélian
 
-- Vin de Savoie Ripaille
+-   Vin de Savoie Ripaille
 
-- Vin de Savoie Ste-Marie-d'Alloix
+-   Vin de Savoie Ste-Marie-d'Alloix
 
-- Vin de Savoie St-Jean-de-la-Porte
+-   Vin de Savoie St-Jean-de-la-Porte
 
-- Vin de Savoie St-Jeoire Prieuré
+-   Vin de Savoie St-Jeoire Prieuré
 
-- Marcillac
+-   Marcillac
 
-- Vin d'Entraygues et de Fel
+-   Vin d'Entraygues et de Fel
 
-- Vin d'Estaing
+-   Vin d'Estaing
 
-- Bergerac
+-   Bergerac
 
-- Bergerac Sec
+-   Bergerac Sec
 
-- Côtes de Bergerac
+-   Côtes de Bergerac
 
-- Côtes de Bergerac Moelleux
+-   Côtes de Bergerac Moelleux
 
-- Côtes de Montravel
+-   Côtes de Montravel
 
-- Haut-Montravel
+-   Haut-Montravel
 
-- Monbazillac
+-   Monbazillac
 
-- Montravel
+-   Montravel
 
-- Pécharmant
+-   Pécharmant
 
-- Rosette
+-   Rosette
 
-- Saussignac
+-   Saussignac
 
-- Béarn
+-   Béarn
 
-- Côtes de St-Mont
+-   Côtes de St-Mont
 
-- Côtes du Brulhois
+-   Côtes du Brulhois
 
-- Madiran
+-   Madiran
 
-- Pacherenc du Vic-Bilh
+-   Pacherenc du Vic-Bilh
 
-- Tursan
+-   Tursan
 
-- Bergerac
+-   Bergerac
 
-- Bergerac Sec
+-   Bergerac Sec
 
-- Côtes de Bergerac
+-   Côtes de Bergerac
 
-- Côtes de Bergerac Moelleux
+-   Côtes de Bergerac Moelleux
 
-- Côtes de Montravel
+-   Côtes de Montravel
 
-- Haut-Montravel
+-   Haut-Montravel
 
-- Monbazillac
+-   Monbazillac
 
-- Montravel
+-   Montravel
 
-- Pécharmant
+-   Pécharmant
 
-- Rosette
+-   Rosette
 
-- Saussignac
+-   Saussignac
 
-- Côtes du Frontonnais
+-   Côtes du Frontonnais
 
-- Côtes du Frontonnais-Fronton
+-   Côtes du Frontonnais-Fronton
 
-- Côtes du Frontonnais-Villaudric
+-   Côtes du Frontonnais-Villaudric
 
-- Béarn
+-   Béarn
 
-- Madiran
+-   Madiran
 
-- Pacherenc du Vic-Bilh
+-   Pacherenc du Vic-Bilh
 
-- Côtes de St-Mont
+-   Côtes de St-Mont
 
-- Tursan
+-   Tursan
 
-- Cahors
+-   Cahors
 
-- Côtes de Buzet (Garonne)
+-   Côtes de Buzet (Garonne)
 
-- Côtes de Duras
+-   Côtes de Duras
 
-- Côtes de Marmandais
+-   Côtes de Marmandais
 
-- Côtes du Brulhois
+-   Côtes du Brulhois
 
-- Béarn
+-   Béarn
 
-- Béarn Bellocq
+-   Béarn Bellocq
 
-- Irouléguy
+-   Irouléguy
 
-- Jurançon
+-   Jurançon
 
-- Jurançon Sec
+-   Jurançon Sec
 
-- Madiran
+-   Madiran
 
-- Pacherenc du Vic-Bilh
+-   Pacherenc du Vic-Bilh
 
-- Côtes de Millau
+-   Côtes de Millau
 
-- Gaillac
+-   Gaillac
 
-- Gaillac Doux
+-   Gaillac Doux
 
-- Gaillac Mousseux
+-   Gaillac Mousseux
 
-- Côtes du Brulhois
+-   Côtes du Brulhois
 
-- Côtes du Frontonnais
+-   Côtes du Frontonnais
 
-- Lavilledieu
+-   Lavilledieu
 
 ![A description...](docs/architecture/media/image26.png)
 
-Un article peut avoir un type d’écran, un type d’écran peut être relié à
+Un article peut avoir un type d'écran, un type d'écran peut être relié à
 plusieurs articles.
 
-- LCD
+-   LCD
 
-- Plasma
+-   Plasma
 
 ![A description...](docs/architecture/media/image27.png)
 
-Un article peut avoir un type d’essence, un type d’essence peut être
+Un article peut avoir un type d'essence, un type d'essence peut être
 relié à plusieurs articles. Un type essence peut contenir de zéro à un
 libellé, un libellé peut être contenu par zéro à plusieurs types
 essences.
 
-- Essence
+-   Essence
 
-- Diesel
+-   Diesel
 
 ![A description...](docs/architecture/media/image28.png)
 
-Une personne peut avoir un vœu, un vœu correspond à un article qui n’est
+Une personne peut avoir un vœu, un vœu correspond à un article qui n'est
 pas encore disponible dans une boutique, lorsque celui-ci sera
 disponible une alerte sera donnée à la personne qui a fait cette
 demande. Une personne peut avoir de zéro à plusieurs vœux, mais un vœu
-ne peut appartenir qu’à une et une seule personne.
+ne peut appartenir qu'à une et une seule personne.
 
 ![A description...](docs/architecture/media/image29.png)
 
 Une personne peut posséder une wish liste, une wish list ne peut
-appartenir qu’à une seule personne.
+appartenir qu'à une seule personne.
 
 ## 3 Architecture applicative (Java / Spring Boot / Vaadin)
 
@@ -2771,12 +3303,12 @@ serveur) a été abandonnée. Le projet a été réécrit en Java et suit
 désormais une architecture en couches classique, organisée en deux
 modules Maven :
 
-recordz-core — modèles de domaine, repositories (accès aux données) et
+recordz-core --- modèles de domaine, repositories (accès aux données) et
 services (logique métier). Indépendant de Vaadin et de Spring Web,
 réutilisable si une autre interface (API REST, traitement batch) devait
 un jour consommer la même logique.
 
-recordz-web — point d'entrée Spring Boot, configuration, sécurité et
+recordz-web --- point d'entrée Spring Boot, configuration, sécurité et
 interface utilisateur Vaadin. Dépend de recordz-core.
 
 Pile technique : Java 25, Vaadin 25, Spring Boot 3.4, Spring Security,
@@ -2784,15 +3316,15 @@ OAuth2 (Google), jOOQ 3.19, MySQL 9, Flyway, Docker.
 
 ### Schéma en couches
 
-UI (vues Vaadin) — recordz-web/ui — HomeView, CatalogueView,
+UI (vues Vaadin) --- recordz-web/ui --- HomeView, CatalogueView,
 EncheresView, etc.
 
-Service (logique métier) — recordz-core/service — ArticleService,
+Service (logique métier) --- recordz-core/service --- ArticleService,
 EnchereService..., annotés @Transactional
 
-Repository (accès aux données) — recordz-core/repository — DSL jOOQ
+Repository (accès aux données) --- recordz-core/repository --- DSL jOOQ
 
-MySQL (schéma recordz) — via le pool de connexions HikariCP
+MySQL (schéma recordz) --- via le pool de connexions HikariCP
 
 Chaque couche ne dépend que de la couche immédiatement inférieure : les
 vues Vaadin n'accèdent jamais directement aux repositories, elles
@@ -2812,872 +3344,1213 @@ article_ip, article_visite, sessions), sans remettre en cause la
 structure générale décrite plus bas.
 
 ## 4. Modèle physique de données
+
 ### Table article
-| Attribut                   | Description                                      |
-|---|---|
-| Id_article                 | L’id de l’article                                |
-| Nom                        | Le nom de l’article                              |
-| Description                | La description de l’article                      |
-| Ref_genre                  | La référence au genre de l’article               |
-| Ref_type                   | La référence au type de l’article                |
-| Ref_cepage                 | La référence au cépage de l’article              |
-| Auteur                     | L’auteur de l’article                            |
-| Marque                     | La marque de l’article                           |
-| Label                      | Le label de l’article (musique)                  |
-| Prix                       | Le prix de l’article                             |
-| Prix_achat                 | Le prix d’achat de l’article                     |
-| Pochette                   | La pochette de l’article                         |
-| Presound                   | Le son en pré écoute                             |
-| Ref_etat                   | La référence à l’état                            |
-| Ref_categorie              | La référence à la catégorie                      |
-| Ref_subcategorie           | La référence à la sous-catégorie                 |
-| Owned                      | La valeur si l’article est posséder ou pas       |
-| Ref_statut                 | La référence au statut                           |
-| Date                       | La date de mise en vente de l’article            |
-| Ref_depot                  | La référence au dépôt de l’article               |
-| Ref_Taille                 | La référence à la taille de l’article            |
-| Enchere                    | La valeur si un article est mis aux enchères     |
-| Ref_condition_de_payement  | La référence à la condition de payement          |
-| Ref_condition_de_livraison | La référence à la condition de livraison         |
-| Enchere_date_debut         | La date de début de l’enchère                    |
-| Enchere_date_fin           | La date de fin de l’enchère                      |
-| Vendu                      | La valeur si l’article à été vendu ou non        |
-| Ref_type_ecran             | La référence au type d’écran                     |
-| Dimension                  | Les dimensions d’un article                      |
-| Poids                      | Le poids de l’article                            |
-| Nb_portes                  | Le nombre de portes d’un article                 |
-| Nb_cheveaux                | Le nombre de chevaux d’un article                |
-| Nb_km                      | Le nombre de kilomètre                           |
-| Premiere_immatriculation   | La date de la première immatriculation           |
-| Annee                      | L’année de l’article                             |
-| Options                    | Les options de l’article                         |
-| Essence_ou_diesel          | Essence ou diesel                                |
-| Nb_piece                   | Nombre de pièce d’un bien immobilier             |
-| Surface_habitable          | La surface habitable                             |
-| Superficie_terrain         | La superficie d’un terrain                       |
-| Visites                    | Le nombre de visite d’un article                 |
-| Nbr_enchère                | Le nombre d’enchère d’un article                 |
-| Ref_lang                   | La référence à la langue d’un article            |
-| Ref_canton                 | La référence à un canton                         |
-| Lieu                       | Le lieu d’un article                             |
-| Adresse                    | L’adresse                                        |
-| Npa                        | Le code postal                                   |
-| Ref_location_ou_achat      | La valeur si un article est en location ou achat |
-| Ref_departement            | La référence à un département                    |
-| Ref_pays                   | La référence à un pays                           |
-| Ref_boite_de_vitesse       | La référence à une boite de vitesse              |
-| Climatisatiion             | La valeur si un article possède la climatisation |
-| Processeur                 | La puissance d’un processeur                     |
-| Ram                        | La capacité                                      |
-| Disque_dur                 | Le disque dur                                    |
-| Quantité                   | La quantité d’article                            |
-| Ref_provenance             | La référence de la provenance à l’article        |
-| Longueur                   | La longueur de l’article                         |
-| Largeeur                   | La largeur de l’article                          |
-| Consomation                | La consommation de l’article                     |
-| Acteurs                    | Les acteurs                                      |
-| Duree                      | La durée                                         |
-| Realisateur                | Le réalisateur                                   |
-| Taille                     | La taille de l’article                           |
-| Ref_type_de_jeu            | La référence au type de jeu                      |
-| Ref_pays_region_vin        | La référence à une région de vin                 |
-| Ref_type_de_vin            | La référence au type de vin                      |
-| Ref_etat                   | La référence à un état                           |
-| Frais_de_livraison         | Les frais de livraison d’un article              |
-| Wat                        | La puissance en wat d’un article                 |
-| Nb_cylindre                | Le nombre de cylindre d’un article               |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_article                          L'id de l'article
+
+  Nom                                 Le nom de l'article
+
+  Description                         La description de l'article
+
+  Ref_genre                           La référence au genre de l'article
+
+  Ref_type                            La référence au type de l'article
+
+  Ref_cepage                          La référence au cépage de l'article
+
+  Auteur                              L'auteur de l'article
+
+  Marque                              La marque de l'article
+
+  Label                               Le label de l'article (musique)
+
+  Prix                                Le prix de l'article
+
+  Prix_achat                          Le prix d'achat de l'article
+
+  Pochette                            La pochette de l'article
+
+  Presound                            Le son en pré écoute
+
+  Ref_etat                            La référence à l'état
+
+  Ref_categorie                       La référence à la catégorie
+
+  Ref_subcategorie                    La référence à la sous-catégorie
+
+  Owned                               La valeur si l'article est posséder
+                                      ou pas
+
+  Ref_statut                          La référence au statut
+
+  Date                                La date de mise en vente de
+                                      l'article
+
+  Ref_depot                           La référence au dépôt de l'article
+
+  Ref_Taille                          La référence à la taille de
+                                      l'article
+
+  Enchere                             La valeur si un article est mis aux
+                                      enchères
+
+  Ref_condition_de_payement           La référence à la condition de
+                                      payement
+
+  Ref_condition_de_livraison          La référence à la condition de
+                                      livraison
+
+  Enchere_date_debut                  La date de début de l'enchère
+
+  Enchere_date_fin                    La date de fin de l'enchère
+
+  Vendu                               La valeur si l'article à été vendu
+                                      ou non
+
+  Ref_type_ecran                      La référence au type d'écran
+
+  Dimension                           Les dimensions d'un article
+
+  Poids                               Le poids de l'article
+
+  Nb_portes                           Le nombre de portes d'un article
+
+  Nb_cheveaux                         Le nombre de chevaux d'un article
+
+  Nb_km                               Le nombre de kilomètre
+
+  Premiere_immatriculation            La date de la première
+                                      immatriculation
+
+  Annee                               L'année de l'article
+
+  Options                             Les options de l'article
+
+  Essence_ou_diesel                   Essence ou diesel
+
+  Nb_piece                            Nombre de pièce d'un bien
+                                      immobilier
+
+  Surface_habitable                   La surface habitable
+
+  Superficie_terrain                  La superficie d'un terrain
+
+  Visites                             Le nombre de visite d'un article
+
+  Nbr_enchère                         Le nombre d'enchère d'un article
+
+  Ref_lang                            La référence à la langue d'un
+                                      article
+
+  Ref_canton                          La référence à un canton
+
+  Lieu                                Le lieu d'un article
+
+  Adresse                             L'adresse
+
+  Npa                                 Le code postal
+
+  Ref_location_ou_achat               La valeur si un article est en
+                                      location ou achat
+
+  Ref_departement                     La référence à un département
+
+  Ref_pays                            La référence à un pays
+
+  Ref_boite_de_vitesse                La référence à une boite de vitesse
+
+  Climatisatiion                      La valeur si un article possède la
+                                      climatisation
+
+  Processeur                          La puissance d'un processeur
+
+  Ram                                 La capacité
+
+  Disque_dur                          Le disque dur
+
+  Quantité                            La quantité d'article
+
+  Ref_provenance                      La référence de la provenance à
+                                      l'article
+
+  Longueur                            La longueur de l'article
+
+  Largeeur                            La largeur de l'article
+
+  Consomation                         La consommation de l'article
+
+  Acteurs                             Les acteurs
+
+  Duree                               La durée
+
+  Realisateur                         Le réalisateur
+
+  Taille                              La taille de l'article
+
+  Ref_type_de_jeu                     La référence au type de jeu
+
+  Ref_pays_region_vin                 La référence à une région de vin
+
+  Ref_type_de_vin                     La référence au type de vin
+
+  Ref_etat                            La référence à un état
+
+  Frais_de_livraison                  Les frais de livraison d'un article
+
+  Wat                                 La puissance en wat d'un article
+
+  Nb_cylindre                         Le nombre de cylindre d'un article
+  -----------------------------------------------------------------------
 
 ### Table article_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_article | La référence à l’article |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_article   La référence à l'article
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table langue
-| Attribut  | Description                |
-|---|---|
-| Id_langue | L’identifiant de la langue |
-| Key       | La clef de la langue       |
+
+  Attribut    Description
+  ----------- ----------------------------
+  Id_langue   L'identifiant de la langue
+  Key         La clef de la langue
 
 ### Table langue_libelle
-| Attribut    | Description               |
-|---|---|
-| Ref_langue  | La référence de la langue |
-| Ref_libelle | La référence au libellé   |
+
+  Attribut      Description
+  ------------- ---------------------------
+  Ref_langue    La référence de la langue
+  Ref_libelle   La référence au libellé
 
 ### Table a_livre
-| Attribut              | Description                       |
-|---|---|
-| Id_a_livré            | L’identifiant de à livré          |
-| Ref_article           | La référence à l’article          |
-| Ref_acheteur          | La référence à l’acheteur         |
-| Ref_vendeur           | La référence au vendeur           |
-| Date_achat            | La date d’achat                   |
-| Ref_mode_de_livraison | La référence au mode de livraison |
-| Ref_statut            | La référence au statut            |
-| Quantité              | La quantité d’article             |
-| Montant               | Le montant                        |
-| Date_reception        | La date de réception de l’article |
+
+  Attribut                Description
+  ----------------------- -----------------------------------
+  Id_a_livré              L'identifiant de à livré
+  Ref_article             La référence à l'article
+  Ref_acheteur            La référence à l'acheteur
+  Ref_vendeur             La référence au vendeur
+  Date_achat              La date d'achat
+  Ref_mode_de_livraison   La référence au mode de livraison
+  Ref_statut              La référence au statut
+  Quantité                La quantité d'article
+  Montant                 Le montant
+  Date_reception          La date de réception de l'article
 
 ### Table a_paye
-| Attribut               | Description                         |
-|---|---|
-| Id_a_paye              | L’identifiant à payé                |
-| Ref_article            | La référence à un article           |
-| Ref_vendeur            | La référence à un vendeur           |
-| Ref_acheteur           | La référence à un acheteur          |
-| Ref_enchere            | La référence à une enchère          |
-| Ref_mode_de_livraison  | La référence à un mode de livraison |
-| Ref_mode_de_payement   | La référence à un mode de payement  |
-| Ref_statut             | La référence à un statut            |
-| Montant                | Le montant                          |
-| Date fermeture enchere | La date de fermeture de l’enchère   |
-| Date_payement          | La date de payement                 |
-| Date_echeance          | La date d’échéance d’une enchère    |
-| Rappel_1               | Le premier rappel                   |
-| Rappel_2               | Le deuxième rappel                  |
-| Rappel_3               | Le troisième rappel                 |
-| Quantité               | La quantité                         |
+
+  Attribut                 Description
+  ------------------------ -------------------------------------
+  Id_a_paye                L'identifiant à payé
+  Ref_article              La référence à un article
+  Ref_vendeur              La référence à un vendeur
+  Ref_acheteur             La référence à un acheteur
+  Ref_enchere              La référence à une enchère
+  Ref_mode_de_livraison    La référence à un mode de livraison
+  Ref_mode_de_payement     La référence à un mode de payement
+  Ref_statut               La référence à un statut
+  Montant                  Le montant
+  Date fermeture enchere   La date de fermeture de l'enchère
+  Date_payement            La date de payement
+  Date_echeance            La date d'échéance d'une enchère
+  Rappel_1                 Le premier rappel
+  Rappel_2                 Le deuxième rappel
+  Rappel_3                 Le troisième rappel
+  Quantité                 La quantité
 
 ### Table boite_de_vitessse
-| Attribut            | Description                          |
-|---|---|
-| Id_boite_de_vitesse | L’identifiant de la boite de vitesse |
+
+  Attribut              Description
+  --------------------- --------------------------------------
+  Id_boite_de_vitesse   L'identifiant de la boite de vitesse
 
 ### Table boite_de_vitesse_libelle_langue
-| Attribut             | Description                         |
-|---|---|
-| Ref_boite_de_vitesse | La référence à une boite de vitesse |
-| Ref_langue           | La référence à une langue           |
-| Ref_libellé          | La référence à un libellé           |
+
+  Attribut               Description
+  ---------------------- -------------------------------------
+  Ref_boite_de_vitesse   La référence à une boite de vitesse
+  Ref_langue             La référence à une langue
+  Ref_libellé            La référence à un libellé
 
 ### Table boutique
-| Attribut           | Description                            |
-|---|---|
-| Id_boutique        | L’identifiant de la boutique           |
-| Nom                | Le nom de la boutique                  |
-| Date_creation      | La date de création de la boutique     |
-| Ref_personne       | La référence au gérant de la boutique  |
-| Ref_main_categorie | La référence à la catégorie principale |
-| Image              | Le logo de la boutique                 |
+
+  Attribut             Description
+  -------------------- ----------------------------------------
+  Id_boutique          L'identifiant de la boutique
+  Nom                  Le nom de la boutique
+  Date_creation        La date de création de la boutique
+  Ref_personne         La référence au gérant de la boutique
+  Ref_main_categorie   La référence à la catégorie principale
+  Image                Le logo de la boutique
 
 ### Table boutique_a_categorie
-| Attribut      | Description                 |
-|---|---|
-| Ref_boutique  | La référence à la boutique  |
-| Ref_categorie | La référence à la catégorie |
+
+  Attribut        Description
+  --------------- -----------------------------
+  Ref_boutique    La référence à la boutique
+  Ref_categorie   La référence à la catégorie
 
 ### Table canton_fr
-| Attribut  | Description             |
-|---|---|
-| Id_canton | L’identifiant du canton |
-| Key       | La clef du canton       |
-| Nom       | Le nom du canton        |
+
+  Attribut    Description
+  ----------- -------------------------
+  Id_canton   L'identifiant du canton
+  Key         La clef du canton
+  Nom         Le nom du canton
 
 ### Table canton_de
-| Attribut  | Description             |
-|---|---|
-| Id_canton | L’identifiant du canton |
-| Key       | La clef du canton       |
-| Nom       | Le nom du canton        |
+
+  Attribut    Description
+  ----------- -------------------------
+  Id_canton   L'identifiant du canton
+  Key         La clef du canton
+  Nom         Le nom du canton
 
 ### Table canton_it
-| Attribut  | Description             |
-|---|---|
-| Id_canton | L’identifiant du canton |
-| Key       | La clef du canton       |
-| Nom       | Le nom du canton        |
+
+  Attribut    Description
+  ----------- -------------------------
+  Id_canton   L'identifiant du canton
+  Key         La clef du canton
+  Nom         Le nom du canton
 
 ### Table catégorie
-| Attribut     | Description                   |
-|---|---|
-| Id_categorie | L’identifiant de la catégorie |
+
+  Attribut       Description
+  -------------- -------------------------------
+  Id_categorie   L'identifiant de la catégorie
 
 ### Table catégorie_libellé_langue
-| Attribut      | Description                  |
-|---|---|
-| Ref_categorie | La référence à une catégorie |
-| Ref_langue    | La référence à une langue    |
-| Ref_libelle   | La référence à un libellé    |
+
+  Attribut        Description
+  --------------- ------------------------------
+  Ref_categorie   La référence à une catégorie
+  Ref_langue      La référence à une langue
+  Ref_libelle     La référence à un libellé
 
 ### Table cepage
-| Attribut  | Description             |
-|---|---|
-| Id_cepage | L’identifiant du cépage |
+
+  Attribut    Description
+  ----------- -------------------------
+  Id_cepage   L'identifiant du cépage
 
 ### Table cepage_libelle_langue
-| Attribut    | Description               |
-|---|---|
-| Ref_cepage  | La référence au cépage    |
-| Ref_langue  | La référence à la langue  |
-| Ref_libelle | La référence à un libellé |
+
+  Attribut      Description
+  ------------- ---------------------------
+  Ref_cepage    La référence au cépage
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence à un libellé
 
 ### Table commande
-| Attribut             | Description                      |
-|---|---|
-| Id_commande          | L’identifiant de la commande     |
-| sessionID            | La session de l’utilisateur      |
-| Ref_client           | La référence au client           |
-| Date                 | La date                          |
-| Ref_mode_de_payement | La référence au mode de payement |
-| Ref_depot            | La référence au dépôt            |
+
+  Attribut               Description
+  ---------------------- ----------------------------------
+  Id_commande            L'identifiant de la commande
+  sessionID              La session de l'utilisateur
+  Ref_client             La référence au client
+  Date                   La date
+  Ref_mode_de_payement   La référence au mode de payement
+  Ref_depot              La référence au dépôt
 
 ### Table commande_article
-| Attribut      | Description                |
-|---|---|
-| Ref_commande  | La référence à la commande |
-| Ref_article   | La référence à l’article   |
-| Date_payement | La date de payement        |
+
+  Attribut        Description
+  --------------- ----------------------------
+  Ref_commande    La référence à la commande
+  Ref_article     La référence à l'article
+  Date_payement   La date de payement
 
 ### Table commentaire
-| Attribut       | Description                                          |
-|---|---|
-| Id_commentaire | L’identifiant du commentaire                         |
-| Ref_article    | La référence à l’article                             |
-| Ref_emetteur   | La référence à la personne ayant émis le commentaire |
-| Question       | La question                                          |
-| Texte          | Le texte                                             |
-| Date           | La date                                              |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_commentaire                      L'identifiant du commentaire
+
+  Ref_article                         La référence à l'article
+
+  Ref_emetteur                        La référence à la personne ayant
+                                      émis le commentaire
+
+  Question                            La question
+
+  Texte                               Le texte
+
+  Date                                La date
+  -----------------------------------------------------------------------
 
 ### Table condition_livraison
-| Attribut                  | Description                                |
-|---|---|
-| Id_condition_de_livraison | L’identifiant de la condition de livraison |
-| Frais                     | Les frais de la condition de livraison     |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_condition_de_livraison           L'identifiant de la condition de
+                                      livraison
+
+  Frais                               Les frais de la condition de
+                                      livraison
+  -----------------------------------------------------------------------
 
 ### Table condition_livraison_libelle_langue
-| Attribut                   | Description                              |
-|---|---|
-| Ref_condition_de_livraison | La référence à la condition de livraison |
-| Ref_langue                 | La référence à la langue                 |
-| Ref_libellé                | La référence au libellé                  |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Ref_condition_de_livraison          La référence à la condition de
+                                      livraison
+
+  Ref_langue                          La référence à la langue
+
+  Ref_libellé                         La référence au libellé
+  -----------------------------------------------------------------------
 
 ### Table condition_payement
-| Attribut              | Description                               |
-|---|---|
-| Id_condition_payement | L’identifiant de la condition de payement |
+
+  Attribut                Description
+  ----------------------- -------------------------------------------
+  Id_condition_payement   L'identifiant de la condition de payement
 
 ### Table condition_payement_libelle_langue
-| Attribut               | Description                              |
-|---|---|
-| Ref_condition_payement | La référence à une condition de payement |
-| Ref_libelle            | La référence à un libellé                |
-| Ref_langue             | La référence à une langue                |
+
+  Attribut                 Description
+  ------------------------ ------------------------------------------
+  Ref_condition_payement   La référence à une condition de payement
+  Ref_libelle              La référence à un libellé
+  Ref_langue               La référence à une langue
 
 ### Table demande_visite
-| Attribut          | Description                                           |
-|---|---|
-| Id_demande_visite | L’identifiant de la demande de visite                 |
-| Reponse_par_email | La valeur si la réponse doit être donné par email     |
-| Reponse_par_tel   | La valeur si la réponse doit être donné par téléphone |
-| Nom               | Le nom                                                |
-| Prenom            | Le prénom                                             |
-| Nom               | Le nom                                                |
-| Adresse           | L’adresse                                             |
-| Npa               | Le npa                                                |
-| Ville             | La ville                                              |
-| Telephone         | Le téléphone                                          |
-| Ref_article       | La référence à l’article                              |
-| Ref_vendeur       | La référence au vendeur                               |
-| Commentaire       | Le commentaire                                        |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_demande_visite                   L'identifiant de la demande de
+                                      visite
+
+  Reponse_par_email                   La valeur si la réponse doit être
+                                      donné par email
+
+  Reponse_par_tel                     La valeur si la réponse doit être
+                                      donné par téléphone
+
+  Nom                                 Le nom
+
+  Prenom                              Le prénom
+
+  Nom                                 Le nom
+
+  Adresse                             L'adresse
+
+  Npa                                 Le npa
+
+  Ville                               La ville
+
+  Telephone                           Le téléphone
+
+  Ref_article                         La référence à l'article
+
+  Ref_vendeur                         La référence au vendeur
+
+  Commentaire                         Le commentaire
+  -----------------------------------------------------------------------
 
 ### Table departement
-| Attribut       | Description                  |
-|---|---|
-| Id_departement | L’identifiant du département |
-| Code           | Le code du département       |
+
+  Attribut         Description
+  ---------------- ------------------------------
+  Id_departement   L'identifiant du département
+  Code             Le code du département
 
 Table_departement_libelle_langue
 
-| Attribut        | Description                   |
-|---|---|
-| Ref_departement | La référence à un département |
-| Ref_langue      | La référence à une langue     |
-| Ref_libelle     | La référence à un libellé     |
+  Attribut          Description
+  ----------------- -------------------------------
+  Ref_departement   La référence à un département
+  Ref_langue        La référence à une langue
+  Ref_libelle       La référence à un libellé
 
 ### Table enchere
-| Attribut      | Description                |
-|---|---|
-| Id_enchere    | L’identifiant de l’enchère |
-| Ref_article   | La référence à l’article   |
-| ref_enchereur | La référence à l’enchèreur |
-| Prix          | Le prix                    |
-| Date_enchère  | La date de l’enchère       |
+
+  Attribut        Description
+  --------------- ----------------------------
+  Id_enchere      L'identifiant de l'enchère
+  Ref_article     La référence à l'article
+  ref_enchereur   La référence à l'enchèreur
+  Prix            Le prix
+  Date_enchère    La date de l'enchère
 
 ### Table etat
-| Attribut | Description             |
-|---|---|
-| Id_etat  | L’identifiant de l’état |
+
+  Attribut   Description
+  ---------- -------------------------
+  Id_etat    L'identifiant de l'état
 
 ### Table etat_libelle_langue
-| Attribut    | Description               |
-|---|---|
-| Ref_etat    | La référence à l’état     |
-| Ref_langue  | La référence à la langue  |
-| Ref_libelle | La référence à un libellé |
+
+  Attribut      Description
+  ------------- ---------------------------
+  Ref_etat      La référence à l'état
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence à un libellé
 
 ### Table evaluation_achat
-| Attribut            | Description                         |
-|---|---|
-| Id_evaluation_achat | L’identifiant de l’évaluation achat |
-| Ref_vendeur         | La référence au vendeur             |
-| Ref_acheteur        | La référence à l’acheteur           |
-| Ref_article         | La référence à l’article            |
-| Note                | La note de l’article                |
-| Commentaire         | Le commentaire                      |
-| Date                | La date                             |
+
+  Attribut              Description
+  --------------------- -------------------------------------
+  Id_evaluation_achat   L'identifiant de l'évaluation achat
+  Ref_vendeur           La référence au vendeur
+  Ref_acheteur          La référence à l'acheteur
+  Ref_article           La référence à l'article
+  Note                  La note de l'article
+  Commentaire           Le commentaire
+  Date                  La date
 
 ### Table evaluation_article
-| Attribut              | Description                           |
-|---|---|
-| Id_evaluation_article | L’identifiant de l’évaluation article |
-| Ref_vendeur           | La référence au vendeur               |
-| Ref_acheteur          | La référence à l’acheteur             |
-| Ref_article           | La référence à l’article              |
-| Note                  | La note de l’article                  |
-| Date                  | La date                               |
+
+  Attribut                Description
+  ----------------------- ---------------------------------------
+  Id_evaluation_article   L'identifiant de l'évaluation article
+  Ref_vendeur             La référence au vendeur
+  Ref_acheteur            La référence à l'acheteur
+  Ref_article             La référence à l'article
+  Note                    La note de l'article
+  Date                    La date
 
 ### Table evaluation_vente
-| Attribut            | Description                         |
-|---|---|
-| Id_evaluation_vente | L’identifiant de l’évaluation vente |
-| Ref_vendeur         | La référence au vendeur             |
-| Ref_acheteur        | La référence à l’acheteur           |
-| Ref_article         | La référence à l’article            |
-| Note                | La note de l’article                |
-| Commentaire         | Le commentaire                      |
-| Date                | La date                             |
+
+  Attribut              Description
+  --------------------- -------------------------------------
+  Id_evaluation_vente   L'identifiant de l'évaluation vente
+  Ref_vendeur           La référence au vendeur
+  Ref_acheteur          La référence à l'acheteur
+  Ref_article           La référence à l'article
+  Note                  La note de l'article
+  Commentaire           Le commentaire
+  Date                  La date
 
 ### Table genre
-| Attribut | Description            |
-|---|---|
-| Id_genre | L’identifiant du genre |
+
+  Attribut   Description
+  ---------- ------------------------
+  Id_genre   L'identifiant du genre
 
 ### Table genre_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_genre   | La référence au genre    |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_genre     La référence au genre
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table libellé
-| Attribut   | Description              |
-|---|---|
-| Id_libelle | L’identifiant du libellé |
-| Libelle    | La valeur du libellé     |
+
+  Attribut     Description
+  ------------ --------------------------
+  Id_libelle   L'identifiant du libellé
+  Libelle      La valeur du libellé
 
 ### Table label
-| Attribut | Description            |
-|---|---|
-| Id_label | L’identifiant du label |
+
+  Attribut   Description
+  ---------- ------------------------
+  Id_label   L'identifiant du label
 
 ### Table label_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_label   | La référence au label    |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_label     La référence au label
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table location_ou_achat
-| Attribut             | Description                        |
-|---|---|
-| Id_location_ou_achat | L’identifiant de location ou achat |
-|                      |                                    |
+
+  Attribut               Description
+  ---------------------- ------------------------------------
+  Id_location_ou_achat   L'identifiant de location ou achat
+                         
 
 ### Table location_ou_achat_libelle_langue
-| Attribut              | Description                       |
-|---|---|
-| Ref_location_ou_achat | La référence ou location ou achat |
-| Ref_libelle           | La référence au libellé           |
-| Ref_langue            | La référence à la langue          |
+
+  Attribut                Description
+  ----------------------- -----------------------------------
+  Ref_location_ou_achat   La référence ou location ou achat
+  Ref_libelle             La référence au libellé
+  Ref_langue              La référence à la langue
 
 ### Table main_categorie
-| Attribut          | Description                        |
-|---|---|
-| Id_main_categorie | L’identifiant de la main catégorie |
+
+  Attribut            Description
+  ------------------- ------------------------------------
+  Id_main_categorie   L'identifiant de la main catégorie
 
 ### Table main_categorie_libelle_langue
-| Attribut           | Description                      |
-|---|---|
-| Ref_main_categorie | La référence à la main catégorie |
-| Ref_langue         | La référence à la langue         |
-| Ref_libellé        | La référence à un libellé        |
+
+  Attribut             Description
+  -------------------- ----------------------------------
+  Ref_main_categorie   La référence à la main catégorie
+  Ref_langue           La référence à la langue
+  Ref_libellé          La référence à un libellé
 
 ### Table met_en_vente
-| Attribut        | Description                                                                   |
-|---|---|
-| Ref_vendeur     | La référence à un vendeur                                                     |
-| Ref_article     | La référence à un article                                                     |
-| Date_stock      | La date du début de la mise en enchère                                        |
-| Page_principale | Affichage ou pas sur la page principale                                       |
-| Page_categorie  | Affichage ou pas sur la page catégorie                                        |
-| Pack_photo      | Option qui permet à l’utilisateur de choisir un pack de photos supplémentaire |
-| Notre_selection | La sélection d’article faite par les modérateurs                              |
-| Ref_statut      | La référence au statut                                                        |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Ref_vendeur                         La référence à un vendeur
+
+  Ref_article                         La référence à un article
+
+  Date_stock                          La date du début de la mise en
+                                      enchère
+
+  Page_principale                     Affichage ou pas sur la page
+                                      principale
+
+  Page_categorie                      Affichage ou pas sur la page
+                                      catégorie
+
+  Pack_photo                          Option qui permet à l'utilisateur
+                                      de choisir un pack de photos
+                                      supplémentaire
+
+  Notre_selection                     La sélection d'article faite par
+                                      les modérateurs
+
+  Ref_statut                          La référence au statut
+  -----------------------------------------------------------------------
 
 ### Table mode_de_payement
-| Attribut            | Description                       |
-|---|---|
-| Id_mode_de_payement | L’identifiant du mode de payement |
+
+  Attribut              Description
+  --------------------- -----------------------------------
+  Id_mode_de_payement   L'identifiant du mode de payement
 
 ### Table mode_de_payement \_libelle_langue
-| Attribut             | Description                      |
-|---|---|
-| Ref_mode_de_payement | La référence au mode de payement |
-| Ref_langue           | La référence à une langue        |
-| ref_libelle          | La référence au libellé          |
+
+  Attribut               Description
+  ---------------------- ----------------------------------
+  Ref_mode_de_payement   La référence au mode de payement
+  Ref_langue             La référence à une langue
+  ref_libelle            La référence au libellé
 
 ### Table mois
-| Attribut | Description           |
-|---|---|
-| Id_mois  | L’identifiant du mois |
+
+  Attribut   Description
+  ---------- -----------------------
+  Id_mois    L'identifiant du mois
 
 ### Table mois_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_mois    | La référence au mois     |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_mois      La référence au mois
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table pays
-| Attribut | Description           |
-|---|---|
-| Id_pays  | L’identifiant du pays |
-| Iso_code | L’iso code du pays    |
+
+  Attribut   Description
+  ---------- -----------------------
+  Id_pays    L'identifiant du pays
+  Iso_code   L'iso code du pays
 
 ### Table pays_libellle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_pays    | La référence au pays     |
-| Ref_langue  | La référence à la langue |
-| Ref_libellé | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_pays      La référence au pays
+  Ref_langue    La référence à la langue
+  Ref_libellé   La référence au libellé
 
 ### Table pays_present
-| Attribut        | Description                  |
-|---|---|
-| Id_pays_present | La référence au pays présent |
-| Iso_code        | L’iso code du pays           |
-| Nom             | Le nom du pays présent       |
+
+  Attribut          Description
+  ----------------- ------------------------------
+  Id_pays_present   La référence au pays présent
+  Iso_code          L'iso code du pays
+  Nom               Le nom du pays présent
 
 ### Table pays_region_vin
-| Attribut           | Description                          |     |
-|---|---|
-| Id_pays_region_vin | L’identifiant du pays présent du vin |     |
-| Nom                | Le nom du pays                       |     |
+
+  Attribut             Description
+  -------------------- --------------------------------------
+  Id_pays_region_vin   L'identifiant du pays présent du vin
+  Nom                  Le nom du pays
 
 ### Table cepage
-| Attribut            | Description                              |
-|---|---|
-| Id_cepage           | L’identifiant du cépage                  |
-| Ref_pays_region_vin | La référence au pays de la région du vin |
-| Ref_type_de_vin     | La référence au type de vin              |
-| Nom                 | Le nom du cépage                         |
+
+  Attribut              Description
+  --------------------- ------------------------------------------
+  Id_cepage             L'identifiant du cépage
+  Ref_pays_region_vin   La référence au pays de la région du vin
+  Ref_type_de_vin       La référence au type de vin
+  Nom                   Le nom du cépage
 
 ### Table commande
-| Attribut             | Description                      |
-|---|---|
-| Id_commande          | L’identifiant de la commande     |
-| sessionID            | La session de l’utilisateur      |
-| Ref_client           | La référence au client           |
-| Date                 | La date de la commande           |
-| Ref_mode_de_payement | La référence au mode de payement |
-| Date_de_payement     | La date de payement              |
-| Ref_depot            | La référence au dépôt            |
+
+  Attribut               Description
+  ---------------------- ----------------------------------
+  Id_commande            L'identifiant de la commande
+  sessionID              La session de l'utilisateur
+  Ref_client             La référence au client
+  Date                   La date de la commande
+  Ref_mode_de_payement   La référence au mode de payement
+  Date_de_payement       La date de payement
+  Ref_depot              La référence au dépôt
 
 ### Table commande_article
-| Attribut      | Description                |
-|---|---|
-| Ref_commande  | La référence à la commande |
-| Ref_article   | La référence à l’article   |
-| Date_payement | La date de payement        |
+
+  Attribut        Description
+  --------------- ----------------------------
+  Ref_commande    La référence à la commande
+  Ref_article     La référence à l'article
+  Date_payement   La date de payement
 
 ### Table commentaire
-| Attribut       | Description                  |
-|---|---|
-| Id_commentaire | L’identifiant du commentaire |
-| Ref_article    | La référence à l’article     |
-| Ref_emetteur   | La référence à l’émetteur    |
-| Question       | La question                  |
-| Texte          | Le texte                     |
-| Date           | La date du commentaire       |
+
+  Attribut         Description
+  ---------------- ------------------------------
+  Id_commentaire   L'identifiant du commentaire
+  Ref_article      La référence à l'article
+  Ref_emetteur     La référence à l'émetteur
+  Question         La question
+  Texte            Le texte
+  Date             La date du commentaire
 
 ### Table condition_livraison
-| Attribut               | Description                                |
-|---|---|
-| Id_condition_livraison | L’identifiant de la condition de livraison |
-| Frais                  | Les frais de la condition de livraison     |
+
+  Attribut                 Description
+  ------------------------ --------------------------------------------
+  Id_condition_livraison   L'identifiant de la condition de livraison
+  Frais                    Les frais de la condition de livraison
 
 ### Table condition_livraison_libelle_langue
-| Attribut                   | Description                              |
-|---|---|
-| Ref_id_condition_livraison | La référence à la condition de livraison |
-| Ref_libelle                | La référence au libellé                  |
-| Ref_langue                 | La référence à la langue                 |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Ref_id_condition_livraison          La référence à la condition de
+                                      livraison
+
+  Ref_libelle                         La référence au libellé
+
+  Ref_langue                          La référence à la langue
+  -----------------------------------------------------------------------
 
 ### Table condition_payement
-| Attribut              | Description                               |
-|---|---|
-| Id_condition_payement | L’identifiant de la condition de payement |
-| Frais                 | Les frais de la condition de payement     |
+
+  Attribut                Description
+  ----------------------- -------------------------------------------
+  Id_condition_payement   L'identifiant de la condition de payement
+  Frais                   Les frais de la condition de payement
 
 ### Table condition_payement_libelle_langue
-| Attribut                  | Description                             |
-|---|---|
-| Ref_id_condition_payement | La référence à la condition de payement |
-| Ref_libelle               | La référence au libellé                 |
-| Ref_langue                | La référence à la langue                |
+
+  Attribut                    Description
+  --------------------------- -----------------------------------------
+  Ref_id_condition_payement   La référence à la condition de payement
+  Ref_libelle                 La référence au libellé
+  Ref_langue                  La référence à la langue
 
 ### Table demande_visite
-| Attribut              | Description                                      |
-|---|---|
-| Id_demande_visite     | L’identifiant de la demande de visite            |
-| Reponse_par_email     | La valeur si la personne doit répondre par email |
-| Reponse par telephone | La réponse par téléphone                         |
-| Nom                   | Le nom                                           |
-| Prénom                | Le prénom                                        |
-| Adresse               | L’adresse                                        |
-| Npa                   | Le code postal                                   |
-| Ville                 | La ville                                         |
-| Ref_article           | La référence à l’article                         |
-| Ref_vendeuur          | La référence au vendeur                          |
-| Commentaire           | Un commentaire laissé par la personne            |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_demande_visite                   L'identifiant de la demande de
+                                      visite
+
+  Reponse_par_email                   La valeur si la personne doit
+                                      répondre par email
+
+  Reponse par telephone               La réponse par téléphone
+
+  Nom                                 Le nom
+
+  Prénom                              Le prénom
+
+  Adresse                             L'adresse
+
+  Npa                                 Le code postal
+
+  Ville                               La ville
+
+  Ref_article                         La référence à l'article
+
+  Ref_vendeuur                        La référence au vendeur
+
+  Commentaire                         Un commentaire laissé par la
+                                      personne
+  -----------------------------------------------------------------------
 
 ### Table departement
-| Attribut       | Description                  |
-|---|---|
-| Id_departement | L’identifiant du département |
-| Code           | Le code du département       |
+
+  Attribut         Description
+  ---------------- ------------------------------
+  Id_departement   L'identifiant du département
+  Code             Le code du département
 
 ### Table departement_libelle_langue
-| Attribut        | Description                 |
-|---|---|
-| Ref_departement | La référence au département |
-| Ref_langue      | La référence à la langue    |
-| Ref_libelle     | La référence au libellé     |
+
+  Attribut          Description
+  ----------------- -----------------------------
+  Ref_departement   La référence au département
+  Ref_langue        La référence à la langue
+  Ref_libelle       La référence au libellé
 
 ### Table depot
-| Attribut       | Description                          |
-|---|---|
-| Id_depot       | L’identifiant du dépôt               |
-| Nom            | Le nom du dépôt                      |
-| Adresse        | L’adresse du dépôt                   |
-| Npa            | Le code postal du dépôt              |
-| Ref_pays       | La référence au pays du dépôt        |
-| Telephone      | Le numéro de téléphone du dépôt      |
-| Email          | L’email du dépôt                     |
-| Ref_resposable | La référence au responsable du dépôt |
+
+  Attribut         Description
+  ---------------- --------------------------------------
+  Id_depot         L'identifiant du dépôt
+  Nom              Le nom du dépôt
+  Adresse          L'adresse du dépôt
+  Npa              Le code postal du dépôt
+  Ref_pays         La référence au pays du dépôt
+  Telephone        Le numéro de téléphone du dépôt
+  Email            L'email du dépôt
+  Ref_resposable   La référence au responsable du dépôt
 
 ### Table enchere
-| Attribut      | Description                |
-|---|---|
-| Id_enchere    | L’identifiant de l’enchère |
-| Ref_article   | La référence à l’article   |
-| Ref_enchereur | La référence à l’enchereur |
-| Prix          | Le prix                    |
-| Date_enchere  | La date de mise au enchère |
+
+  Attribut        Description
+  --------------- ----------------------------
+  Id_enchere      L'identifiant de l'enchère
+  Ref_article     La référence à l'article
+  Ref_enchereur   La référence à l'enchereur
+  Prix            Le prix
+  Date_enchere    La date de mise au enchère
 
 ### Table evaluation_achat
-| Attribut            | Description                              |
-|---|---|
-| Id_evaluation_achat | L’identifiant de l’évaluation de l’achat |
-| Ref_vendeur         | La référence au vendeur                  |
-| Ref_acheteur        | La référence à l’acheteur                |
-| Ref_article         | La référence à l’article                 |
-| Note                | La note donnée à l’achat                 |
-| Commentaire         | Le commentaire                           |
-| Date                | La date de l’évaluation                  |
+
+  Attribut              Description
+  --------------------- ------------------------------------------
+  Id_evaluation_achat   L'identifiant de l'évaluation de l'achat
+  Ref_vendeur           La référence au vendeur
+  Ref_acheteur          La référence à l'acheteur
+  Ref_article           La référence à l'article
+  Note                  La note donnée à l'achat
+  Commentaire           Le commentaire
+  Date                  La date de l'évaluation
 
 ### Table evaluation_article
-| Attribut              | Description                                |
-|---|---|
-| Id_evaluation_article | L’identifiant de l’évaluation de l’article |
-| Ref_article           | La référence à l’article                   |
-| Ref_vendeur           | La référence au vendeur                    |
-| Ref_acheteur          | La référence à l’acheteur                  |
-| Note                  | La note de l’évaluation                    |
-| Date                  | La date de l’évaluation                    |
+
+  Attribut                Description
+  ----------------------- --------------------------------------------
+  Id_evaluation_article   L'identifiant de l'évaluation de l'article
+  Ref_article             La référence à l'article
+  Ref_vendeur             La référence au vendeur
+  Ref_acheteur            La référence à l'acheteur
+  Note                    La note de l'évaluation
+  Date                    La date de l'évaluation
 
 ### Table evaluation_vente
-| Attribut            | Description                               |
-|---|---|
-| Id_evaluation_vente | L’identifiant de l’évaluation de la vente |
-| Ref_article         | La référence à l’article                  |
-| Ref_vendeur         | La référence au vendeur                   |
-| Ref_acheteur        | La référence à l’acheteur                 |
-| Note                | La note de l’évaluation                   |
-| Date                | La date de l’évaluation                   |
+
+  Attribut              Description
+  --------------------- -------------------------------------------
+  Id_evaluation_vente   L'identifiant de l'évaluation de la vente
+  Ref_article           La référence à l'article
+  Ref_vendeur           La référence au vendeur
+  Ref_acheteur          La référence à l'acheteur
+  Note                  La note de l'évaluation
+  Date                  La date de l'évaluation
 
 ### Table genre
-| Attribut | Description            |
-|---|---|
-| Id_genre | L’identifiant du genre |
+
+  Attribut   Description
+  ---------- ------------------------
+  Id_genre   L'identifiant du genre
 
 ### Table genre_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_genre   | La référence au genre    |
-| Ref_langue  | La référence à la langue |
-| Ref_libellé | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_genre     La référence au genre
+  Ref_langue    La référence à la langue
+  Ref_libellé   La référence au libellé
 
 ### Table label
-| Attribut | Description            |
-|---|---|
-| Id_label | L’identifiant du label |
+
+  Attribut   Description
+  ---------- ------------------------
+  Id_label   L'identifiant du label
 
 ### Table label_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_label   | La référence au label    |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_label     La référence au label
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table location_ou_achat
-| Attribut             | Description                              |
-|---|---|
-| Id_location_ou_achat | L’identification de la location ou achat |
+
+  Attribut               Description
+  ---------------------- ------------------------------------------
+  Id_location_ou_achat   L'identification de la location ou achat
 
 ### Table location_ou_achat_libelle_langue
-| Attribut              | Description                         |
-|---|---|
-| Ref_location_ou_achat | La référence à la location ou achat |
-| Ref_langue            | La référence à la langue            |
-| Ref_libelle           | La référence au libellé             |
+
+  Attribut                Description
+  ----------------------- -------------------------------------
+  Ref_location_ou_achat   La référence à la location ou achat
+  Ref_langue              La référence à la langue
+  Ref_libelle             La référence au libellé
 
 ### Table pointure
-| Attribut    | Description                  |
-|---|---|
-| Id_pointure | L’identifiant de la pointure |
+
+  Attribut      Description
+  ------------- ------------------------------
+  Id_pointure   L'identifiant de la pointure
 
 ### Table pointure_libelle_langue
-| Attribut     | Description                |
-|---|---|
-| Ref_pointure | La référence à la pointure |
-| Ref_libelle  | La référence au libellé    |
-| Ref_langue   | La référence à la langue   |
+
+  Attribut       Description
+  -------------- ----------------------------
+  Ref_pointure   La référence à la pointure
+  Ref_libelle    La référence au libellé
+  Ref_langue     La référence à la langue
 
 ### Table publication_option
-| Attribut              | Description                            |
-|---|---|
-| Id_publication_option | L’identifiant de la publication option |
-| Prix                  | Le prix                                |
+
+  Attribut                Description
+  ----------------------- ----------------------------------------
+  Id_publication_option   L'identifiant de la publication option
+  Prix                    Le prix
 
 ### Table publication_option_libelle_langue
-| Attribut               | Description                          |
-|---|---|
-| Ref_publication_option | La référence à la publication option |
-| Ref_langue             | La référence à la langue             |
-| Ref_libelle            | La référence au libellé              |
+
+  Attribut                 Description
+  ------------------------ --------------------------------------
+  Ref_publication_option   La référence à la publication option
+  Ref_langue               La référence à la langue
+  Ref_libelle              La référence au libellé
 
 ### Table recherche
-| Attribut      | Description                   |
-|---|---|
-| Id_recherche  | L’identifiant de la recherche |
-| Nbr           | Le nombre de recherche        |
-| Ref_categorie | La référence à la catégorie   |
-| Ref_article   | La référence à l’article      |
+
+  Attribut        Description
+  --------------- -------------------------------
+  Id_recherche    L'identifiant de la recherche
+  Nbr             Le nombre de recherche
+  Ref_categorie   La référence à la catégorie
+  Ref_article     La référence à l'article
 
 ### Table session
-| Attribut  | Description                        |
-|---|---|
-| Id        | L’identifiant de la session        |
-| A_session | La valeur de la session            |
-| Username  | Le nom d’utilisateur de la session |
+
+  Attribut    Description
+  ----------- ------------------------------------
+  Id          L'identifiant de la session
+  A_session   La valeur de la session
+  Username    Le nom d'utilisateur de la session
 
 ### Table statut
-| Attribut  | Description             |
-|---|---|
-| Id_statut | L’identifiant du statut |
+
+  Attribut    Description
+  ----------- -------------------------
+  Id_statut   L'identifiant du statut
 
 ### Table statut_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_statut  | La référence au statut   |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_statut    La référence au statut
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table subcategorie
-| Attribut        | Description                        |
-|---|---|
-| Id_subcategorie | L’identifiant de la sous-catégorie |
-| Ref_categorie   | La référence à la catégorie        |
+
+  Attribut          Description
+  ----------------- ------------------------------------
+  Id_subcategorie   L'identifiant de la sous-catégorie
+  Ref_categorie     La référence à la catégorie
 
 ### Table subcategorie_libelle_langue
-| Attribut         | Description                      |
-|---|---|
-| Ref_subcategorie | La référence à la sous-catégorie |
-| Ref_libelle      | La référence au libellé          |
-| Ref_langue       | La référence à la langue         |
+
+  Attribut           Description
+  ------------------ ----------------------------------
+  Ref_subcategorie   La référence à la sous-catégorie
+  Ref_libelle        La référence au libellé
+  Ref_langue         La référence à la langue
 
 ### Table taille
-| Attribut  | Description                |
-|---|---|
-| Id_taille | L’identifiant de la taille |
+
+  Attribut    Description
+  ----------- ----------------------------
+  Id_taille   L'identifiant de la taille
 
 ### Table taille_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_taille  | La référence à la taille |
-| Ref_libelle | La référence au libellé  |
-| Ref_langue  | La référence à la langue |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_taille    La référence à la taille
+  Ref_libelle   La référence au libellé
+  Ref_langue    La référence à la langue
 
 ### Table temps
-| Attribut | Description            |
-|---|---|
-| Id_temps | L’identifiant du temps |
+
+  Attribut   Description
+  ---------- ------------------------
+  Id_temps   L'identifiant du temps
 
 ### Table temps_libelle_langue
-| Attribut    | Description              |
-|---|---|
-| Ref_temps   | La référence au temps    |
-| Ref_langue  | La référence à la langue |
-| Ref_libelle | La référence au libellé  |
+
+  Attribut      Description
+  ------------- --------------------------
+  Ref_temps     La référence au temps
+  Ref_langue    La référence à la langue
+  Ref_libelle   La référence au libellé
 
 ### Table type_de_compte
-| Attribut          | Description                     |
-|---|---|
-| Id_type_de_compte | L’identifiant du type de compte |
-| Prix              | Le prix du type de compte       |
+
+  Attribut            Description
+  ------------------- ---------------------------------
+  Id_type_de_compte   L'identifiant du type de compte
+  Prix                Le prix du type de compte
 
 ### Table type_de_compte_libelle_langue
-| Attribut           | Description                    |
-|---|---|
-| Ref_type_de_compte | La référence au type de compte |
-| Ref_langue         | La référence à la langue       |
-| Ref_libelle        | La référence au libellé        |
+
+  Attribut             Description
+  -------------------- --------------------------------
+  Ref_type_de_compte   La référence au type de compte
+  Ref_langue           La référence à la langue
+  Ref_libelle          La référence au libellé
 
 ### Table type_de_jeu
-| Attribut       | Description                  |
-|---|---|
-| Id_type_de_jeu | L’identifiant du type de jeu |
+
+  Attribut         Description
+  ---------------- ------------------------------
+  Id_type_de_jeu   L'identifiant du type de jeu
 
 ### Table type_de_jeu_libelle_langue
-| Attribut        | Description                 |
-|---|---|
-| Ref_type_de_jeu | La référence au type de jeu |
-| Ref_langue      | La référence à la langue    |
-| Ref_libelle     | La référence au libellé     |
+
+  Attribut          Description
+  ----------------- -----------------------------
+  Ref_type_de_jeu   La référence au type de jeu
+  Ref_langue        La référence à la langue
+  Ref_libelle       La référence au libellé
 
 ### Table type_de_vin
-| Attribut       | Description                  |
-|---|---|
-| Id_type_de_vin | L’identifiant du type de vin |
+
+  Attribut         Description
+  ---------------- ------------------------------
+  Id_type_de_vin   L'identifiant du type de vin
 
 ### Table type_de_vin_libelle_langue
-| Attribut        | Description                 |
-|---|---|
-| Ref_type_de_vin | La référence au type de vin |
-| Ref_libelle     | La référence au libellé     |
-| Ref_langue      | La référence à la langue    |
+
+  Attribut          Description
+  ----------------- -----------------------------
+  Ref_type_de_vin   La référence au type de vin
+  Ref_libelle       La référence au libellé
+  Ref_langue        La référence à la langue
 
 ### Table type_ecran
-| Attribut      | Description                   |
-|---|---|
-| Id_type_ecran | L’identifiant du type d’écran |
+
+  Attribut        Description
+  --------------- -------------------------------
+  Id_type_ecran   L'identifiant du type d'écran
 
 ### Table type_ecran_libelle_langue
-| Attribut       | Description                |
-|---|---|
-| Ref_type_ecran | La référence au type écran |
-| Ref_libelle    | La référence au libellé    |
-| Ref_langue     | La référence à la langue   |
+
+  Attribut         Description
+  ---------------- ----------------------------
+  Ref_type_ecran   La référence au type écran
+  Ref_libelle      La référence au libellé
+  Ref_langue       La référence à la langue
 
 ### Table type_essence
-| Attribut        | Description                   |
-|---|---|
-| Id_type_essence | L’identifiant du type essence |
+
+  Attribut          Description
+  ----------------- -------------------------------
+  Id_type_essence   L'identifiant du type essence
 
 ### Table type_essence_libelle_langue
-| Attribut         | Description                    |
-|---|---|
-| Ref_type_essence | La référence au type d’essence |
-| Ref_libelle      | La référence au libellé        |
-| Ref_langue       | La référence à la langue       |
+
+  Attribut           Description
+  ------------------ --------------------------------
+  Ref_type_essence   La référence au type d'essence
+  Ref_libelle        La référence au libellé
+  Ref_langue         La référence à la langue
 
 ### Table wish
-| Attribut                   | Description                                      |
-|---|---|
-| Id_article                 | L’id de l’article                                |
-| Nom                        | Le nom de l’article                              |
-| Ref_wish_list              | La référence à la liste de vœu                   |
-| Ref_user                   | La référence à la personne                       |
-| Description                | La description de l’article                      |
-| Ref_genre                  | La référence au genre de l’article               |
-| Ref_type                   | La référence au type de l’article                |
-| Ref_cepage                 | La référence au cépage de l’article              |
-| Auteur                     | L’auteur de l’article                            |
-| Marque                     | La marque de l’article                           |
-| Label                      | Le label de l’article (musique)                  |
-| Prix                       | Le prix de l’article                             |
-| Prix_achat                 | Le prix d’achat de l’article                     |
-| Pochette                   | La pochette de l’article                         |
-| Presound                   | Le son en pré écoute                             |
-| Ref_etat                   | La référence à l’état                            |
-| Ref_categorie              | La référence à la catégorie                      |
-| Ref_subcategorie           | La référence à la sous-catégorie                 |
-| Owned                      | La valeur si l’article est posséder ou pas       |
-| Ref_statut                 | La référence au statut                           |
-| Date                       | La date de mise en vente de l’article            |
-| Ref_depot                  | La référence au dépôt de l’article               |
-| Ref_Taille                 | La référence à la taille de l’article            |
-| Enchere                    | La valeur si un article est mis aux enchères     |
-| Ref_condition_de_payement  | La référence à la condition de payement          |
-| Ref_condition_de_livraison | La référence à la condition de livraison         |
-| Enchere_date_debut         | La date de début de l’enchère                    |
-| Enchere_date_fin           | La date de fin de l’enchère                      |
-| Vendu                      | La valeur si l’article à été vendu ou non        |
-| Ref_type_ecran             | La référence au type d’écran                     |
-| Dimension                  | Les dimensions d’un article                      |
-| Poids                      | Le poids de l’article                            |
-| Nb_portes                  | Le nombre de portes d’un article                 |
-| Nb_cheveaux                | Le nombre de chevaux d’un article                |
-| Nb_km                      | Le nombre de kilomètre                           |
-| Premiere_immatriculation   | La date de la première immatriculation           |
-| Annee                      | L’année de l’article                             |
-| Options                    | Les options de l’article                         |
-| Essence_ou_diesel          | Essence ou diesel                                |
-| Nb_piece                   | Nombre de pièce d’un bien immobilier             |
-| Surface_habitable          | La surface habitable                             |
-| Superficie_terrain         | La superficie d’un terrain                       |
-| Visites                    | Le nombre de visite d’un article                 |
-| Nbr_enchère                | Le nombre d’enchère d’un article                 |
-| Ref_lang                   | La référence à la langue d’un article            |
-| Ref_canton                 | La référence à un canton                         |
-| Lieu                       | Le lieu d’un article                             |
-| Adresse                    | L’adresse                                        |
-| Npa                        | Le code postal                                   |
-| Ref_location_ou_achat      | La valeur si un article est en location ou achat |
-| Ref_departement            | La référence à un département                    |
-| Ref_pays                   | La référence à un pays                           |
-| Ref_boite_de_vitesse       | La référence à une boite de vitesse              |
-| Climatisatiion             | La valeur si un article possède la climatisation |
-| Processeur                 | La puissance d’un processeur                     |
-| Ram                        | La capacité                                      |
-| Disque_dur                 | Le disque dur                                    |
-| Quantité                   | La quantité d’article                            |
-| Ref_provenance             | La référence de la provenance à l’article        |
-| Longueur                   | La longueur de l’article                         |
-| Largeeur                   | La largeur de l’article                          |
-| Consomation                | La consommation de l’article                     |
-| Acteurs                    | Les acteurs                                      |
-| Duree                      | La durée                                         |
-| Realisateur                | Le réalisateur                                   |
-| Taille                     | La taille de l’article                           |
-| Ref_type_de_jeu            | La référence au type de jeu                      |
-| Ref_pays_region_vin        | La référence à une région de vin                 |
-| Ref_type_de_vin            | La référence au type de vin                      |
-| Ref_etat                   | La référence à un état                           |
-| Frais_de_livraison         | Les frais de livraison d’un article              |
-| Wat                        | La puissance en wat d’un article                 |
-| Nb_cylindre                | Le nombre de cylindre d’un article               |
+
+  -----------------------------------------------------------------------
+  Attribut                            Description
+  ----------------------------------- -----------------------------------
+  Id_article                          L'id de l'article
+
+  Nom                                 Le nom de l'article
+
+  Ref_wish_list                       La référence à la liste de vœu
+
+  Ref_user                            La référence à la personne
+
+  Description                         La description de l'article
+
+  Ref_genre                           La référence au genre de l'article
+
+  Ref_type                            La référence au type de l'article
+
+  Ref_cepage                          La référence au cépage de l'article
+
+  Auteur                              L'auteur de l'article
+
+  Marque                              La marque de l'article
+
+  Label                               Le label de l'article (musique)
+
+  Prix                                Le prix de l'article
+
+  Prix_achat                          Le prix d'achat de l'article
+
+  Pochette                            La pochette de l'article
+
+  Presound                            Le son en pré écoute
+
+  Ref_etat                            La référence à l'état
+
+  Ref_categorie                       La référence à la catégorie
+
+  Ref_subcategorie                    La référence à la sous-catégorie
+
+  Owned                               La valeur si l'article est posséder
+                                      ou pas
+
+  Ref_statut                          La référence au statut
+
+  Date                                La date de mise en vente de
+                                      l'article
+
+  Ref_depot                           La référence au dépôt de l'article
+
+  Ref_Taille                          La référence à la taille de
+                                      l'article
+
+  Enchere                             La valeur si un article est mis aux
+                                      enchères
+
+  Ref_condition_de_payement           La référence à la condition de
+                                      payement
+
+  Ref_condition_de_livraison          La référence à la condition de
+                                      livraison
+
+  Enchere_date_debut                  La date de début de l'enchère
+
+  Enchere_date_fin                    La date de fin de l'enchère
+
+  Vendu                               La valeur si l'article à été vendu
+                                      ou non
+
+  Ref_type_ecran                      La référence au type d'écran
+
+  Dimension                           Les dimensions d'un article
+
+  Poids                               Le poids de l'article
+
+  Nb_portes                           Le nombre de portes d'un article
+
+  Nb_cheveaux                         Le nombre de chevaux d'un article
+
+  Nb_km                               Le nombre de kilomètre
+
+  Premiere_immatriculation            La date de la première
+                                      immatriculation
+
+  Annee                               L'année de l'article
+
+  Options                             Les options de l'article
+
+  Essence_ou_diesel                   Essence ou diesel
+
+  Nb_piece                            Nombre de pièce d'un bien
+                                      immobilier
+
+  Surface_habitable                   La surface habitable
+
+  Superficie_terrain                  La superficie d'un terrain
+
+  Visites                             Le nombre de visite d'un article
+
+  Nbr_enchère                         Le nombre d'enchère d'un article
+
+  Ref_lang                            La référence à la langue d'un
+                                      article
+
+  Ref_canton                          La référence à un canton
+
+  Lieu                                Le lieu d'un article
+
+  Adresse                             L'adresse
+
+  Npa                                 Le code postal
+
+  Ref_location_ou_achat               La valeur si un article est en
+                                      location ou achat
+
+  Ref_departement                     La référence à un département
+
+  Ref_pays                            La référence à un pays
+
+  Ref_boite_de_vitesse                La référence à une boite de vitesse
+
+  Climatisatiion                      La valeur si un article possède la
+                                      climatisation
+
+  Processeur                          La puissance d'un processeur
+
+  Ram                                 La capacité
+
+  Disque_dur                          Le disque dur
+
+  Quantité                            La quantité d'article
+
+  Ref_provenance                      La référence de la provenance à
+                                      l'article
+
+  Longueur                            La longueur de l'article
+
+  Largeeur                            La largeur de l'article
+
+  Consomation                         La consommation de l'article
+
+  Acteurs                             Les acteurs
+
+  Duree                               La durée
+
+  Realisateur                         Le réalisateur
+
+  Taille                              La taille de l'article
+
+  Ref_type_de_jeu                     La référence au type de jeu
+
+  Ref_pays_region_vin                 La référence à une région de vin
+
+  Ref_type_de_vin                     La référence au type de vin
+
+  Ref_etat                            La référence à un état
+
+  Frais_de_livraison                  Les frais de livraison d'un article
+
+  Wat                                 La puissance en wat d'un article
+
+  Nb_cylindre                         Le nombre de cylindre d'un article
+  -----------------------------------------------------------------------
 
 ### Table wish_list
-| Attribut      | Description                     |
-|---|---|
-| Id_wish_list  | L’identifiant de la wish list   |
-| Ref_user      | La référence à la personne      |
-| Date_creation | La date de création de la liste |
-|               |                                 |
+
+  Attribut        Description
+  --------------- ---------------------------------
+  Id_wish_list    L'identifiant de la wish list
+  Ref_user        La référence à la personne
+  Date_creation   La date de création de la liste
+                  
 
 ## 5 Structure applicative détaillée
 
@@ -3695,27 +4568,28 @@ d'entrée pour la connexion.
 
 ### Organisation des packages (com.example.recordz)
 
-config/JooqConfig.java — configuration du DSL jOOQ et activation du
+config/JooqConfig.java --- configuration du DSL jOOQ et activation du
 cache (@EnableCaching)
 
-security/ — SecurityConfig.java, CustomOAuth2UserService.java,
+security/ --- SecurityConfig.java, CustomOAuth2UserService.java,
 AuthenticatedUser.java, LoginView.java
 
-model/domain/ — Article, Personne, Enchere, Commande, Transaction,
+model/domain/ --- Article, Personne, Enchere, Commande, Transaction,
 Boutique, Wish / WishList, Commentaire, Referentiel, Evaluations
 
-repository/ — ArticleRepository, PersonneRepository, EnchereRepository,
-CommandeRepository, ReferentielRepository (annoté @Cacheable)
+repository/ --- ArticleRepository, PersonneRepository,
+EnchereRepository, CommandeRepository, ReferentielRepository (annoté
+@Cacheable)
 
-service/ — ArticleService, EnchereService (validation des règles
+service/ --- ArticleService, EnchereService (validation des règles
 d'enchère), PersonneService
 
-ui/layouts/MainLayout.java — shell applicatif et menu de navigation
+ui/layouts/MainLayout.java --- shell applicatif et menu de navigation
 
-ui/views/ — HomeView (accueil), CatalogueView (catalogue et recherche),
-EncheresView (enchères actives), et un ensemble de vues secondaires
-regroupées dans OtherViews (mes annonces, mes achats, liste de souhaits,
-boutique, profil)
+ui/views/ --- HomeView (accueil), CatalogueView (catalogue et
+recherche), EncheresView (enchères actives), et un ensemble de vues
+secondaires regroupées dans OtherViews (mes annonces, mes achats, liste
+de souhaits, boutique, profil)
 
 ### Accès aux données
 
@@ -3736,7 +4610,7 @@ ArticleService porte la logique liée aux annonces (cycle de vie d'un
 article, statuts), EnchereService valide et applique les règles métier
 des enchères, et PersonneService gère le cycle de vie d'un utilisateur
 ou d'une boutique. Ces services sont annotés @Transactional, ce qui
-garantit l'atomicité des opérations d'insertion et de suppression —
+garantit l'atomicité des opérations d'insertion et de suppression ---
 exigence déjà identifiée dans la version précédente du projet, assurée
 ici par le conteneur Spring plutôt que par une gestion manuelle des
 transactions SQL.
