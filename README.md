@@ -80,10 +80,10 @@ Le principe commercial central est le suivant :
   -----------------------------------------------------------------------
   Fonctionnalité          Description             Statut documentaire
   ----------------------- ----------------------- -----------------------
-  Vente directe           Annonces à prix fixe de Cœur du produit
+  Vente directe           Annonces à prix fixe du produit
                           produits de luxe        
 
-  Enchères                Enchères limitées dans  Cœur du produit
+  Enchères                Enchères limitées du produit
                           le temps avec           
                           historique              
 
