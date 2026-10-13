@@ -599,7 +599,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
 
             else if (cat == ArticleCategory.VINS) {
-                col.add(fieldRow("Millésime", article.getMillesime()));
+                col.add(fieldRow("Millésime", article.getTx()));
 
                 if (article.getRefTypeDeVin() != null)
                     referenceService.findAllWineTypes().stream()

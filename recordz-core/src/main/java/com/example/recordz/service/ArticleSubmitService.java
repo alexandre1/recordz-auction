@@ -2,6 +2,8 @@ package com.example.recordz.service;
 
 import com.example.recordz.model.domain.dto.ArticleFormData;
 import com.example.recordz.model.domain.dto.ArticleSaveResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,13 @@ import java.util.Set;
  * Persistance d'un article depuis le formulaire d'ajout.
  * Équivalent du bloc d'INSERT dans le Perl loadAddArticle().
  *
+ * Transactionnalité :
+ *  - toutes les écritures SQL (article, mises à jour pochette / Entrupy / vidéo,
+ *    met_en_vente) s'exécutent dans UNE seule transaction JDBC : tout ou rien.
+ *  - les écritures sur le système de fichiers (image, vidéo) ne peuvent pas
+ *    participer à une transaction SQL : elles sont donc faites APRÈS le commit,
+ *    avec compensation en cas d'échec (voir save()).
+ *
  * Intégration Entrupy :
  *  - seules les catégories listées dans CATEGORIES_REQUIRANT_ENTRUPY déclenchent
  *    le circuit d'authentification (customer_item_id + statut "pending").
@@ -30,11 +39,16 @@ import java.util.Set;
  *  - si data.videoPath pointe vers un fichier temporaire (déposé par
  *    VideoUploadController dans app.video-temp.dir via le flux QR code /
  *    Redis Pub/Sub côté ArticleFormView), il est déplacé vers app.video.dir
- *    une fois l'id_article connu, et la colonne video_path mise à jour.
+ *    une fois la transaction validée, et video_path est renseigné dans la
+ *    transaction (chemin final calculé à l'avance).
+ *  - si le déplacement échoue après le commit, video_path est remis à NULL :
+ *    l'article reste publié, simplement sans vidéo.
  *  - data.videoPath == null/blank : article sans vidéo, comportement inchangé.
  */
 @Service
 public class ArticleSubmitService {
+
+    private static final Logger log = LoggerFactory.getLogger(ArticleSubmitService.class);
 
     // TODO: remplacer par les véritables id de ref_categorie nécessitant Entrupy
     // (typiquement maroquinerie/montres/bijoux — à confirmer selon votre référentiel)
@@ -51,28 +65,7 @@ public class ArticleSubmitService {
 
     private static final String CUSTOMER_ITEM_ID_PREFIX = "CHIC-";
 
-    private final DataSource dataSource;
-    private final Path uploadDir;
-    private final Path videoDir;
-
-    public ArticleSubmitService(DataSource dataSource,
-                                @Value("${app.upload.dir}") String uploadDirPath,
-                                @Value("${app.video.dir}") String videoDirPath) {
-        this.dataSource = dataSource;
-        this.uploadDir  = Paths.get(uploadDirPath);
-        this.videoDir   = Paths.get(videoDirPath);
-    }
-
-    /**
-     * Insère un article en base et retourne son id_article.
-     */
-    public ArticleSaveResult save(ArticleFormData data) {
-
-        long owned = resolveCurrentUserId();
-        boolean requiresEntrupy = requiresEntrupyAuthentication(data);
-        int statutInitial = requiresEntrupy ? STATUT_EN_ATTENTE_AUTH_ENTRUPY : STATUT_PUBLIE;
-
-        String sql = """
+    private static final String INSERT_ARTICLE_SQL = """
             INSERT INTO article (
                 nom, label, prix, marque,
                 ref_categorie, ref_subcategorie,
@@ -116,8 +109,128 @@ public class ArticleSubmitService {
             )
             """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    private final DataSource dataSource;
+    private final Path uploadDir;
+    private final Path videoDir;
+
+    public ArticleSubmitService(DataSource dataSource,
+                                @Value("${app.upload.dir}") String uploadDirPath,
+                                @Value("${app.video.dir}") String videoDirPath) {
+        this.dataSource = dataSource;
+        this.uploadDir  = Paths.get(uploadDirPath);
+        this.videoDir   = Paths.get(videoDirPath);
+    }
+
+    /**
+     * Insère un article en base (transaction unique) puis écrit les fichiers
+     * associés, et retourne son id_article.
+     *
+     * Étapes :
+     *  1. résolution de l'utilisateur (avant la transaction : lecture seule) ;
+     *  2. transaction SQL : INSERT article + UPDATE groupé + INSERT met_en_vente ;
+     *  3. après commit : écriture de l'image (échec => suppression compensatoire
+     *     de l'article puis exception), déplacement de la vidéo (échec => video_path
+     *     remis à NULL, l'article reste publié).
+     */
+    public ArticleSaveResult save(ArticleFormData data) {
+
+        long owned = resolveCurrentUserId();
+        boolean requiresEntrupy = requiresEntrupyAuthentication(data);
+        int statutInitial = requiresEntrupy ? STATUT_EN_ATTENTE_AUTH_ENTRUPY : STATUT_PUBLIE;
+
+        // Vidéo : on ne retient que si le fichier temporaire existe réellement
+        Path tempVideo = null;
+        if (data.videoPath != null && !data.videoPath.isBlank()) {
+            Path candidate = Paths.get(data.videoPath);
+            if (Files.exists(candidate)) {
+                tempVideo = candidate;
+            } else {
+                log.warn("Fichier vidéo temporaire introuvable, article créé sans vidéo : {}", data.videoPath);
+            }
+        }
+
+        int newId = -1;
+        String pochette = null;
+        Path finalVideo = null;
+
+        // ---------------------------------------------------------------
+        // 1) Transaction SQL : tout ou rien
+        // ---------------------------------------------------------------
+        try (Connection conn = dataSource.getConnection()) {
+            boolean previousAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                newId = insertArticle(conn, data, owned, statutInitial);
+                if (newId <= 0) {
+                    throw new SQLException("Aucun id_article généré lors de l'insertion");
+                }
+
+                pochette = "article_" + newId + resolveExtension(data.pochette);
+                if (tempVideo != null) {
+                    finalVideo = videoDir.resolve(
+                            "article_" + newId + resolveExtension(tempVideo.getFileName().toString()));
+                }
+
+                updateArticleAfterInsert(conn, newId, pochette, requiresEntrupy, finalVideo);
+
+                // Lier l'article au vendeur
+                try (PreparedStatement mv = conn.prepareStatement(
+                        "INSERT INTO met_en_vente (ref_vendeur, ref_article, date_stock) VALUES (?, ?, CURDATE())")) {
+                    mv.setLong(1, owned);
+                    mv.setInt(2, newId);
+                    mv.executeUpdate();
+                }
+
+                conn.commit();
+
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    e.addSuppressed(rollbackEx);
+                }
+                throw e;
+            } finally {
+                try {
+                    conn.setAutoCommit(previousAutoCommit);
+                } catch (SQLException ex) {
+                    log.warn("Impossible de restaurer l'auto-commit de la connexion", ex);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur insertion article", e);
+        }
+
+        // ---------------------------------------------------------------
+        // 2) Fichiers : uniquement après le commit
+        // ---------------------------------------------------------------
+        if (data.pochetteStream != null) {
+            try {
+                saveImage(data.pochetteStream, pochette);
+            } catch (RuntimeException e) {
+                // Compensation : sans image, l'article n'a pas de sens -> on l'annule.
+                // (la vidéo n'a pas encore été déplacée : le fichier temporaire reste intact)
+                compensateDeleteArticle(newId);
+                throw e;
+            }
+        }
+
+        if (finalVideo != null && !moveVideoToFinalStorage(tempVideo, finalVideo)) {
+            // L'article reste publié, mais sans vidéo : on évite un video_path orphelin.
+            clearVideoPath(newId);
+        }
+
+        return new ArticleSaveResult(newId, requiresEntrupy);
+    }
+
+    /**
+     * Exécute l'INSERT principal sur la connexion transactionnelle fournie
+     * et retourne l'id_article généré (ou -1).
+     */
+    private int insertArticle(Connection conn, ArticleFormData data, long owned, int statutInitial)
+            throws SQLException {
+
+        try (PreparedStatement ps = conn.prepareStatement(INSERT_ARTICLE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             int i = 1;
 
@@ -191,65 +304,41 @@ public class ArticleSubmitService {
 
             ps.executeUpdate();
 
-            int newId = -1;
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) newId = keys.getInt(1);
+                if (keys.next()) return keys.getInt(1);
             }
+            return -1;
+        }
+    }
 
-            if (newId > 0) {
-                String ext      = resolveExtension(data.pochette);
-                String pochette = "article_" + newId + ext;
+    /**
+     * UPDATE groupé (remplace les 3 UPDATE séparés d'origine) : pochette,
+     * champs Entrupy (si requis) et video_path (si vidéo). Un seul aller-retour
+     * dans la transaction.
+     */
+    private void updateArticleAfterInsert(Connection conn, int articleId, String pochette,
+                                          boolean requiresEntrupy, Path finalVideo) throws SQLException {
 
-                try (PreparedStatement upd = conn.prepareStatement(
-                        "UPDATE article SET pochette = ? WHERE id_article = ?")) {
-                    upd.setString(1, pochette);
-                    upd.setInt(2, newId);
-                    upd.executeUpdate();
-                }
+        StringBuilder sql = new StringBuilder("UPDATE article SET pochette = ?");
+        if (requiresEntrupy) {
+            sql.append(", entrupy_customer_item_id = ?, entrupy_status = 'pending'");
+        }
+        if (finalVideo != null) {
+            sql.append(", video_path = ?");
+        }
+        sql.append(" WHERE id_article = ?");
 
-                if (requiresEntrupy) {
-                    String customerItemId = CUSTOMER_ITEM_ID_PREFIX + newId;
-                    try (PreparedStatement updEntrupy = conn.prepareStatement(
-                            "UPDATE article SET entrupy_customer_item_id = ?, entrupy_status = 'pending' " +
-                                    "WHERE id_article = ?")) {
-                        updEntrupy.setString(1, customerItemId);
-                        updEntrupy.setInt(2, newId);
-                        updEntrupy.executeUpdate();
-                    }
-                }
-
-                // Vidéo : déplace le fichier temporaire (déposé par
-                // VideoUploadController) vers le stockage définitif, puis met
-                // à jour la colonne video_path. Rien ne se passe si aucune
-                // vidéo n'a été reçue (data.videoPath null/blank).
-                if (data.videoPath != null && !data.videoPath.isBlank()) {
-                    String finalVideoPath = moveVideoToFinalStorage(data.videoPath, newId);
-                    if (finalVideoPath != null) {
-                        try (PreparedStatement updVideo = conn.prepareStatement(
-                                "UPDATE article SET video_path = ? WHERE id_article = ?")) {
-                            updVideo.setString(1, finalVideoPath);
-                            updVideo.setInt(2, newId);
-                            updVideo.executeUpdate();
-                        }
-                    }
-                }
-
-                // ✅ Lier l'article au vendeur
-                try (PreparedStatement mv = conn.prepareStatement(
-                        "INSERT INTO met_en_vente (ref_vendeur, ref_article, date_stock) VALUES (?, ?, CURDATE())")) {
-                    mv.setLong(1, owned);
-                    mv.setInt(2, newId);
-                    mv.executeUpdate();
-                }
-
-                if (data.pochetteStream != null) {
-                    saveImage(data.pochetteStream, pochette);
-                }
+        try (PreparedStatement upd = conn.prepareStatement(sql.toString())) {
+            int i = 1;
+            upd.setString(i++, pochette);
+            if (requiresEntrupy) {
+                upd.setString(i++, toCustomerItemId(articleId));
             }
-            return new ArticleSaveResult(newId, requiresEntrupy);
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur insertion article", e);
+            if (finalVideo != null) {
+                upd.setString(i++, finalVideo.toString());
+            }
+            upd.setInt(i, articleId);
+            upd.executeUpdate();
         }
     }
 
@@ -268,6 +357,10 @@ public class ArticleSubmitService {
         return CUSTOMER_ITEM_ID_PREFIX + articleId;
     }
 
+    // -------------------------------------------------------------------------
+    // Fichiers (hors transaction SQL)
+    // -------------------------------------------------------------------------
+
     /**
      * Écrit le fichier image dans le répertoire app.upload.dir.
      * Crée le répertoire s'il n'existe pas.
@@ -284,24 +377,12 @@ public class ArticleSubmitService {
 
     /**
      * Déplace le fichier vidéo temporaire (app.video-temp.dir, déposé par
-     * VideoUploadController) vers le stockage définitif (app.video.dir),
-     * renommé selon l'id_article généré. Retourne le chemin final, ou null
-     * si le déplacement échoue — dans ce cas l'article est quand même créé,
-     * simplement sans vidéo, plutôt que de faire échouer toute la publication
-     * pour un problème de fichier.
+     * VideoUploadController) vers le stockage définitif (app.video.dir).
+     * Retourne true si le déplacement a réussi, false sinon (l'erreur est loggée).
      */
-    private String moveVideoToFinalStorage(String tempVideoPath, int articleId) {
+    private boolean moveVideoToFinalStorage(Path source, Path dest) {
         try {
-            Path source = Paths.get(tempVideoPath);
-            if (!Files.exists(source)) {
-                return null; // fichier temporaire déjà nettoyé ou chemin invalide
-            }
-
             Files.createDirectories(videoDir);
-
-            String ext = resolveExtension(source.getFileName().toString());
-            String filename = "article_" + articleId + ext;
-            Path dest = videoDir.resolve(filename);
 
             try {
                 Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
@@ -312,14 +393,69 @@ public class ArticleSubmitService {
                 Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
                 Files.deleteIfExists(source);
             }
-
-            return dest.toString();
+            return true;
 
         } catch (Exception e) {
-            // Ne fait pas échouer la publication de l'article pour un souci
-            // de déplacement de fichier vidéo — l'article reste utilisable
-            // sans vidéo, à ré-uploader manuellement si besoin.
-            return null;
+            log.warn("Échec du déplacement de la vidéo {} -> {} : l'article reste publié sans vidéo",
+                    source, dest, e);
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Compensations (après commit, en cas d'échec d'une écriture de fichier)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Remet video_path à NULL si la vidéo n'a pas pu être déplacée.
+     */
+    private void clearVideoPath(int articleId) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "UPDATE article SET video_path = NULL WHERE id_article = ?")) {
+            ps.setInt(1, articleId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Impossible de remettre video_path à NULL pour l'article {}", articleId, e);
+        }
+    }
+
+    /**
+     * Supprime l'article (et son lien met_en_vente) dans une transaction dédiée
+     * lorsque l'écriture de l'image échoue après le commit.
+     */
+    private void compensateDeleteArticle(int articleId) {
+        try (Connection conn = dataSource.getConnection()) {
+            boolean previousAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "DELETE FROM met_en_vente WHERE ref_article = ?")) {
+                    ps.setInt(1, articleId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "DELETE FROM article WHERE id_article = ?")) {
+                    ps.setInt(1, articleId);
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    e.addSuppressed(rollbackEx);
+                }
+                throw e;
+            } finally {
+                try {
+                    conn.setAutoCommit(previousAutoCommit);
+                } catch (SQLException ex) {
+                    log.warn("Impossible de restaurer l'auto-commit de la connexion", ex);
+                }
+            }
+        } catch (SQLException | RuntimeException e) {
+            log.error("Compensation impossible : article {} à supprimer manuellement", articleId, e);
         }
     }
 
@@ -339,27 +475,35 @@ public class ArticleSubmitService {
     // Résolution de l'utilisateur connecté via Spring Security
     // -------------------------------------------------------------------------
 
+    /**
+     * Retourne l'id_personne de l'utilisateur connecté.
+     * Lève une exception (avant toute écriture) si l'utilisateur n'est pas
+     * résolu, au lieu de renvoyer silencieusement 0 et de créer un article
+     * rattaché à un vendeur inexistant.
+     */
     private long resolveCurrentUserId() {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.isAuthenticated()) {
-                Object principal = auth.getPrincipal();
-                if (principal instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidc) {
-                    String email = oidc.getAttribute("email");
-                    if (email != null) {
-                        try (Connection conn = dataSource.getConnection();
-                             PreparedStatement ps = conn.prepareStatement(
-                                     "SELECT id_personne FROM personne WHERE email = ?")) {
-                            ps.setString(1, email);
-                            try (ResultSet rs = ps.executeQuery()) {
-                                if (rs.next()) return rs.getLong(1);
-                            }
-                        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("Aucun utilisateur authentifié");
+        }
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidc) {
+            String email = oidc.getAttribute("email");
+            if (email != null) {
+                try (Connection conn = dataSource.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(
+                             "SELECT id_personne FROM personne WHERE email = ?")) {
+                    ps.setString(1, email);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) return rs.getLong(1);
                     }
+                } catch (SQLException e) {
+                    throw new RuntimeException("Erreur résolution utilisateur connecté", e);
                 }
             }
-        } catch (Exception ignored) {}
-        return 0L;
+        }
+        throw new IllegalStateException("Utilisateur connecté introuvable dans la table personne");
     }
 
     // -------------------------------------------------------------------------
