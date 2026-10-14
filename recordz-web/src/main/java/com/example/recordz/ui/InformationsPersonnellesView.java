@@ -104,7 +104,7 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
             person.setIban(ibanF.getValue());
             person.setPaypalMe(paypalF.getValue());
             person.setPays(paysSel.getValue());
-//            personneService.update(person);
+            personneService.updateProfil(person);
         });
 
         Button reset = new Button("Reset", e -> {

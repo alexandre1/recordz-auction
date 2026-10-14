@@ -78,6 +78,26 @@ public class Article {
     private Integer wat;
     private Integer nbCylindre;
 
+    public Integer getIdAlivre() {
+        return idAlivre;
+    }
+
+    public void setIdAlivre(Integer idAlivre) {
+        this.idAlivre = idAlivre;
+    }
+
+    private Integer idAlivre;
+
+    public Integer getIdApaye() {
+        return idApaye;
+    }
+
+    public void setIdApaye(Integer idApaye) {
+        this.idApaye = idApaye;
+    }
+
+    private Integer idApaye;
+
     public String getTx() {
         return tx;
     }

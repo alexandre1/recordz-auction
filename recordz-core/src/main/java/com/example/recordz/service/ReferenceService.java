@@ -110,7 +110,7 @@ public class ReferenceService {
 
     public Integer findIdAcheteur(int articleId) {
         var result = dsl.fetch("""
-        SELECTp.id_personne as c
+        SELECT p.id_personne as c
         FROM personne p
         JOIN a_paye mv ON p.id_personne = mv.ref_acheteur
         WHERE mv.ref_article = ?

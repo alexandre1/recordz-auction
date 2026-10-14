@@ -428,6 +428,7 @@ public class ArticleRepository {
                     a.setMarque(              r.get(field("article.marque"),                  String.class));
                     a.setPrix(                r.get(field("article.prix"),                    Double.class));
                     a.setRefVendeur(          r.get(field("a_paye.ref_vendeur"),              Integer.class));
+                    a.setIdApaye(             r.get(field("a_paye.id_a_paye"),              Integer.class));
                     a.setRefAcheteur(         r.get(field("a_paye.ref_acheteur"),             Long.class)); // ✅
                     a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class)); // ✅
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class)); // ✅
@@ -521,6 +522,7 @@ public class ArticleRepository {
                     a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
                     a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
                     return a;
                 });
     }
@@ -565,6 +567,7 @@ public class ArticleRepository {
                     a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
                     a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),                         Integer.class));
                     return a;
                 });
     }
@@ -708,6 +711,55 @@ public class ArticleRepository {
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
                     return a;                });
     }
+
+    public List<Article> findArticlesAttenteSoulevement(String email, int limit, int offset) {
+        return dsl.select(
+                        field("article.id_article"),
+                        field("article.pochette"),
+                        field("article.pochette2"),
+                        field("article.nom"),
+                        field("a_livre.ref_vendeur"),
+                        field("a_livre.ref_acheteur"),       // ✅ ajout
+                        field("a_livre.id_a_livre"),
+                        field("a_livre.montant"),            // ✅ ajout
+                        field("article.prix"),               // ✅ ajout
+                        field("article.ref_mode_de_livraison"),       // ✅ ajout
+                        field("article.ref_condition_payement"),      // ✅ ajout
+                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
+                )
+                .from(
+                        table("article"),
+                        table("a_livre"),
+                        table("personne"),
+                        table("condition_livraison_libelle_langue")
+                )
+                .where(field("a_livre.ref_article").eq(field("article.id_article")))
+                .and(field("a_livre.ref_vendeur").eq(field("personne.id_personne")))
+                .and(field("personne.email").eq(email))
+                .and(
+                        field("a_livre.ref_statut").eq(8)
+                )
+                .and(field("article.ref_mode_de_livraison").equal(3))
+                .and(field("article.ref_mode_de_livraison")
+                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
+                .limit(50)
+                .offset(0)
+                .fetch()
+                .map(r -> {
+                    Article a = new Article();
+                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
+                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),            Long.class));
+                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),             Integer.class));
+                    a.setNom(                 r.get(field("article.nom"),                     String.class));
+                    a.setPochette(            r.get(field("article.pochette"),                String.class));
+                    a.setPochette2(            r.get(field("article.pochette2"),                    String.class));
+                    a.setPrix(                r.get(field("article.prix"),                    Double.class));
+                    a.setMontant(             r.get(field("a_livre.montant"),                 BigDecimal.class)); // ✅
+                    a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class));   // ✅
+                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
+                    return a;                });
+    }
+
     // ✅ Parenthèses manquantes corrigées sur ref_vendeur et ref_acheteur
     public void updateStatutEstLivre(Integer idArticle, Article article, Personne personne) {
         dsl.update(table("a_livre"))
@@ -730,12 +782,29 @@ public class ArticleRepository {
                 .execute();
     }
 
-    public void confirmerReception (Integer idArticle, Integer refAchteur) {
+    public void confirmerReception (Integer idArticle, Integer refAchteur, Article article) {
         dsl.update(table("a_livre"))
                 .set(field("ref_statut"), 12)
                 .set(field("date_achat"), LocalDateTime.now())
                 .where(field("ref_article").eq(idArticle))
                 .and(field  ("ref_acheteur").eq(refAchteur))
+                .and(field  ("id_a_livre").eq(article.getIdAlivre()))
+                .execute();
+
+    }
+
+    public void confirmerReceptionVendeur (Integer idArticle, Integer refVendeur) {
+        dsl.update(table("a_paye"))
+                .set(field("ref_statut"), 14)
+                .where(field("ref_article").eq(idArticle))
+                .and(field("ref_vendeur").eq(refVendeur))
+                .execute();
+
+        dsl.update(table("a_livre"))
+                .set(field("ref_statut"), 12)
+                .set(field("date_achat"), LocalDateTime.now())
+                .where(field("ref_article").eq(idArticle))
+                .and(field  ("ref_vendeur").eq(refVendeur))
                 .execute();
 
     }
@@ -743,6 +812,7 @@ public class ArticleRepository {
         dsl.update(table("a_paye"))
                 .set(field("ref_statut"), 7)
                 .where(field("ref_article").eq(idArticle))
+                .and(field("id_a_paye").eq(article.getIdApaye()))
                 .and(field("ref_vendeur").eq(article.getRefVendeur()))
                 .execute();
         dsl.insertInto(table("a_livre"))
@@ -765,7 +835,8 @@ public class ArticleRepository {
             Integer refModeDeLivraison,
             Integer refConditionPayement,
             Integer quantite,
-            Integer refCanton
+            Integer refCanton,
+            Integer idApaye
     ) {
         dsl.update(table("a_paye"))
                 .set(field("ref_vendeur"),           refVendeur)
@@ -779,6 +850,7 @@ public class ArticleRepository {
                 .set(field("ref_canton"),            refCanton)
                 .where(field("ref_article").eq(refArticle))
                 .and(field("ref_acheteur").eq(refAcheteur))
+                .and(field("id_a_paye").eq(idApaye))
                 .execute();
 
         /*
@@ -854,6 +926,7 @@ public class ArticleRepository {
                     a.setRefModeDeLivraison(   r.get(field("article.ref_mode_de_livraison"),  Integer.class));
                     a.setRefConditionPayement( r.get(field("article.ref_condition_payement"), Integer.class));
                     a.setQuantite(             r.get(field("article.quantite"),               Integer.class));
+                    a.setIdApaye(              r.get(field("a_paye.id_a_paye"),               Integer.class));
                     return a;
                 });
     }
@@ -906,6 +979,23 @@ public class ArticleRepository {
                         table("personne"))
                 .where(field("ref_article").eq(field("id_article")))
                 .and(field("ref_acheteur").eq(field("id_personne")))
+                .and(field("email").eq(email))
+                .and(
+                        field("a_livre.ref_statut").eq("14")
+                                .or(field("a_livre.ref_statut").eq("9"))
+                )
+                .and(field("article.ref_mode_de_livraison").equal(3))
+                .fetchOne(0, Integer.class);
+    }
+
+    public int countAttenteSoulevementByUsername(String email) {
+        return dsl.selectCount()
+                .from(
+                        table("article"),
+                        table("a_livre"),
+                        table("personne"))
+                .where(field("ref_article").eq(field("id_article")))
+                .and(field("ref_vendeur").eq(field("id_personne")))
                 .and(field("email").eq(email))
                 .and(
                         field("a_livre.ref_statut").eq("14")

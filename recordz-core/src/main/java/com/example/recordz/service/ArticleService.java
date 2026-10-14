@@ -55,7 +55,8 @@ public class ArticleService {
             Integer refModeDeLivraison,
             Integer refConditionPayement,
             Integer quantite,
-            Integer refCanton
+            Integer refCanton,
+            Integer idApaye
     ) {
         this.articleRepository.insertAPaye(
                 refArticle,
@@ -66,7 +67,8 @@ public class ArticleService {
                 refModeDeLivraison,
                 refConditionPayement,
                 quantite,
-                refCanton
+                refCanton,
+                idApaye
         ); // ← parenthèse ) et non accolade }
     }  // ← plus de point-virgule parasite ici
 
@@ -210,6 +212,10 @@ public class ArticleService {
         return articleRepository.countAllerChercherByUsername(username);
     }
 
+    @Transactional(readOnly = true)
+    public int countAttenteSoulevementByUsername(String username) {
+        return articleRepository.countAttenteSoulevementByUsername(username);
+    }
     /**
      * FIX : readOnly = true ajouté (méthode de lecture).
      *
@@ -246,6 +252,10 @@ public class ArticleService {
         return articleRepository.findArticlesAllerChercher(email, limit, offset);
     }
 
+    @Transactional(readOnly = true)
+    public List<Article> findArticlesAttenteSoulevement(String email, int limit, int offset) {
+        return articleRepository.findArticlesAttenteSoulevement(email, limit, offset);
+    }
     // ✅ Service passe page et pageSize directement
     @Transactional(readOnly = true)
     public List<Article> findArticlesAPaye(String email, int page, int pageSize) {
@@ -324,10 +334,14 @@ public class ArticleService {
     }
 
     @Transactional
-    public void confirmerReception (Integer  idArticle, Integer refAchteur) {
-        articleRepository.confirmerReception(idArticle, refAchteur);
+    public void confirmerReception (Integer  idArticle, Integer refAchteur, Article article) {
+        articleRepository.confirmerReception(idArticle, refAchteur, article);
     }
 
+    @Transactional
+    public void confirmerReceptionVendeur (Integer  idArticle, Integer refVendeur) {
+        articleRepository.confirmerReceptionVendeur(idArticle, refVendeur);
+    }
 
 
     private void validate(Article a) {
