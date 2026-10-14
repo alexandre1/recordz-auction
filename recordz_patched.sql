@@ -1,3 +1,4 @@
+
 -- phpMyAdmin SQL Dump
 -- version 4.9.0.1
 -- https://www.phpmyadmin.net/
@@ -1160,7 +1161,9 @@ INSERT INTO `condition_payement_libelle_langue` (`ref_condition_payement`, `ref_
                                                                                                             (1, 10100, 1),
                                                                                                             (2, 10101, 1),
                                                                                                             (3, 10102, 1),
-                                                                                                            (4, 10103, 1);                                   ;;
+                                                                                                            (4, 10103, 1),
+
+(5, 1000123,1);
 
 -- --------------------------------------------------------
 
@@ -1980,7 +1983,7 @@ INSERT INTO `libelle` (`id_libelle`, `libelle`) VALUES
 (100003, 'Avril'),
 (100004, 'Mai'),
 (100005, 'Juin'),
-(100006, 'Juillet'),
+(100006, 'Juillet'),cond
 (100007, 'Août'),
 (100008, 'Septembre'),
 (100009, 'Octobre'),
@@ -4181,7 +4184,7 @@ ALTER TABLE article
 ALTER TABLE `wish_list`
     ADD CONSTRAINT `fk_wl_user` FOREIGN KEY (`ref_user`) REFERENCES `personne` (`id_personne`);
 
-
+ALTER TABLE a_livre MODIFY date_achat DATETIME NULL;
 
 
 -- 2. Vider les tables liées pour éviter les données orphelines (Optionnel mais recommandé)
