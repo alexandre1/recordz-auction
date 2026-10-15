@@ -270,6 +270,11 @@ public class ArticleService {
     public int countMesAchatsByVendeur(String email) {
         return articleRepository.countMesAchatsByVendeur(email);
     }
+    @Transactional(readOnly = true)
+    public int countMesAchatsByAcheteur(String email) {
+        return articleRepository.countMesAchatsByAcheteur(email);
+    }
+
     /**
      * Charge un article et incrémente son compteur de visites.
      */

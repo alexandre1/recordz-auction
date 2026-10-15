@@ -47,7 +47,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     private Grid<Article> localGridPayment = null;
 
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 80;
     private String email;
     private int total;
     private int totalPages;
@@ -451,7 +451,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         grid.removeAllColumns();
         addArticleNoters(localGridPayment);
 
-        total      = articleService.countMesAchatsByVendeur(email);
+        total      = articleService.countMesAchatsByAcheteur(email);
         totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
 
         VerticalLayout gridContainer = new VerticalLayout();
@@ -494,13 +494,12 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         g.getStyle()
                 .set("border-radius", "20px")
                 .set("border", "1px solid #6100C1")
-                .set("overflow", "visible")
-                .set("padding-left", "8px");
+                .set("padding-left", "8px");   // retire "overflow: visible"
 
         g.setWidth("100%");
         g.setMinWidth("1000px");
+        g.setAllRowsVisible(true);             // Vaadin 24.2+
     }
-
     // -------------------------------------------------------------------------
     // Colonnes : grid standard
     // -------------------------------------------------------------------------
@@ -688,6 +687,8 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
 
     private void addArticleMesArtclesAttenteByPoste(Grid<Article> g) {
+
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
         g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
         g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
         g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
@@ -1595,7 +1596,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             articleService.confirmerReception(article.getIdArticle().intValue(), article.getRefAcheteur().intValue(), article);
             Notification.show("Réception confirmée pour : " + article.getNom());
             dlg.close();
-            showContent("mywaitdelivering");
+            showContent("mywaitdeliveringbypost");
         });
 
         content.add(new HorizontalLayout(annulerBtn, confirmerBtn));

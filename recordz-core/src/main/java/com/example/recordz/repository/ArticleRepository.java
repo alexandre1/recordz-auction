@@ -277,7 +277,17 @@ public class ArticleRepository {
                 .and(field("a.ref_statut").eq(1))
                 .fetchOne(0, Integer.class);
     }
-
+    public int countMesAchatsByAcheteur(String email) {
+        return dsl.selectCount()
+                .from(table("a_paye").as("m"))
+                .join(table("article").as("a"))
+                .on(field("m.ref_article").eq(field("a.id_article")))
+                .join(table("personne").as("p"))
+                .on(field("m.ref_acheteur").eq(field("p.id_personne")))
+                .where(field("p.email").eq(email))
+                .and(field("m.ref_statut").eq(14))
+                .fetchOne(0, Integer.class);
+    }
     public int countMesAchatsByVendeur(String email) {
         return dsl.selectCount()
                 .from(table("a_paye").as("m"))
@@ -382,7 +392,7 @@ public class ArticleRepository {
                 .join(table("personne").as("p"))
                 .on(field("m.ref_vendeur").eq(field("p.id_personne")))
                 .where(field("p.email").eq(email))
-                .and(field("a.ref_statut").eq(1))          // ✅ garde uniquement eq(1)
+                //.and(field("a.ref_statut").eq(1))          // ✅ garde uniquement eq(1)
                 .and(
                         field("a.pub").isNull()                // pub IS NULL
                                 .or(field("a.pub").eq(0))              // OU pub = 0
@@ -614,6 +624,7 @@ public class ArticleRepository {
                     a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
                     a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
                     return a;
                 });
     }
