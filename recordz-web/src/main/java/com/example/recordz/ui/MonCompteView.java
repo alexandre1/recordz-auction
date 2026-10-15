@@ -615,6 +615,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
 
     private void addArticleMesArtclesALivreverByPost(Grid<Article> g) {
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
         g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
         g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
         g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);

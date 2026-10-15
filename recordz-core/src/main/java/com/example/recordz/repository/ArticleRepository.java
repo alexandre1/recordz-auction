@@ -671,6 +671,7 @@ public class ArticleRepository {
                     a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
                     a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
                     return a;
                 });
     }
@@ -783,6 +784,7 @@ public class ArticleRepository {
                 .set(field("quantite"),              1)
                 .where(field("ref_article").eq(idArticle))
                 .and(field("ref_acheteur").eq(article.getRefAcheteur()))
+                .and(field("id_a_livre").eq(article.getIdAlivre()))
                 .execute();
     }
 
