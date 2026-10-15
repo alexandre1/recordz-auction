@@ -671,7 +671,9 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.getStyle().set("margin-left", "80px");
 
         col.add(fieldRow("Nombre de vues",    str(article.getVisites())));
-        col.add(fieldRow("Nombre d'enchères", str(article.getNbrEnchere())));
+        if (article.getEnchere() != null && article.getEnchere().equals(1)) {
+            col.add(fieldRow("Nombre d'enchères", str(article.getNbrEnchere())));
+        }
         col.add(fieldRow("Quantité en stock", str(article.getQuantite())));
         col.add(gap());
 
