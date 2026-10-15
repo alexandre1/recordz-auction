@@ -1,3 +1,4 @@
+
 -- phpMyAdmin SQL Dump
 -- version 4.9.0.1
 -- https://www.phpmyadmin.net/
@@ -8,10 +9,17 @@
 -- Version de PHP :  7.3.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET FOREIGN_KEY_CHECKS = 0; -- Désactivation globale pour l'import
 SET AUTOCOMMIT = 0;
-START TRANSACTION;
 SET time_zone = "+00:00";
 
+-- 2. Destruction et recréation de la base (HORS transaction)
+DROP DATABASE IF EXISTS new_db_recordzv3;
+CREATE DATABASE new_db_recordzv3;
+USE new_db_recordzv3;
+
+-- 3. C'est ICI que l'on commence la transaction pour les structures/données
+START TRANSACTION;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,6 +36,9 @@ SET time_zone = "+00:00";
 -- Structure de la table `app_user`
 --
 
+DROP DATABASE new_db_recordzv3;
+CREATE DATABASE new_db_recordzv3;
+USE new_db_recordzv3;
 CREATE TABLE `app_user` (
                             `id` int(11) NOT NULL,
                             `email` varchar(255) NOT NULL,
@@ -423,6 +434,7 @@ CREATE TABLE `categorie_libelle_langue` (
 --
 
 INSERT INTO `categorie_libelle_langue` (`ref_categorie`, `ref_libelle`, `ref_langue`) VALUES
+
                                                                                           (1, 1, 1),
                                                                                           (2, 2, 1),
                                                                                           (3, 3, 1),
@@ -1150,7 +1162,8 @@ INSERT INTO `condition_payement_libelle_langue` (`ref_condition_payement`, `ref_
                                                                                                             (2, 10101, 1),
                                                                                                             (3, 10102, 1),
                                                                                                             (4, 10103, 1),
-                                                                                                            (5, 1000123, 1);
+
+(5, 1000123,1);
 
 -- --------------------------------------------------------
 
@@ -1924,10 +1937,8 @@ INSERT INTO `libelle` (`id_libelle`, `libelle`) VALUES
 (10032, 'Cd / Vinyl / Mp3'),
 (10033, 'Location'),
 (10034, 'Achat'),
-(10035, 'Neuf'),
 (10035, 'Utilisé'),
 (10036, 'Neuf'),
-(10036, 'Occasion'),
 (10037, 'Cd'),
 (10038, 'Vinyl'),
 (10039, 'Mp3'),
@@ -1972,7 +1983,7 @@ INSERT INTO `libelle` (`id_libelle`, `libelle`) VALUES
 (100003, 'Avril'),
 (100004, 'Mai'),
 (100005, 'Juin'),
-(100006, 'Juillet'),
+(100006, 'Juillet'),cond
 (100007, 'Août'),
 (100008, 'Septembre'),
 (100009, 'Octobre'),
@@ -2162,9 +2173,8 @@ CREATE TABLE `pays_present` (
 
 INSERT INTO `pays_present` (`id_pays_present`, `nom`) VALUES
                                                           (1, 'Suisse'),
-                                                          (2, 'France'),
-                                                          (3, 'Canada'),
-                                                          (4, 'United States');
+                                                          (2, 'France');
+;
 
 -- --------------------------------------------------------
 
@@ -3171,7 +3181,6 @@ ALTER TABLE `a_livre`
   ADD KEY `fk_al_article` (`ref_article`),
   ADD KEY `fk_al_acheteur` (`ref_acheteur`),
   ADD KEY `fk_al_vendeur` (`ref_vendeur`),
-  ADD KEY `fk_al_enchere` (`ref_enchere`),
   ADD KEY `fk_al_livraison` (`ref_mode_de_livraison`);
 
 --
@@ -3224,10 +3233,10 @@ ALTER TABLE `canton_fr`
 --
 -- Index pour la table `categorie_libelle_langue`
 --
-ALTER TABLE `categorie_libelle_langue`
-    ADD PRIMARY KEY (`ref_categorie`,`ref_libelle`,`ref_langue`),
+ALTER TABLE `categorie_libelle_langue` 
+  ADD PRIMARY KEY (`ref_categorie`),
   ADD KEY `fk_cat_ll_langue` (`ref_langue`),
-  ADD KEY `fk_cat_ll_libelle` (`ref_libelle`);
+  ADD KEY `fk_cat_ll_libelle_categorie_libelle_langue` (`ref_libelle`);
 
 --
 -- Index pour la table `cepage`
@@ -3276,13 +3285,6 @@ ALTER TABLE `condition_livraison_libelle_langue`
   ADD KEY `fk_cll_libelle` (`ref_libelle`),
   ADD KEY `fk_cll_langue` (`ref_langue`);
 
---
--- Index pour la table `condition_payement_libelle_langue`
---
-ALTER TABLE `condition_payement_libelle_langue`
-    ADD PRIMARY KEY (`ref_condition_payement`,`ref_libelle`,`ref_langue`),
-  ADD KEY `fk_cpl_libelle` (`ref_libelle`),
-  ADD KEY `fk_cpl_langue` (`ref_langue`);
 
 --
 -- Index pour la table `demande_visite`
@@ -3307,9 +3309,9 @@ ALTER TABLE `depot`
 
 --
 -- Index pour la table `enchere`
---
-ALTER TABLE `enchere`
-    ADD PRIMARY KEY (`id_enchere`,`ref_article`,`ref_enchereur`,`prix`,`date_enchere`),
+ALTER TABLE `enchere` 
+  ADD PRIMARY KEY (`id_enchere`),
+  ADD UNIQUE KEY `uq_id_enchere` (`id_enchere`), -- Add this line
   ADD KEY `fk_enchere_article` (`ref_article`),
   ADD KEY `fk_enchere_enchereur` (`ref_enchereur`);
 
@@ -3363,14 +3365,16 @@ ALTER TABLE `genre`
 --
 -- Index pour la table `langue`
 --
-ALTER TABLE `langue`
-    ADD PRIMARY KEY (`id_langue`,`nom`);
-
+ALTER TABLE `langue` 
+  ADD PRIMARY KEY (`id_langue`),
+  ADD UNIQUE KEY `uq_id_langue` (`id_langue`), -- <-- ADD THIS EXACT LINE
+  ADD KEY `fk_bdvll_langue` (`id_langue`);
 --
 -- Index pour la table `libelle`
 --
-ALTER TABLE `libelle`
-    ADD PRIMARY KEY (`id_libelle`,`libelle`);
+ALTER TABLE `libelle` 
+  ADD PRIMARY KEY (`id_libelle`),
+  ADD UNIQUE KEY `uq_id_libelle` (`id_libelle`); -- ADD THIS LINE
 
 --
 -- Index pour la table `location_ou_achat_libelle_langue`
@@ -3426,14 +3430,16 @@ ALTER TABLE `mois_libelle_langue`
 --
 -- Index pour la table `pays`
 --
-ALTER TABLE `pays`
-    ADD PRIMARY KEY (`id_pays`,`pays_code`);
+ALTER TABLE `pays` 
+  ADD PRIMARY KEY (`id_pays`),
+  ADD UNIQUE KEY `uq_id_pays` (`id_pays`); -- ADD THIS LINE
 
 --
 -- Index pour la table `pays_present`
 --
-ALTER TABLE `pays_present`
-    ADD PRIMARY KEY (`id_pays_present`,`nom`);
+ALTER TABLE `pays_present` 
+  ADD PRIMARY KEY (`id_pays_present`),
+  ADD UNIQUE KEY `uq_id_pays_present` (`id_pays_present`); -- ADD THIS LINE
 
 --
 -- Index pour la table `pays_region_vin`
@@ -3831,15 +3837,11 @@ ALTER TABLE `wish_list`
 ALTER TABLE `article`
     ADD CONSTRAINT `fk_article_boite` FOREIGN KEY (`ref_boite_de_vitesse`) REFERENCES `boite_de_vitesse` (`id`),
   ADD CONSTRAINT `fk_article_canton` FOREIGN KEY (`ref_canton`) REFERENCES `canton_fr` (`id_canton`),
-  ADD CONSTRAINT `fk_article_categorie` FOREIGN KEY (`ref_categorie`) REFERENCES `categorie_libelle_langue` (`ref_categorie`),
   ADD CONSTRAINT `fk_article_cepage` FOREIGN KEY (`ref_cepage`) REFERENCES `cepage` (`id_cepage`),
-  ADD CONSTRAINT `fk_article_departement` FOREIGN KEY (`ref_departement`) REFERENCES `departement` (`id_departement`),
   ADD CONSTRAINT `fk_article_essence` FOREIGN KEY (`essence_ou_diesel`) REFERENCES `type_essence` (`id`),
   ADD CONSTRAINT `fk_article_etat` FOREIGN KEY (`ref_etat`) REFERENCES `etat` (`id`),
   ADD CONSTRAINT `fk_article_livraison` FOREIGN KEY (`ref_mode_de_livraison`) REFERENCES `condition_livraison` (`id`),
-  ADD CONSTRAINT `fk_article_payement` FOREIGN KEY (`ref_condition_payement`) REFERENCES `condition_payement_libelle_langue` (`ref_condition_payement`),
   ADD CONSTRAINT `fk_article_region_vin` FOREIGN KEY (`ref_pays_region_vin`) REFERENCES `pays_region_vin` (`id_pays_region_vin`),
-  ADD CONSTRAINT `fk_article_taille` FOREIGN KEY (`ref_taille`) REFERENCES `taille` (`id`),
   ADD CONSTRAINT `fk_article_type_ecran` FOREIGN KEY (`ref_type_ecran`) REFERENCES `type_ecran` (`id`),
   ADD CONSTRAINT `fk_article_type_jeux` FOREIGN KEY (`ref_type_de_jeux`) REFERENCES `type_de_jeux` (`id`);
 
@@ -3862,7 +3864,7 @@ ALTER TABLE `article_visite`
 ALTER TABLE `a_livre`
     ADD CONSTRAINT `fk_al_acheteur` FOREIGN KEY (`ref_acheteur`) REFERENCES `personne` (`id_personne`),
   ADD CONSTRAINT `fk_al_article` FOREIGN KEY (`ref_article`) REFERENCES `article` (`id_article`),
-  ADD CONSTRAINT `fk_al_enchere` FOREIGN KEY (`ref_enchere`) REFERENCES `enchere` (`id_enchere`),
+  ADD CONSTRAINT `fk_al_enchere_article` FOREIGN KEY (`ref_enchere`) REFERENCES `enchere` (`id_enchere`),
   ADD CONSTRAINT `fk_al_livraison` FOREIGN KEY (`ref_mode_de_livraison`) REFERENCES `condition_livraison` (`id`),
   ADD CONSTRAINT `fk_al_vendeur` FOREIGN KEY (`ref_vendeur`) REFERENCES `personne` (`id_personne`);
 
@@ -3875,7 +3877,6 @@ ALTER TABLE `a_paye`
   ADD CONSTRAINT `fk_ap_canton` FOREIGN KEY (`ref_canton`) REFERENCES `canton_fr` (`id_canton`),
   ADD CONSTRAINT `fk_ap_enchere` FOREIGN KEY (`ref_enchere`) REFERENCES `enchere` (`id_enchere`),
   ADD CONSTRAINT `fk_ap_livraison` FOREIGN KEY (`ref_mode_de_livraison`) REFERENCES `condition_livraison` (`id`),
-  ADD CONSTRAINT `fk_ap_payement` FOREIGN KEY (`ref_condition_payement`) REFERENCES `condition_payement_libelle_langue` (`ref_condition_payement`),
   ADD CONSTRAINT `fk_ap_vendeur` FOREIGN KEY (`ref_vendeur`) REFERENCES `personne` (`id_personne`);
 
 --
@@ -3897,14 +3898,17 @@ ALTER TABLE `boutique`
 --
 ALTER TABLE `boutique_a_categorie`
     ADD CONSTRAINT `fk_bac_boutique` FOREIGN KEY (`ref_boutique`) REFERENCES `boutique` (`id_boutique`),
-  ADD CONSTRAINT `fk_bac_categorie` FOREIGN KEY (`ref_categorie`) REFERENCES `categorie_libelle_langue` (`ref_categorie`);
+    ADD CONSTRAINT `fk_bac_categorie_categorie` FOREIGN KEY (`ref_categorie`) REFERENCES `categorie_libelle_langue` (`ref_categorie`);
 
 --
 -- Contraintes pour la table `categorie_libelle_langue`
 --
-ALTER TABLE `categorie_libelle_langue`
-    ADD CONSTRAINT `fk_cat_ll_langue` FOREIGN KEY (`ref_langue`) REFERENCES `langue` (`id_langue`),
-  ADD CONSTRAINT `fk_cat_ll_libelle` FOREIGN KEY (`ref_libelle`) REFERENCES `libelle` (`id_libelle`);
+-- LOCATE THIS BLOCK IN YOUR SCRIPT:
+ALTER TABLE `categorie_libelle_langue` 
+
+  ADD UNIQUE KEY `uq_ref_categorie` (`ref_categorie`), -- ADD THIS EXACT LINE
+  ADD KEY `fk_cat_ll_langue_categorie_langue` (`ref_langue`),
+  ADD KEY `fk_cat_ll_libelle` (`ref_libelle`);
 
 --
 -- Contraintes pour la table `cepage`
@@ -3946,9 +3950,12 @@ ALTER TABLE `condition_livraison_libelle_langue`
 --
 -- Contraintes pour la table `condition_payement_libelle_langue`
 --
-ALTER TABLE `condition_payement_libelle_langue`
-    ADD CONSTRAINT `fk_cpl_langue` FOREIGN KEY (`ref_langue`) REFERENCES `langue` (`id_langue`),
-  ADD CONSTRAINT `fk_cpl_libelle` FOREIGN KEY (`ref_libelle`) REFERENCES `libelle` (`id_libelle`);
+-- LOCATE THIS BLOCK IN YOUR SCRIPT:
+ALTER TABLE `condition_payement_libelle_langue` 
+  ADD PRIMARY KEY (`ref_condition_payement`),
+  ADD UNIQUE KEY `uq_ref_condition_payement` (`ref_condition_payement`), -- ADD THIS LINE
+  ADD KEY `fk_cpl_libelle` (`ref_libelle`),
+  ADD KEY `fk_cpl_langue` (`ref_langue`);
 
 --
 -- Contraintes pour la table `demande_visite`
@@ -4152,11 +4159,50 @@ ALTER TABLE `wish`
   ADD CONSTRAINT `fk_wish_payement` FOREIGN KEY (`ref_condition_payement`) REFERENCES `condition_payement_libelle_langue` (`ref_condition_payement`),
   ADD CONSTRAINT `fk_wish_user` FOREIGN KEY (`ref_user`) REFERENCES `personne` (`id_personne`);
 
+ALTER TABLE article
+    ADD COLUMN entrupy_customer_item_id VARCHAR(64)  NULL,
+    ADD COLUMN entrupy_status           VARCHAR(32)  NULL,   -- pending / authentic / unidentified / invalid / not_supported
+    ADD COLUMN entrupy_id               VARCHAR(64)  NULL,   -- id Entrupy de l'authentification
+    ADD COLUMN entrupy_certificate_url  VARCHAR(255) NULL,
+    ADD COLUMN entrupy_updated_at       TIMESTAMP    NULL;
+
+CREATE UNIQUE INDEX ux_article_entrupy_customer_item_id
+    ON article (entrupy_customer_item_id);
+
+-- Renommez ce fichier selon votre convention Flyway existante
+-- (ex: V28__add_article_video_path.sql — à ajuster selon le numéro déjà
+-- utilisé pour V__add_entrupy_authentication_fields.sql, celle-ci doit
+-- suivre juste après)
+
+ALTER TABLE article
+    ADD COLUMN video_path VARCHAR(255) NULL;
+
 --
 -- Contraintes pour la table `wish_list`
 --
+
 ALTER TABLE `wish_list`
     ADD CONSTRAINT `fk_wl_user` FOREIGN KEY (`ref_user`) REFERENCES `personne` (`id_personne`);
+
+ALTER TABLE a_livre MODIFY date_achat DATETIME NULL;
+
+
+-- 2. Vider les tables liées pour éviter les données orphelines (Optionnel mais recommandé)
+TRUNCATE TABLE `article_ip`;
+TRUNCATE TABLE `article_visite`;
+TRUNCATE TABLE `a_livre`;
+TRUNCATE TABLE `a_paye`;
+TRUNCATE TABLE `commentaire`;
+TRUNCATE TABLE `enchere`;
+TRUNCATE TABLE `evaluation_article`;
+TRUNCATE TABLE `met_en_vente`;
+
+-- 3. Vider la table des articles et remettre le compteur d'AUTO_INCREMENT à 0
+TRUNCATE TABLE `article`;
+
+-- 4. Réactiver la vérification des clés étrangères
+
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
