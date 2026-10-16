@@ -323,7 +323,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
     // ─────────────────────────────────────────────────────────────────────────
     private void openRechercheAvancee() {
         Dialog dialog = new Dialog();
-        dialog.setWidth("500px");
+        ResponsiveHelper.dialogWidth(dialog, 500);
         dialog.setHeaderTitle("Recherche avancée");
 
         VerticalLayout content = new VerticalLayout();

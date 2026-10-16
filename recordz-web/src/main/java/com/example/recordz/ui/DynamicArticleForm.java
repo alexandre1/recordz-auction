@@ -122,15 +122,14 @@ public class DynamicArticleForm extends VerticalLayout {
 
         categorySelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
-                refreshSubCategories(e.getValue().label());
                 int catId = Integer.parseInt(e.getValue().value());
+                refreshSubCategories(catId);
                 refreshDynamicFields(catId, -1);
                 if (onCategoryChanged != null) onCategoryChanged.accept(catId);
             } else if (onCategoryChanged != null) {
                 onCategoryChanged.accept(null);
             }
         });
-
         subCategorySelect.addValueChangeListener(e -> {
             if (e.getValue() != null && categorySelect.getValue() != null) {
                 refreshDynamicFields(
@@ -410,15 +409,14 @@ public class DynamicArticleForm extends VerticalLayout {
         return select;
     }
 
-    private void refreshSubCategories(String categoryLabel) {
+    private void refreshSubCategories(int categoryId) {
         List<ArticleDynamicDataService.LabelValue> subs =
-                dataService.loadSubCategories(categoryLabel, lang);
+                dataService.loadSubCategories(categoryId, lang);
         subCategorySelect.setItems(subs);
         subCategorySelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
         subCategorySelect.setVisible(!subs.isEmpty());
         subCategorySelect.clear();
     }
-
     // =========================================================================
     // CHAMPS DYNAMIQUES
     // =========================================================================

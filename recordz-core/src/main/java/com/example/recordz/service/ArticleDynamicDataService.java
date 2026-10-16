@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ArticleDynamicDataService {
@@ -29,29 +30,70 @@ public class ArticleDynamicDataService {
             FROM categorie_libelle_langue
             JOIN libelle ON categorie_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON categorie_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
     }
 
-    public List<LabelValue> loadSubCategories(String mainCategoryLabel, String lang) {
+    /**
+     * Sous-catégories d'une catégorie, identifiée par son ID (et non par son libellé,
+     * qui peut exister en doublon dans la table libelle).
+     * ref_subcategorie n'est unique QUE dans le couple (ref_categorie, ref_subcategorie).
+     */
+    public List<LabelValue> loadSubCategories(int categoryId, String lang) {
         String sql = """
-            SELECT subcategorie_libelle_langue.ref_subcategorie, libelle.libelle
-            FROM subcategorie_libelle_langue
-            JOIN libelle ON subcategorie_libelle_langue.ref_libelle = libelle.id_libelle
-            JOIN langue  ON subcategorie_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
-              AND subcategorie_libelle_langue.ref_categorie = (
-                  SELECT ref_categorie
-                  FROM categorie_libelle_langue
-                  JOIN libelle l2 ON categorie_libelle_langue.ref_libelle = l2.id_libelle
-                  JOIN langue  la ON categorie_libelle_langue.ref_langue  = la.id_langue
-                  WHERE l2.libelle = ? AND la.key = ?
-              )
-            ORDER BY libelle.libelle
+            SELECT s.ref_subcategorie, l.libelle
+            FROM subcategorie_libelle_langue s
+            JOIN libelle l ON s.ref_libelle = l.id_libelle
+            JOIN langue  g ON s.ref_langue  = g.id_langue
+            WHERE g.`key` = ?
+              AND s.ref_categorie = ?
+            ORDER BY l.libelle
             """;
-        return queryThreeParams(sql, lang, mainCategoryLabel, lang);
+        List<LabelValue> result = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, lang.toUpperCase());
+            ps.setInt(2, categoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(new LabelValue(rs.getString(1), rs.getString(2)));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur chargement sous-catégories", e);
+        }
+        return result;
+    }
+
+    /**
+     * Libellé d'une sous-catégorie à partir du COUPLE (catégorie, sous-catégorie).
+     * À utiliser partout où l'on affiche la sous-catégorie d'un article :
+     * un join sur ref_subcategorie seul ramène plusieurs lignes (ex. Jeans / Vin blanc).
+     */
+    public Optional<String> loadSubCategoryLabel(int categoryId, int subCategoryId, String lang) {
+        String sql = """
+            SELECT l.libelle
+            FROM subcategorie_libelle_langue s
+            JOIN libelle l ON s.ref_libelle = l.id_libelle
+            JOIN langue  g ON s.ref_langue  = g.id_langue
+            WHERE g.`key` = ?
+              AND s.ref_categorie    = ?
+              AND s.ref_subcategorie = ?
+            LIMIT 1
+            """;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, lang.toUpperCase());
+            ps.setInt(2, categoryId);
+            ps.setInt(3, subCategoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.ofNullable(rs.getString(1)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur chargement libellé sous-catégorie", e);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -82,7 +124,7 @@ public class ArticleDynamicDataService {
             FROM type_de_vin_libelle_langue
             JOIN libelle ON type_de_vin_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON type_de_vin_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -113,7 +155,7 @@ public class ArticleDynamicDataService {
             FROM location_ou_achat_libelle_langue
             JOIN libelle ON location_ou_achat_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON location_ou_achat_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -129,7 +171,7 @@ public class ArticleDynamicDataService {
             FROM type_essence_libelle_langue
             JOIN libelle ON type_essence_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON type_essence_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -141,7 +183,7 @@ public class ArticleDynamicDataService {
             FROM boite_de_vitesse_libelle_langue
             JOIN libelle ON boite_de_vitesse_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON boite_de_vitesse_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -157,7 +199,7 @@ public class ArticleDynamicDataService {
             FROM type_ecran_libelle_langue
             JOIN libelle ON type_ecran_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON type_ecran_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -173,7 +215,7 @@ public class ArticleDynamicDataService {
             FROM type_de_jeux_libelle_langue
             JOIN libelle ON type_de_jeux_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON type_de_jeux_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -200,7 +242,7 @@ public class ArticleDynamicDataService {
             FROM etat_libelle_langue
             JOIN libelle ON etat_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON etat_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -216,7 +258,7 @@ public class ArticleDynamicDataService {
             FROM condition_payement_libelle_langue
             JOIN libelle ON condition_payement_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON condition_payement_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -228,7 +270,7 @@ public class ArticleDynamicDataService {
             FROM condition_livraison_libelle_langue
             JOIN libelle ON condition_livraison_libelle_langue.ref_libelle = libelle.id_libelle
             JOIN langue  ON condition_livraison_libelle_langue.ref_langue  = langue.id_langue
-            WHERE langue.key = ?
+            WHERE langue.`key` = ?
             ORDER BY libelle.libelle
             """;
         return query(sql, lang);
@@ -250,24 +292,6 @@ public class ArticleDynamicDataService {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur chargement données dynamiques", e);
-        }
-        return result;
-    }
-
-    private List<LabelValue> queryThreeParams(String sql, String p1, String p2, String p3) {
-        List<LabelValue> result = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, p1.toUpperCase());
-            ps.setString(2, p2);
-            ps.setString(3, p3.toUpperCase());
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    result.add(new LabelValue(rs.getString(1), rs.getString(2)));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur chargement sous-catégories", e);
         }
         return result;
     }

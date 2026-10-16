@@ -69,7 +69,9 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         getStyle()
                 .set("border-radius", "20px")
                 .set("overflow", "hidden")
-                .set("width", "640px")
+                .set("width", "100%")
+                .set("max-width", "640px")
+                .set("box-sizing", "border-box")
                 .set("margin-bottom", "24px");
 
         OidcUser user = (OidcUser) SecurityContextHolder
@@ -144,7 +146,8 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         activeView  = option;
         getStyle()
                 .set("width", "100%")
-                .set("min-width", "1000px")
+                .set("min-width", "0")
+                .set("max-width", "100%")   // annule le max-width: 640px posé dans beforeEnter
                 .set("box-sizing", "border-box");
         contentArea.removeAll();
         switch (option) {
@@ -178,7 +181,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // -------------------------------------------------------------------------
     /*
     private VerticalLayout buildStatsAPaye() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -202,7 +205,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 */
 
     private VerticalLayout buildStatsAPaye() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -227,7 +230,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Sous-vue : Mes attentes de livraison (acheteur)
     // -------------------------------------------------------------------------
     private VerticalLayout buildAttenteLivraisonADomicilePourMoi() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -249,7 +252,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     }
 
     private VerticalLayout buildAttenteLivraisonByPoste() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -271,7 +274,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     }
 
     private VerticalLayout buildAllerChercher() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -321,7 +324,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Sous-vue : Mes attentes de payement (vendeur)
     // -------------------------------------------------------------------------
     private VerticalLayout buildStatsMesAttentesDePement() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -346,7 +349,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Sous-vue : Mes articles à livrer (vendeur)
     // -------------------------------------------------------------------------
     private VerticalLayout buildStatsMesArtilesAlivrerADomicile() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -369,7 +372,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
 
     private VerticalLayout buildStatsMesArtilesAlivrerByPost() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -440,7 +443,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Sous-vue : Mes achats
     // -------------------------------------------------------------------------
     private VerticalLayout buildStatsMesAchats() {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -464,7 +467,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
 
     private VerticalLayout buildStatsMesVendus () {
-        getStyle().set("width", "900px");
+        getStyle().set("width", "100%");
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -497,8 +500,11 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 .set("padding-left", "8px");   // retire "overflow: visible"
 
         g.setWidth("100%");
-        g.setMinWidth("1000px");
-        g.setAllRowsVisible(true);             // Vaadin 24.2+
+        // Plus de min-width : le grid défile horizontalement dans son propre cadre
+        // si les colonnes dépassent la largeur de l'écran.
+        g.setAllRowsVisible(true);             // OK : pagination à PAGE_SIZE lignes
+        // Sur mobile : on masque les colonnes secondaires
+        ResponsiveHelper.hideColumnsOnMobile(g, "ID", "Marque");
     }
     // -------------------------------------------------------------------------
     // Colonnes : grid standard
@@ -508,6 +514,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         grid.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
         grid.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
         grid.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        ResponsiveHelper.hideColumnsOnMobile(grid, "ID", "Marque");
     }
 
     // -------------------------------------------------------------------------
@@ -1208,7 +1215,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         final double maxVal = max;
 
         Div wrapper = new Div();
-        wrapper.getStyle().set("width", "520px").set("padding", "8px 0");
+        wrapper.getStyle().set("width", "100%").set("max-width", "520px").set("padding", "8px 0");
 
         Div chartTitle = new Div();
         chartTitle.setText(title);
@@ -1277,7 +1284,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Vendeur confirme avoir reçu le paiement
     private void showFaireOffreDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1418,7 +1425,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private void showConfirmerPayement(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
@@ -1516,7 +1523,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     }
     private void showConfirmerReceptionDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1546,7 +1553,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private void showConfirmerReceptionSoulevementDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1577,7 +1584,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Acheteur confirme la réception
     private void  showConfirmerReceptionADomicileDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1628,7 +1635,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Vendeur confirme la livraison
     private void showConfirmerLivraison(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1683,7 +1690,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private void showConfirmerLivraisonByPost(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1737,7 +1744,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private void showAcheteurDetails(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1784,7 +1791,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private void showVendeurDetails(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1831,7 +1838,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Vendeur voit les détails de l'acheteur
     private void showAcheteurDetail(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);
@@ -1872,7 +1879,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Acheteur note un article
     private void showNoterDIalogue(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
         content.setSpacing(true);

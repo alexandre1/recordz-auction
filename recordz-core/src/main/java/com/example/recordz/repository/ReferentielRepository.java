@@ -27,6 +27,16 @@ public class    ReferentielRepository {
 
     private static final int LANGUE_FR = 1; // ← constante par défaut
 
+    @Cacheable("subcategorie-libelle")
+    public Optional<String> findLibelleSubcategorie(int refCategorie, int refSubcategorie, int refLangue) {
+        return dsl.fetchOptional("""
+            SELECT l.libelle
+            FROM subcategorie_libelle_langue s
+            JOIN libelle l ON l.id_libelle = s.ref_libelle
+            WHERE s.ref_categorie = ? AND s.ref_subcategorie = ? AND s.ref_langue = ?
+            """, refCategorie, refSubcategorie, refLangue)
+                .map(r -> r.get("libelle", String.class));
+    }
     @Cacheable("libelles")
     public Optional<String> findLibelle(Long idLibelle) {
         return dsl.select(field("libelle", String.class))

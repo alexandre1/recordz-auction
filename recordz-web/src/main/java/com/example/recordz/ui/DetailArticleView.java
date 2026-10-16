@@ -57,7 +57,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
     private final CalendrierService calendrierService;
 
     private Article article;
-    private Personne personne;
+    private Personne personne; // vendeur de l'article (peut être null)
 
     public DetailArticleView(ArticleService articleService, ReferenceService referenceService,
                              PersonneService personneService,
@@ -73,10 +73,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
     public void beforeEnter(BeforeEnterEvent event) {
         String idStr = event.getRouteParameters().get("articleId").orElse("0");
         try {
-            Long id = Long.valueOf(idStr); // CORRECTION 1 : suppression du 's' parasite et extraction de l'id
-            article = articleService.findById(Long.valueOf(idStr)).orElseThrow();
+            Long id = Long.valueOf(idStr);
+
             articleService.findByIdAndTrackVisit(id).ifPresentOrElse(
-                    article -> {
+                    a -> {
+                        this.article = a;
+
+                        // ── Enregistrement de la visite (utilisateur connecté uniquement) ──
                         try {
                             var auth = SecurityContextHolder.getContext().getAuthentication();
                             if (auth != null && auth.getPrincipal() instanceof OidcUser oidcUser) {
@@ -84,19 +87,28 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                                 String nom = oidcUser.getAttribute("family_name");
                                 String prenom = oidcUser.getAttribute("given_name");
                                 referenceService.enregistrerVisite(
-                                        article.getIdArticle().intValue(),
+                                        a.getIdArticle().intValue(),
                                         nom != null ? nom : "",
                                         prenom != null ? prenom : "",
                                         email != null ? email : ""
                                 );
-                                // CORRECTION 2 : fermeture correcte du bloc if
-                                Integer idVendeur = referenceService.findIdVendeur(article.getIdArticle().intValue());
-                                personne = personneService.findById(idVendeur.longValue());
                             }
                         } catch (Exception ex) {
                             System.err.println("Erreur enregistrement visite : " + ex.getMessage());
                         }
-                        buildView(article);
+
+                        // ── Vendeur : chargé indépendamment de la connexion ──
+                        try {
+                            Integer idVendeur = referenceService.findIdVendeur(a.getIdArticle().intValue());
+                            personne = idVendeur != null
+                                    ? personneService.findById(idVendeur.longValue())
+                                    : null;
+                        } catch (Exception ex) {
+                            personne = null;
+                            System.err.println("Erreur chargement vendeur : " + ex.getMessage());
+                        }
+
+                        buildView(a);
                     },
                     () -> add(new Paragraph("Article introuvable."))
             );
@@ -132,11 +144,16 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         // ── Corps ─────────────────────────────────────────────
         HorizontalLayout body = new HorizontalLayout();
         body.setAlignItems(Alignment.START);
-        body.setSpacing(true);
+        body.setSpacing(false);
+        body.setWidthFull();
+        body.getStyle()
+                .set("flex-wrap", "wrap")              // colonnes empilées sur mobile
+                .set("column-gap", "96px")
+                .set("row-gap", "1rem");
         body.add(buildLeftColumn(article));
         body.add(buildRightColumn(article));
         add(body);
-// ── Derniers enchérisseurs ────────────────────────────
+        // ── Derniers enchérisseurs ────────────────────────────
         if (article.getEnchere() != null && article.getEnchere() > 0) {
             add(new Hr());
             add(buildEncherisseursSection(article));
@@ -153,7 +170,9 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         if (video != null && !video.isBlank()) {
             IFrame iframe = new IFrame();
             iframe.setSrc("https://www.youtube-nocookie.com/embed/" + video);
-            iframe.setWidth("560px");
+            iframe.setWidth("100%");
+            iframe.setMaxWidth("560px");
+            iframe.getStyle().set("aspect-ratio", "16 / 9");
             iframe.getElement().setAttribute("frameborder", "0");
             iframe.getElement().setAttribute("allow",
                     "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
@@ -259,6 +278,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         row.setMaxWidth("560px");
         row.getStyle()
                 .set("padding", "6px 8px")
+                .set("flex-wrap", "wrap")
                 .set("border-bottom", "1px solid #F0E6FF");
         if (plusRecente) {
             row.getStyle().set("background-color", "#F7F0FF");
@@ -465,7 +485,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
             try {
                 var auth = SecurityContextHolder.getContext().getAuthentication();
-                if (!(auth.getPrincipal() instanceof OidcUser oidcUser)) {
+                if (auth == null || !(auth.getPrincipal() instanceof OidcUser oidcUser)) {
                     errMsg.setText("Vous devez être connecté.");
                     errMsg.setVisible(true);
                     return;
@@ -508,14 +528,18 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.setSpacing(false);
         col.setPadding(false);
         col.setWidth("310px");
+        col.setMaxWidth("100%");
 
         String catLibelle    = "";
         String subCatLibelle = "";
         if (article.getRefCategorie() != null) {
             catLibelle = referenceService.findCategorieLibelle(article.getRefCategorie());
         }
-        if (article.getRefSubcategorie() != null) {
-            subCatLibelle = referenceService.findSubCategorieLibelle(article.getRefSubcategorie());
+        // ✅ CORRECTION : la sous-catégorie se résout avec le COUPLE (catégorie, sous-catégorie).
+        // Les ids 1 à 4 existent à la fois en vêtements et en vins : l'id seul est ambigu.
+        if (article.getRefCategorie() != null && article.getRefSubcategorie() != null) {
+            subCatLibelle = referenceService.findSubCategorieLibelle(
+                    article.getRefCategorie(), article.getRefSubcategorie());
         }
 
         col.add(fieldRow("Catégorie", catLibelle));
@@ -582,20 +606,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 );
             }
 
-            else if (cat == ArticleCategory.FASHION_FEMME) {
-                col.add(
-                        fieldRow("Taille",               str(article.getTaille())))
-                ;
-            }
-            else if (cat == ArticleCategory.FASHION_HOMME) {
-                col.add(
-                        fieldRow("Taille",               str(article.getTaille())))
-                ;
-            }
-            else if (cat == ArticleCategory.LINGERIE) {
-                col.add(
-                        fieldRow("Taille",               str(article.getTaille())))
-                ;
+            else if (cat == ArticleCategory.FASHION_FEMME
+                    || cat == ArticleCategory.FASHION_HOMME
+                    || cat == ArticleCategory.LINGERIE) {
+                col.add(fieldRow("Taille", str(article.getTaille())));
             }
 
             else if (cat == ArticleCategory.VINS) {
@@ -607,9 +621,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                             .findFirst()
                             .ifPresent(w -> col.add(fieldRow("Type de vin", w.nom())));
 
-                if (article.getCepage() != null)
+                // ✅ CORRECTION : getRefCepage() (cohérent avec ArticleRepository.setRefCepage)
+                if (article.getRefCepage() != null)
                     referenceService.findAllCepages().stream()
-                            .filter(w -> w.id() == article.getCepage())
+                            .filter(w -> w.id() == article.getRefCepage())
                             .findFirst()
                             .ifPresent(w -> col.add(fieldRow("Cépage", w.nom())));
             }
@@ -668,7 +683,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.setSpacing(false);
         col.setPadding(false);
         col.setWidth("300px");
-        col.getStyle().set("margin-left", "80px");
+        col.setMaxWidth("100%");
 
         col.add(fieldRow("Nombre de vues",    str(article.getVisites())));
         if (article.getEnchere() != null && article.getEnchere().equals(1)) {
@@ -678,10 +693,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.add(gap());
 
         // ── Vendeur ────────────────────────────────────────────
-        Integer idVendeur = referenceService.findIdVendeur(article.getIdArticle().intValue());
-        if (idVendeur != null) {
-            Personne person = personneService.findById(idVendeur.longValue());
-            Anchor auteurLink = new Anchor("/profil/" + person.getNomUtilisateur(), person.getNom());
+        // ✅ CORRECTION : on réutilise le champ "personne" (déjà chargé) et on teste null
+        if (personne != null) {
+            String lienProfil = personne.getNomUtilisateur() != null ? personne.getNomUtilisateur() : "";
+            String nomAffiche = personne.getNom() != null ? personne.getNom() : lienProfil;
+            Anchor auteurLink = new Anchor("/profil/" + lienProfil, nomAffiche);
 
             Span lbl = new Span("Vendeur : ");
             lbl.getStyle()
@@ -716,8 +732,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         // ── Boutons d'action ───────────────────────────────────
         HorizontalLayout buttonsLayout = new HorizontalLayout();
+
+        buttonsLayout.setWidthFull();
+        buttonsLayout.setPadding(false);
+        buttonsLayout.setSpacing(true);
         buttonsLayout.setAlignItems(Alignment.CENTER);
-        buttonsLayout.getStyle().set("margin-top", "4px");
+
+        buttonsLayout.getStyle()
+                .set("display", "flex")
+                .set("flex-wrap", "wrap")
+                .set("gap", "8px")
+                .set("max-width", "100%")
+                .set("box-sizing", "border-box");
+
+        Integer catId = article.getRefCategorie();
+        boolean immobilier = catId != null && ArticleCategory.fromId(catId) == ArticleCategory.IMMOBILIER;
 
         if (article.getEnchere() != null && article.getEnchere() > 0) {
 
@@ -732,23 +761,18 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                             : "Aucune offre"));
 
             if (date != null) {
-                System.out.println("Date fermeture : " + article.getDateFermetureEnchere());
                 col.add(fieldRow("Date fermeture enchère", date));
             }
             Button offreBtn = styledButton("Faire une offre");
             offreBtn.addClickListener(e -> showFaireOffreDialog(article, null, derniereOffre));
 
-            Integer catId = article.getRefCategorie();
-            if (catId != null && ArticleCategory.fromId(catId) == ArticleCategory.IMMOBILIER) {
+            if (immobilier) {
                 Button visiteBtn = styledButton("Demande de visites");
                 visiteBtn.addClickListener(e -> showDemandeDeVisite(article));
                 Button visiteCalendrier = styledButton("L'agenda des visites");
-                // CORRECTION 3 : parenthèse fermante manquante sur le listener
-                visiteCalendrier.addClickListener(e ->
-                        buildCalendrierArticle(personne.getEmail()));
+                visiteCalendrier.addClickListener(e -> ouvrirAgenda());
 
                 buttonsLayout.add(listeVisiteursBtn, offreBtn, visiteBtn, visiteCalendrier);
-
             } else {
                 buttonsLayout.add(listeVisiteursBtn, offreBtn);
             }
@@ -758,15 +782,12 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             Button offreBtn = styledButton("Acheter");
             offreBtn.addClickListener(e -> showAcheterDialog(article));
 
-            Integer catId = article.getRefCategorie();
-            if (catId != null && ArticleCategory.fromId(catId) == ArticleCategory.IMMOBILIER) {
+            if (immobilier) {
                 Button visiteBtn = styledButton("Demande de visites");
                 visiteBtn.addClickListener(e -> showDemandeDeVisite(article));
 
-                // ✅ Ajout du bouton calendrier
                 Button visiteCalendrier = styledButton("L'agenda des visites");
-                visiteCalendrier.addClickListener(e ->
-                        buildCalendrierArticle(personne.getEmail()));
+                visiteCalendrier.addClickListener(e -> ouvrirAgenda());
 
                 buttonsLayout.add(listeVisiteursBtn, offreBtn, visiteBtn, visiteCalendrier);
             } else {
@@ -778,9 +799,19 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         return col;
     }
 
+    /** ✅ Ouvre l'agenda du vendeur, en protégeant le cas "vendeur introuvable". */
+    private void ouvrirAgenda() {
+        if (personne == null || personne.getEmail() == null || personne.getEmail().isBlank()) {
+            Notification.show("Agenda indisponible : vendeur introuvable.", 3000,
+                    Notification.Position.TOP_CENTER);
+            return;
+        }
+        buildCalendrierArticle(personne.getEmail());
+    }
+
     private void showDemandeDeVisite(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("420px");
+        ResponsiveHelper.dialogWidth(dlg, 420);
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
@@ -795,7 +826,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         ComboBox<PaysPhone> indicatifBox = new ComboBox<>("Indicatif");
         indicatifBox.setItems(pays);
         indicatifBox.setItemLabelGenerator(p -> p.drapeau() + " " + p.indicatif());
-        indicatifBox.setWidth("180px");
+        indicatifBox.setWidth("40%");
 
         pays.stream()
                 .filter(p -> p.code().equals("CH"))
@@ -804,7 +835,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         TextField reponseParTelephone = new TextField("Numéro");
         reponseParTelephone.setPlaceholder("XX XXX XX XX");
-        reponseParTelephone.setWidth("200px");
+        reponseParTelephone.setWidth("60%");
 
         reponseParTelephone.addValueChangeListener(e -> {
             PaysPhone selected = indicatifBox.getValue();
@@ -842,10 +873,6 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         datePicker.setValue(LocalDate.now());
         datePicker.setMin(LocalDate.now());
         datePicker.setLocale(new java.util.Locale("fr", "CH"));
-        datePicker.addValueChangeListener(e -> {
-            LocalDate selected = e.getValue();
-            System.out.println("Date choisie : " + selected);
-        });
         content.add(datePicker);
 
         TimePicker timePicker = new TimePicker("Heure du rendez-vous");
@@ -853,10 +880,6 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         timePicker.setStep(Duration.ofMinutes(30));
         timePicker.setMin(LocalTime.of(8, 0));
         timePicker.setMax(LocalTime.of(18, 0));
-        timePicker.addValueChangeListener(e -> {
-            LocalTime selected = e.getValue();
-            System.out.println("Heure choisie : " + selected);
-        });
         content.add(timePicker);
 
         Button fermerBtn = new Button("Fermer");
@@ -874,6 +897,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .set("width", "90px")
                 .set("border", "none");
         envoyerBtn.addClickListener(e -> {
+            // ✅ Validation : date et heure obligatoires (LocalDateTime.of plante sur null)
+            if (datePicker.getValue() == null || timePicker.getValue() == null) {
+                Notification.show("Veuillez choisir une date et une heure.", 3000,
+                        Notification.Position.TOP_CENTER);
+                return;
+            }
+
             PaysPhone selected = indicatifBox.getValue();
             String numeroComplet = selected != null
                     ? selected.indicatif() + reponseParTelephone.getValue().replaceAll("[^0-9]", "")
@@ -898,10 +928,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                             commentaire.getValue().trim(),
                             dateVisite
                     );
-                    Personne personne = this.personneService.findById(idVendeur.longValue());
-                    if (personne != null) {
+                    Personne vendeur = this.personneService.findById(idVendeur.longValue());
+                    if (vendeur != null) {
                         envoyerEmailDemandeVisite(
-                                personne.getEmail(),
+                                vendeur.getEmail(),
                                 article.getNom(),
                                 nom.getValue() + " " + prenom.getValue(),
                                 commentaire.getValue(),
@@ -934,24 +964,27 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         msg.setTo(email);
         msg.setFrom("robot@avant-garde.ch");
         msg.setSubject("Vous avez une demande de visites !");
+        // ✅ CORRECTION : le text block était concaténé avec "Bonjour " + email + """...""",
+        // ce qui mélangeait concaténation et .formatted() (le .formatted ne s'appliquait
+        // qu'au dernier bloc). On formate maintenant un seul bloc.
         msg.setText("""
-                Bonjour """ + email + """
-                
+                Bonjour,
+
                 Vous avez une nouvelle demande de visite pour l'article %s
-                
-                La personne avec le nom suivant %s désire visiter le bien voici son commentaire %s
-                
+
+                La personne avec le nom suivant %s désire visiter le bien, voici son commentaire : %s
+
                 Voici son email : %s
-                
+
                 Il désire visiter le bien pour la date du %s
-                
+
                 L'équipe Avant-Garde
                 """.formatted(nom, nomPrenom, commentaire, emailDemandeur, dateVisite));
         try {
             mailSender.send(msg);
             Notification.show("Email envoyé");
         } catch (Exception e) {
-            System.err.println("Erreur envoi email acheteur : " + e.getMessage());
+            System.err.println("Erreur envoi email vendeur : " + e.getMessage());
         }
     }
 
@@ -1009,13 +1042,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private void showVisiteursDialog(Article article) {
         Dialog dlg = new Dialog();
-        // CORRECTION 7 : la largeur de 420px ne laissait plus assez de place
-        // pour la colonne "Date de visite" une fois ajoutée (avatar + nom +
-        // email prenaient déjà quasi toute la largeur disponible). La date
-        // existait bien dans le DOM mais était poussée hors de la zone
-        // visible du dialogue, faute de retour à la ligne automatique sur
-        // un HorizontalLayout.
-        dlg.setWidth("560px");
+        ResponsiveHelper.dialogWidth(dlg, 560);
 
         var visiteurs = referenceService.findVisiteurs(article.getIdArticle().intValue());
         final int PAGE_SIZE = 5;
@@ -1055,12 +1082,6 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     .set("padding", "2px 10px");
         }
 
-        // CORRECTION 5 : la pagination était visible puis immédiatement
-        // re-masquée par un second appel à setVisible(totalPages > 1) en fin
-        // de méthode. Il ne reste plus qu'un seul appel, juste après le
-        // contrôle "liste vide", qui affiche la barre dès qu'il y a au moins
-        // un visiteur (les flèches sont désactivées via setEnabled si une
-        // seule page suffit).
         Runnable renderPage = () -> {
             listeZone.removeAll();
 
@@ -1076,6 +1097,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
             HorizontalLayout tableHeader = new HorizontalLayout();
             tableHeader.setWidthFull();
+            tableHeader.addClassName("hide-on-mobile");   // masqué sur petit écran (voir CSS)
             tableHeader.getStyle().set("padding", "6px 8px").set("margin-bottom", "4px");
             Span hNom = new Span("Visiteur");
             hNom.getStyle().set("width", "150px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
@@ -1097,6 +1119,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 row.setWidthFull();
                 row.getStyle()
                         .set("padding", "6px 8px")
+                        .set("flex-wrap", "wrap")          // la date passe à la ligne sur mobile
                         .set("border-bottom", "1px solid #F0E6FF");
 
                 String nomComplet = (v[0] != null ? v[0] : "") + " " + (v[1] != null ? v[1] : "");
@@ -1127,14 +1150,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     nomLink.getUI().ifPresent(ui -> ui.navigate("profil/" + username));
                 });
 
-                Span emailSpan = new Span(email.contains("@")
-                        ? email.substring(0, 2) + "***" + email.substring(email.indexOf('@'))
-                        : "—");
+                // ✅ Masquage de l'email sécurisé : substring(0, 2) plantait si la partie locale < 2 caractères
+                Span emailSpan = new Span(masquerEmail(email));
                 emailSpan.getStyle().set("font-size", "0.78rem").set("color", "#888").set("width", "120px").set("flex-shrink", "0");
 
-                // CORRECTION 6 : affichage de la date de visite (v[3]) pour
-                // que chaque passage d'un même visiteur soit distingué,
-                // et non uniquement le dernier tel qu'avant.
                 String dateBrute = v.length > 3 ? v[3] : null;
                 Span dateSpan = new Span(formatDateVisite(dateBrute));
                 dateSpan.getStyle().set("font-size", "0.78rem").set("color", "#888").set("white-space", "nowrap");
@@ -1170,7 +1189,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private void showFaireOffreDialog(Article article, TextField offreField, Double derniereOffre) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
+
+        // ✅ Prix de référence : dernière offre si elle existe, sinon prix de départ de l'article
+        final Double prixReference = derniereOffre != null ? derniereOffre : article.getPrix();
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
@@ -1185,7 +1207,8 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         nomArticle.getStyle().set("font-size", "0.9rem");
         content.add(nomArticle);
 
-        Span prixActuel = new Span("Prix actuel : " + derniereOffre + " CHF");
+        Span prixActuel = new Span("Prix actuel : "
+                + (prixReference != null ? String.format("%.2f", prixReference) : "—") + " CHF");
         prixActuel.getStyle().set("font-size", "0.9rem").set("color", "#555");
         content.add(prixActuel);
         content.add(new Hr());
@@ -1231,9 +1254,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
             try {
                 double montant = Double.parseDouble(valeur);
-                if (derniereOffre != null && montant <= article.getPrix()) {
+                // ✅ CORRECTION : on compare à la dernière offre (ou au prix de départ s'il n'y en a pas)
+                if (prixReference != null && montant <= prixReference) {
                     errMsg.setText("Votre offre doit être supérieure au prix actuel ("
-                            + derniereOffre + " CHF).");
+                            + String.format("%.2f", prixReference) + " CHF).");
                     errMsg.setVisible(true);
                     return;
                 }
@@ -1289,7 +1313,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private void showAcheterDialog(Article article) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("380px");
+        ResponsiveHelper.dialogWidth(dlg, 380);
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
@@ -1354,28 +1378,33 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     return;
                 }
 
-                if (article.getQuantite() - 1 >= 0) {
-                    int[] conditionPayement = {article.getRefConditionPayement() != null
-                            ? article.getRefConditionPayement() : 0};
-                    int[] conditionLivraison = {article.getRefModeDeLivraison() != null
-                            ? article.getRefModeDeLivraison() : 0};
-
-                    referenceService.enregistrerAchat(
-                            article.getIdArticle().intValue(),
-                            idAcheteur,
-                            article.getPrix(),
-                            article.getQuantite(),
-                            conditionPayement[0],
-                            conditionLivraison[0]
-                    );
-
-                } else {
+                // ✅ CORRECTION : quantité null protégée, et on s'arrête si le stock est épuisé
+                // (avant, la notification "plus disponible" était suivie de "Achat confirmé").
+                int stock = article.getQuantite() != null ? article.getQuantite() : 0;
+                if (stock - 1 < 0) {
                     Notification.show(
                             "L'article n'est plus disponible en stock",
                             3000,
                             Notification.Position.TOP_CENTER
                     );
+                    dlg.close();
+                    return;
                 }
+
+                int conditionPayement = article.getRefConditionPayement() != null
+                        ? article.getRefConditionPayement() : 0;
+                int conditionLivraison = article.getRefModeDeLivraison() != null
+                        ? article.getRefModeDeLivraison() : 0;
+
+                referenceService.enregistrerAchat(
+                        article.getIdArticle().intValue(),
+                        idAcheteur,
+                        article.getPrix(),
+                        article.getQuantite(),
+                        conditionPayement,
+                        conditionLivraison
+                );
+
                 Notification.show(
                         "Achat confirmé pour " + article.getPrix() + " CHF !",
                         3000,
@@ -1395,11 +1424,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         dlg.open();
     }
 
-    // CORRECTION 4 : buildCalendrierArticle ouvre une Dialog au lieu d'injecter dans la vue
     private void buildCalendrierArticle(String email) {
         Dialog dlg = new Dialog();
-        dlg.setWidth("900px");
-        dlg.setHeight("600px");
+        ResponsiveHelper.dialogWidth(dlg, 900);
+        dlg.setHeight("85vh");
+        dlg.setMaxHeight("600px");
 
         FullCalendar calendar = FullCalendarBuilder.create().build();
         calendar.setSizeFull();
@@ -1448,6 +1477,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         HorizontalLayout toolbar = new HorizontalLayout(prev, today, next, viewSelect);
         toolbar.setAlignItems(Alignment.CENTER);
+        toolbar.getStyle().set("flex-wrap", "wrap");
 
         VerticalLayout content = new VerticalLayout(toolbar, calendar, fermerBtn);
         content.setSizeFull();
@@ -1462,17 +1492,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
     private HorizontalLayout fieldRow(String label, String value) {
         HorizontalLayout row = new HorizontalLayout();
         row.setAlignItems(Alignment.BASELINE);
+        row.setWidthFull();
         row.getStyle().set("margin-bottom", "3px");
 
+        // Libellé = moitié de la ligne, champ = le reste
         Span lbl = new Span(label);
         lbl.getStyle()
-                .set("width", "185px")
+                .set("flex", "0 0 50%")
+                .set("min-width", "0")
                 .set("font-size", "0.85rem")
                 .set("color", "#0000CC");
 
         TextField val = new TextField();
         val.setValue(value != null ? value : "");
-        val.setWidth("150px");
+        val.setMinWidth("0");
+        val.getStyle().set("flex", "1 1 0");
         val.setReadOnly(true);
         val.getStyle().set("font-size", "0.8rem");
 
@@ -1490,10 +1524,18 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         return o != null ? o.toString() : "—";
     }
 
-    // CORRECTION 6 (suite) : formate la date de visite renvoyée par
-    // ReferenceService.findVisiteurs (chaîne issue de LocalDateTime.toString()).
-    // En cas de format inattendu ou de valeur nulle, on affiche "—" plutôt
-    // que de laisser planter l'interface.
+    /** Masque la partie locale d'un email : "ab***@domaine.ch" (sans risque si < 2 caractères). */
+    private String masquerEmail(String email) {
+        if (email == null || !email.contains("@")) return "—";
+        int at = email.indexOf('@');
+        String local = email.substring(0, at);
+        String visible = local.length() >= 2 ? local.substring(0, 2) : local;
+        return visible + "***" + email.substring(at);
+    }
+
+    // Formate la date de visite renvoyée par ReferenceService.findVisiteurs
+    // (chaîne issue de LocalDateTime.toString()). En cas de format inattendu ou de
+    // valeur nulle, on affiche "—" plutôt que de laisser planter l'interface.
     private static final DateTimeFormatter DATE_VISITE_FORMAT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -1510,15 +1552,20 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private Button styledButton(String label) {
         Button btn = new Button(label);
+
         btn.getStyle()
-                .set("background", "none")
+                .set("background", "white")
                 .set("border", "1px solid #6100C1")
                 .set("color", "#6100C1")
                 .set("border-radius", "20px")
-                .set("font-size", "0.8rem")
+                .set("font-size", "0.85rem")
                 .set("cursor", "pointer")
-                .set("padding", "4px 12px")
-                .set("margin-top", "4px");
+                .set("padding", "8px 14px")
+                .set("margin", "0")
+                .set("white-space", "normal")
+                .set("min-height", "40px")
+                .set("box-sizing", "border-box");
+
         return btn;
     }
 }

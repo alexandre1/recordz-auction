@@ -754,25 +754,21 @@ public class ReferenceService {
 
 
 
-    public String findSubCategorieLibelle(int idSubcat) {
+    public String findSubCategorieLibelle(int idCategorie, int idSubcat) {
         return dsl.fetch("""
-            SELECT ls.libelle AS libelle
-            FROM article a
-            LEFT JOIN subcategorie_libelle_langue s
-                   ON s.ref_subcategorie = a.ref_subcategorie
-                  AND s.ref_categorie = a.ref_categorie
-                  AND s.ref_langue = ?
-            LEFT JOIN libelle ls
-                   ON ls.id_libelle = s.ref_libelle
-            WHERE a.ref_subcategorie = ?
+            SELECT l.libelle
+            FROM subcategorie_libelle_langue s
+            JOIN libelle l ON l.id_libelle = s.ref_libelle
+            WHERE s.ref_categorie    = ?
+              AND s.ref_subcategorie = ?
+              AND s.ref_langue       = ?
             LIMIT 1
-            """, 1, idSubcat)
+            """, idCategorie, idSubcat, LANGUE_FR)
                 .stream()
                 .findFirst()
                 .map(r -> r.get("libelle", String.class))
                 .orElse(null);
     }
-
     public List<CategorieItem> findAllCategories() {
         return dsl.fetch("""
                         SELECT c.ref_categorie, l.libelle
