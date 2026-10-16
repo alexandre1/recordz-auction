@@ -344,8 +344,8 @@ public class ArticleService {
     }
 
     @Transactional
-    public void confirmerReceptionVendeur (Integer  idArticle, Integer refVendeur) {
-        articleRepository.confirmerReceptionVendeur(idArticle, refVendeur);
+    public void confirmerReceptionVendeur (Integer  idArticle, Integer refVendeur, Integer idAlivre, Article article) {
+        articleRepository.confirmerReceptionVendeur(idArticle, refVendeur,idAlivre, article);
     }
 
 

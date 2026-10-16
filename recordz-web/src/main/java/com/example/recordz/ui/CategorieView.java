@@ -32,7 +32,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
 
     private final Select<String> categorieSelect     = new Select<>();
     private final Select<String> sousCategorieSelect = new Select<>();
-    private final Button         advSearch           = new Button("Recherche avancée");
+    private final Button         advSearch           = styledButton("Recherche avancée");
 
     private int currentPage = 1;
     private int totalPages  = 1;
@@ -132,14 +132,6 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
         selectsBar.setAlignItems(Alignment.BASELINE);
         selectsBar.setSpacing(true);
 
-        advSearch.getStyle()
-                .set("background", "none")
-                .set("border", "none")
-                .set("color", "#6100C1")
-                .set("text-decoration", "underline")
-                .set("cursor", "pointer")
-                .set("font-size", "0.85rem")
-                .set("padding", "0");
         advSearch.addClickListener(e -> openRechercheAvancee());
 
         VerticalLayout topSection = new VerticalLayout(selectsBar);
@@ -703,4 +695,24 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
     }
 
     public record ArticleDto(String nom, String fabricant, double prixChf) {}
+
+    private Button styledButton(String label) {
+        Button btn = new Button(label);
+
+        btn.getStyle()
+                .set("background", "white")
+                .set("border", "1px solid #6100C1")
+                .set("color", "#6100C1")
+                .set("border-radius", "20px")
+                .set("font-size", "0.85rem")
+                .set("cursor", "pointer")
+                .set("padding", "8px 14px")
+                .set("margin", "0")
+                .set("white-space", "normal")
+                .set("min-height", "40px")
+                .set("box-sizing", "border-box");
+
+        return btn;
+    }
+
 }

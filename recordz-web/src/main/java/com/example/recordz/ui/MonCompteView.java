@@ -730,6 +730,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     }
 
     private void addArticleMesArtclesAllerChercher(Grid<Article> g) {
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
         g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
         g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
         g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
@@ -766,6 +767,12 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
 
     private void addArticleAttenteSoulevement(Grid<Article> g) {
+        g.addColumn(art -> art.getIdAlivre() != null
+                        ? art.getIdAlivre() : "—")
+                .setHeader("ID")
+                .setWidth("30px")
+                .setFlexGrow(0);
+
         g.addComponentColumn(this::buildImageBox)
                 .setHeader("Image")
                 .setWidth("80px")
@@ -1540,10 +1547,11 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         Button confirmerBtn = new Button("Confirmer la réception");
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
+            //Notification.show("A aller cherher id : " + article.getIdAlivre());
             articleService.confirmerReception(article.getIdArticle().intValue(), article.getRefAcheteur().intValue(), article);
             Notification.show("Réception confirmée pour : " + article.getNom());
             dlg.close();
-            showContent("mywaitdelivering");
+            showContent("myarticletopickup");
         });
 
         content.add(new HorizontalLayout(annulerBtn, confirmerBtn));
@@ -1570,7 +1578,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         Button confirmerBtn = new Button("Confirmer la réception");
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
-            articleService.confirmerReceptionVendeur(article.getIdArticle().intValue(), article.getRefVendeur().intValue());
+            articleService.confirmerReceptionVendeur(article.getIdArticle().intValue(), article.getRefVendeur().intValue(), article.getIdAlivre(), article);
             Notification.show("Réception confirmée pour : " + article.getNom());
             dlg.close();
             showContent("mywaitpickup");

@@ -717,30 +717,18 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.add(gap());
 
         // ── Bouton visiteurs ───────────────────────────────────
-        Button listeVisiteursBtn = new Button("👥 Voir les visiteurs");
-        listeVisiteursBtn.getStyle()
-                .set("background", "none")
-                .set("border", "1px solid #6100C1")
-                .set("color", "#6100C1")
-                .set("border-radius", "20px")
-                .set("font-size", "0.8rem")
-                .set("cursor", "pointer")
-                .set("padding", "4px 12px")
-                .set("margin-top", "4px")
-                .set("transition", "all 0.2s");
+        // ✅ Même style que les autres boutons d'action
+        Button listeVisiteursBtn = styledButton("👥 Voir les visiteurs");
         listeVisiteursBtn.addClickListener(e -> showVisiteursDialog(article));
 
         // ── Boutons d'action ───────────────────────────────────
-        HorizontalLayout buttonsLayout = new HorizontalLayout();
-
+        // ✅ Grille CSS : toutes les cellules ont la même largeur, les boutons la remplissent.
+        // Pour une pile verticale (1 bouton par ligne), remplacer par "1fr".
+        Div buttonsLayout = new Div();
         buttonsLayout.setWidthFull();
-        buttonsLayout.setPadding(false);
-        buttonsLayout.setSpacing(true);
-        buttonsLayout.setAlignItems(Alignment.CENTER);
-
         buttonsLayout.getStyle()
-                .set("display", "flex")
-                .set("flex-wrap", "wrap")
+                .set("display", "grid")
+                .set("grid-template-columns", "repeat(auto-fit, minmax(150px, 1fr))")
                 .set("gap", "8px")
                 .set("max-width", "100%")
                 .set("box-sizing", "border-box");
@@ -794,6 +782,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 buttonsLayout.add(listeVisiteursBtn, offreBtn);
             }
         }
+        // ✅ Chaque bouton remplit sa cellule de la grille -> tailles identiques
+        buttonsLayout.getChildren().forEach(c -> {
+            if (c instanceof Button b) b.setWidthFull();
+        });
         col.add(buttonsLayout);
 
         return col;

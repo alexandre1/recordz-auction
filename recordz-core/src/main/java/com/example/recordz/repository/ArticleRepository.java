@@ -705,7 +705,7 @@ public class ArticleRepository {
                 )
                 .and(field("article.ref_mode_de_livraison").equal(3))
                 .and(field("article.ref_mode_de_livraison")
-                .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
+                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
                 .limit(50)
                 .offset(0)
                 .fetch()
@@ -721,6 +721,7 @@ public class ArticleRepository {
                     a.setMontant(             r.get(field("a_livre.montant"),                 BigDecimal.class)); // ✅
                     a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class));   // ✅
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),  Integer.class));   // ✅
                     return a;                });
     }
 
@@ -769,6 +770,7 @@ public class ArticleRepository {
                     a.setMontant(             r.get(field("a_livre.montant"),                 BigDecimal.class)); // ✅
                     a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class));   // ✅
                     a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
+                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),  Integer.class));   // ✅
                     return a;                });
     }
 
@@ -806,11 +808,12 @@ public class ArticleRepository {
 
     }
 
-    public void confirmerReceptionVendeur (Integer idArticle, Integer refVendeur) {
+    public void confirmerReceptionVendeur (Integer idArticle, Integer refVendeur, Integer idAlivre, Article article) {
         dsl.update(table("a_paye"))
                 .set(field("ref_statut"), 14)
                 .where(field("ref_article").eq(idArticle))
                 .and(field("ref_vendeur").eq(refVendeur))
+                .and(field("id_a_paye").eq(article.getIdApaye()))
                 .execute();
 
         dsl.update(table("a_livre"))
@@ -818,6 +821,7 @@ public class ArticleRepository {
                 .set(field("date_achat"), LocalDateTime.now())
                 .where(field("ref_article").eq(idArticle))
                 .and(field  ("ref_vendeur").eq(refVendeur))
+                .and(field  ("id_a_livre").eq(article.getIdAlivre()))
                 .execute();
 
     }
@@ -1401,4 +1405,3 @@ public class ArticleRepository {
                 .fetchInto(String.class);
     }
 }
-
