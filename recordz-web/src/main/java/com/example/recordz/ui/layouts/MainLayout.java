@@ -24,6 +24,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinSession;
+import java.util.Locale;
 
 @Layout
 @AnonymousAllowed
@@ -47,12 +50,15 @@ public class MainLayout extends AppLayout {
         DrawerToggle toggle = new DrawerToggle();
         toggle.setAriaLabel("Ouvrir le menu des catégories");
 
-        HorizontalLayout top = new HorizontalLayout(toggle, buildMainNav());
+        Select<Locale> langSelect = buildLanguageSelect();
+        FlexLayout mainNav = buildMainNav();
+
+        HorizontalLayout top = new HorizontalLayout(toggle, mainNav, langSelect);
+        top.expand(mainNav);          // pousse le sélecteur à droite
         top.setWidthFull();
         top.setPadding(false);
         top.setSpacing(false);
         top.setAlignItems(FlexComponent.Alignment.CENTER);
-
         VerticalLayout navbar = new VerticalLayout();
         navbar.setSpacing(false);
         navbar.setPadding(false);
@@ -74,12 +80,16 @@ public class MainLayout extends AppLayout {
         nav.getStyle().set("padding", "0 0.5rem").set("gap", "0.25rem 1rem");
 
         String[][] links = {
-                {"Home",       ""},
-                {"Mon Compte", "mon-compte"},
-                {"A propos",   "a-propos"},
-                {"Tarif",      "tarif"}
+                {getTranslation("nav.home"),    ""},
+                {getTranslation("nav.account"), "mon-compte"},
+                {getTranslation("nav.about"),   "a-propos"},
+                {getTranslation("nav.pricing"), "tarif"}
         };
-
+        TextField nomField = new TextField();
+        StyleHelper.applyTextFieldStyle(nomField);
+        nomField.addClassName("layout-search-field");
+        nomField.setPlaceholder(getTranslation("search.name"));
+        Button searchBtn = styledButton(getTranslation("search.button"));
         for (String[] l : links) {
             Anchor a = new Anchor("/" + l[1], l[0]);
             a.addClassName("layout-nav-link");
@@ -190,5 +200,40 @@ public class MainLayout extends AppLayout {
         });
 
         addToDrawer(sidebar);
+    }
+
+    public static final String SESSION_LOCALE = "app.locale";
+
+    private Select<Locale> buildLanguageSelect() {
+        Select<Locale> langSelect = new Select<>();
+        langSelect.setItems(Locale.FRENCH, Locale.ENGLISH, Locale.GERMAN);
+        langSelect.setItemLabelGenerator(l -> switch (l.getLanguage()) {
+            case "de" -> "🇩🇪 Deutsch";
+            case "en" -> "🇬🇧 English";
+            default   -> "🇫🇷 Français";
+        });
+        langSelect.setWidth("140px");
+        langSelect.setAriaLabel("Langue / Language / Sprache");
+        langSelect.getStyle().set("margin-right", "0.5rem");
+
+        // Sélection initiale d'après la locale courante de l'UI
+        String lang = UI.getCurrent() != null ? UI.getCurrent().getLocale().getLanguage() : "fr";
+        langSelect.setValue(switch (lang) {
+            case "de" -> Locale.GERMAN;
+            case "en" -> Locale.ENGLISH;
+            default   -> Locale.FRENCH;
+        });
+
+        langSelect.addValueChangeListener(e -> {
+            if (!e.isFromClient() || e.getValue() == null) {
+                return;
+            }
+            Locale newLocale = e.getValue();
+            VaadinSession.getCurrent().setAttribute(SESSION_LOCALE, newLocale);
+            UI ui = UI.getCurrent();
+            ui.setLocale(newLocale);
+            ui.getPage().reload();   // reconstruit les vues avec la nouvelle langue
+        });
+        return langSelect;
     }
 }

@@ -32,11 +32,22 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Route(value = "mon-compte", layout = MainLayout.class)
 @PermitAll
-@PageTitle("Avant-Garde - Mon Compte")
-public class MonCompteView extends VerticalLayout implements BeforeEnterObserver {
+public class MonCompteView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
 
     private static final Number[] STATS_PARIS_HILTON = {0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1000};
-    private static final String[] MOIS = {"Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"};
+    /** Libellés des 12 mois, traduits selon la locale de l'UI. */
+    private String[] months() {
+        String[] m = new String[12];
+        for (int i = 0; i < 12; i++) {
+            m[i] = getTranslation("account.month." + (i + 1));
+        }
+        return m;
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("account.page.title");
+    }
 
     private final ReferenceService referenceService;
     private final ArticleService articleService;
@@ -100,19 +111,19 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         layout.setPadding(false);
 
         String[][] items = {
-                {"Mes articles à payés",                "myarticlepayes"},
-                {"Mes attentes de livraison à domicile", "mywaitdelivering"},
-                {"Mes attentes de livraison par poste", "mywaitdeliveringbypost"},
-                {"Mes attentes de payement",            "mywaitpayement"},
-                {"Mes objets à livrer à domicile",      "myobjectstodeliver"},
-                {"Mes objets à livrer",                 "myobjectstodeliverByPost"},
-                {"Mes attentes de soulèvement",         "mywaitpickup"},
-                {"Mes articles à aller chercher",       "myarticletopickup"},
-                {"Mes invendus",                        "myunsold"},
-                {"Mes objets en vente",                 "myselling"},
-                {"Mes articles achetés",                "mybought"},
-                {"Mes articles vendus",                 "mysold"},
-                {"Statistiques des ventes par marque",   "statdealarticlebrand"}
+                {getTranslation("account.menu.myarticlepayes"),                "myarticlepayes"},
+                {getTranslation("account.menu.mywaitdelivering"), "mywaitdelivering"},
+                {getTranslation("account.menu.mywaitdeliveringbypost"), "mywaitdeliveringbypost"},
+                {getTranslation("account.menu.mywaitpayement"),            "mywaitpayement"},
+                {getTranslation("account.menu.myobjectstodeliver"),      "myobjectstodeliver"},
+                {getTranslation("account.menu.myobjectstodeliverByPost"),                 "myobjectstodeliverByPost"},
+                {getTranslation("account.menu.mywaitpickup"),         "mywaitpickup"},
+                {getTranslation("account.menu.myarticletopickup"),       "myarticletopickup"},
+                {getTranslation("account.menu.myunsold"),                        "myunsold"},
+                {getTranslation("account.menu.myselling"),                 "myselling"},
+                {getTranslation("account.menu.mybought"),                "mybought"},
+                {getTranslation("account.menu.mysold"),                 "mysold"},
+                {getTranslation("account.menu.statdealarticlebrand"),   "statdealarticlebrand"}
 
 
         };
@@ -170,7 +181,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
     private VerticalLayout buildSousVueGenerique(String option) {
         VerticalLayout layout = new VerticalLayout();
-        Span msg = new Span("Contenu à venir pour : " + option);
+        Span msg = new Span(getTranslation("account.coming.soon", option));
         msg.getStyle().set("font-style", "italic").set("color", "#888");
         layout.add(msg);
         return layout;
@@ -209,7 +220,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles à payés →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myarticlepayes") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -234,7 +245,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes attentes de livraison à domicile →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mywaitdelivering") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -256,7 +267,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes attentes de livraison à domicile par postes →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mywaitdeliveringbypost") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -278,7 +289,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles à aller chercher →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myarticletopickup") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -300,7 +311,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles en attente de soulèvement →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mywaitpickup") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
 
@@ -328,7 +339,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes attentes de payement →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mywaitpayement") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -353,7 +364,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles à livrer à domicile →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myobjectstodeliver") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -376,7 +387,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles à livrer par poste →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myobjectstodeliverByPost") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -400,7 +411,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes invendus →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myunsold") + " →"));
 
         grid.removeAllColumns();
         addArticleColumns();
@@ -423,7 +434,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes objets en vente →"));
+        layout.add(new Span("← " + getTranslation("account.menu.myselling") + " →"));
 
         grid.removeAllColumns();
         addArticleColumns();
@@ -447,7 +458,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes achats →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mybought") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -471,7 +482,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(new Span("← Mes articles vendus →"));
+        layout.add(new Span("← " + getTranslation("account.menu.mysold") + " →"));
 
         localGridPayment = new Grid<>(Article.class, false);
         styleGrid(localGridPayment);
@@ -504,28 +515,28 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         // si les colonnes dépassent la largeur de l'écran.
         g.setAllRowsVisible(true);             // OK : pagination à PAGE_SIZE lignes
         // Sur mobile : on masque les colonnes secondaires
-        ResponsiveHelper.hideColumnsOnMobile(g, "ID", "Marque");
+        ResponsiveHelper.hideColumnsOnMobile(g, getTranslation("account.col.id"), getTranslation("account.col.brand"));
     }
     // -------------------------------------------------------------------------
     // Colonnes : grid standard
     // -------------------------------------------------------------------------
     private void addArticleColumns() {
-        grid.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        grid.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        grid.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        grid.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
-        ResponsiveHelper.hideColumnsOnMobile(grid, "ID", "Marque");
+        grid.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        grid.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        grid.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        grid.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
+        ResponsiveHelper.hideColumnsOnMobile(grid, getTranslation("account.col.id"), getTranslation("account.col.brand"));
     }
 
     // -------------------------------------------------------------------------
     // Colonnes : Mes articles payés (acheteur)
     // -------------------------------------------------------------------------
     private void addArticlesAPayer(Grid<Article> g) {
-        g.addColumn(art -> art.getIdApaye() != null ? art.getIdApaye() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdApaye() != null ? art.getIdApaye() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -536,7 +547,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             if (art.getRefVendeur() != null) {
                 Personne vendeur = this.personneService.findById(art.getRefVendeur().longValue());
                 if (vendeur != null) {
-                    Anchor profilLink = new Anchor("/profil/" + vendeur.getNomUtilisateur(), "Voir profil vendeur");
+                    Anchor profilLink = new Anchor("/profil/" + vendeur.getNomUtilisateur(), getTranslation("account.link.seller.profile"));
                     styleAnchorBtn(profilLink);
                     actions.add(profilLink);
                 } else {
@@ -546,22 +557,22 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 actions.add(new Span("—"));
             }
 
-            Button btn = styledButton("Confirmer le paiement");
+            Button btn = styledButton(getTranslation("account.btn.confirm.payment"));
             btn.addClickListener(e -> showConfirmerPayement(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
     // -------------------------------------------------------------------------
     // Colonnes : Mes attentes de payement (vendeur)
     // -------------------------------------------------------------------------
     private void addArticleColumnsPayment(Grid<Article> g) {
-        g.addColumn(art -> art.getIdApaye() != null ? art.getIdApaye() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdApaye() != null ? art.getIdApaye() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -572,7 +583,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             if (art.getRefAcheteur() != null) {
                 Personne personne = this.personneService.findById(art.getRefAcheteur());
                 if (personne != null) {
-                    Anchor profilLink = new Anchor("/profil/" + personne.getNomUtilisateur(), "Voir profil acheteur");
+                    Anchor profilLink = new Anchor("/profil/" + personne.getNomUtilisateur(), getTranslation("account.link.buyer.profile"));
                     styleAnchorBtn(profilLink);
                     actions.add(profilLink);
                 } else {
@@ -582,22 +593,22 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 actions.add(new Span("—"));
             }
 
-            Button btn = styledButton("Confirmer paiement");
+            Button btn = styledButton(getTranslation("account.btn.confirm.payment"));
             btn.addClickListener(e -> showFaireOffreDialog(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
     // -------------------------------------------------------------------------
     // Colonnes : Mes articles à livrer (vendeur)
     // -------------------------------------------------------------------------
     private void addArticleMesArtclesALivrever(Grid<Article> g) {
-        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -606,27 +617,27 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             actions.setAlignItems(Alignment.CENTER);
 
             if (art.getRefAcheteur() != null) {
-                Button profilBtn = styledButton("Voir le profil de l'acheteur");
+                Button profilBtn = styledButton(getTranslation("account.btn.buyer.profile"));
                 profilBtn.addClickListener(e -> showAcheteurDetail(art));
                 actions.add(profilBtn);
             } else {
                 actions.add(new Span("—"));
             }
 
-            Button offreBtn = styledButton("Confirmer la livraison");
+            Button offreBtn = styledButton(getTranslation("account.btn.confirm.delivery"));
             offreBtn.addClickListener(e -> showConfirmerLivraison(art));
             actions.add(offreBtn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
 
     private void addArticleMesArtclesALivreverByPost(Grid<Article> g) {
-        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -635,29 +646,29 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             actions.setAlignItems(Alignment.CENTER);
 
             if (art.getRefAcheteur() != null) {
-                Button profilBtn = styledButton("Voir le profil de l'acheteur");
+                Button profilBtn = styledButton(getTranslation("account.btn.buyer.profile"));
                 profilBtn.addClickListener(e -> showAcheteurDetail(art));
                 actions.add(profilBtn);
             } else {
                 actions.add(new Span("—"));
             }
 
-            Button offreBtn = styledButton("Confirmer la livraison");
+            Button offreBtn = styledButton(getTranslation("account.btn.confirm.delivery"));
             offreBtn.addClickListener(e -> showConfirmerLivraisonByPost(art));
             actions.add(offreBtn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
     // -------------------------------------------------------------------------
     // Colonnes : Mes attentes de livraison (acheteur)
     // -------------------------------------------------------------------------
     private void addArticleMesArtclesAttenteLivraisonADomicile(Grid<Article> g) {
-        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -675,7 +686,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 if (vendeur != null) {
                     Anchor profilLink = new Anchor(
                             "/profil/" + vendeur.getNomUtilisateur(),
-                            "Voir profil vendeur"
+                            getTranslation("account.link.seller.profile")
                     );
                     styleAnchorBtn(profilLink);
                     actions.add(profilLink);
@@ -686,21 +697,21 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 actions.add(new Span("—"));
             }
 
-            Button btn = styledButton("Confirmer la livraison");
+            Button btn = styledButton(getTranslation("account.btn.confirm.delivery"));
             btn.addClickListener(e -> showConfirmerReceptionADomicileDialog(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
 
     private void addArticleMesArtclesAttenteByPoste(Grid<Article> g) {
 
-        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -712,7 +723,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             if (personneId != null) {
                 Personne vendeur = this.personneService.findById(personneId.longValue());
                 if (vendeur != null && art.getRefAcheteur() != null) {
-                    Anchor profilLink = new Anchor("/profil/" + vendeur.getNomUtilisateur(), "Voir profil vendeur");
+                    Anchor profilLink = new Anchor("/profil/" + vendeur.getNomUtilisateur(), getTranslation("account.link.seller.profile"));
                     styleAnchorBtn(profilLink);
                     actions.add(profilLink);
                 } else {
@@ -722,19 +733,19 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 actions.add(new Span("—"));
             }
 
-            Button btn = styledButton("Confirmer la livraison");
+            Button btn = styledButton(getTranslation("account.btn.confirm.delivery"));
             btn.addClickListener(e -> showConfirmerReceptionADomicileDialog(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
     private void addArticleMesArtclesAllerChercher(Grid<Article> g) {
-        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader("ID").setWidth("30px").setFlexGrow(0);
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addColumn(art -> art.getIdAlivre() != null ? art.getIdAlivre() : "—").setHeader(getTranslation("account.col.id")).setWidth("30px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
@@ -747,7 +758,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 Personne vendeur = this.personneService.findById(personneId.longValue());
                 if (vendeur != null && art.getRefAcheteur() != null) {
 
-                    Button profilBtn = styledButton("Voir le profile du vendeur");
+                    Button profilBtn = styledButton(getTranslation("account.btn.seller.profile"));
                     profilBtn.addClickListener(e -> showVendeurDetails(art));
 
                     actions.add(profilBtn);
@@ -758,39 +769,39 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 actions.add(new Span("—"));
             }
 
-            Button btn = styledButton("Confirmer la réception");
+            Button btn = styledButton(getTranslation("account.btn.confirm.reception"));
             btn.addClickListener(e -> showConfirmerReceptionDialog(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
 
     private void addArticleAttenteSoulevement(Grid<Article> g) {
         g.addColumn(art -> art.getIdAlivre() != null
                         ? art.getIdAlivre() : "—")
-                .setHeader("ID")
+                .setHeader(getTranslation("account.col.id"))
                 .setWidth("30px")
                 .setFlexGrow(0);
 
         g.addComponentColumn(this::buildImageBox)
-                .setHeader("Image")
+                .setHeader(getTranslation("account.col.image"))
                 .setWidth("80px")
                 .setFlexGrow(0);
 
         g.addComponentColumn(this::buildNomLink)
-                .setHeader("Article")
+                .setHeader(getTranslation("account.col.article"))
                 .setFlexGrow(1);
 
         g.addColumn(art -> art.getMarque() != null
                         ? art.getMarque() : "—")
-                .setHeader("Marque")
+                .setHeader(getTranslation("account.col.brand"))
                 .setWidth("120px")
                 .setFlexGrow(0);
 
         g.addColumn(art -> art.getPrix() != null
                         ? art.getPrix() + " CHF" : "—")
-                .setHeader("Prix")
+                .setHeader(getTranslation("account.col.price"))
                 .setWidth("100px")
                 .setFlexGrow(0);
 
@@ -811,7 +822,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
                         if (personne != null && art.getRefAcheteur() != null) {
                             Button profilBtn =
-                                    styledButton("Voir le profil de l'acheteur");
+                                    styledButton(getTranslation("account.btn.buyer.profile"));
 
                             profilBtn.addClickListener(
                                     e -> showAcheteurDetails(art));
@@ -822,7 +833,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
                     // Bouton de confirmation : toujours créé pour chaque ligne
                     Button receptionBtn =
-                            styledButton("Confirmer la prise de réception");
+                            styledButton(getTranslation("account.btn.confirm.pickup.reception"));
 
                     receptionBtn.getStyle()
                             .set("white-space", "normal")
@@ -835,16 +846,16 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
                     return actions;
                 })
-                .setHeader("Actions")
+                .setHeader(getTranslation("account.col.actions"))
                 .setWidth("520px")
                 .setFlexGrow(0);    }
 
 
     private void addArticleVendus(Grid<Article> g) {
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
     }
 
@@ -852,21 +863,21 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     // Colonnes : Mes achats (noter l'article)
     // -------------------------------------------------------------------------
     private void addArticleNoters(Grid<Article> g) {
-        g.addComponentColumn(this::buildImageBox).setHeader("Image").setWidth("80px").setFlexGrow(0);
-        g.addComponentColumn(this::buildNomLink).setHeader("Article").setFlexGrow(2);
-        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader("Marque").setWidth("150px").setFlexGrow(0);
-        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader("Prix").setWidth("120px").setFlexGrow(0);
+        g.addComponentColumn(this::buildImageBox).setHeader(getTranslation("account.col.image")).setWidth("80px").setFlexGrow(0);
+        g.addComponentColumn(this::buildNomLink).setHeader(getTranslation("account.col.article")).setFlexGrow(2);
+        g.addColumn(art -> art.getMarque() != null ? art.getMarque() : "—").setHeader(getTranslation("account.col.brand")).setWidth("150px").setFlexGrow(0);
+        g.addColumn(art -> art.getPrix() != null ? art.getPrix() + " CHF" : "—").setHeader(getTranslation("account.col.price")).setWidth("120px").setFlexGrow(0);
 
         g.addComponentColumn(art -> {
             HorizontalLayout actions = new HorizontalLayout();
             actions.setWidthFull();
             actions.setJustifyContentMode(JustifyContentMode.BETWEEN);
             actions.setAlignItems(Alignment.CENTER);
-            Button btn = styledButton("Noter l'article");
+            Button btn = styledButton(getTranslation("account.btn.rate"));
             btn.addClickListener(e -> showNoterDIalogue(art));
             actions.add(btn);
             return actions;
-        }).setHeader("Actions").setWidth("300px").setFlexGrow(1);
+        }).setHeader(getTranslation("account.col.actions")).setWidth("300px").setFlexGrow(1);
     }
 
     // -------------------------------------------------------------------------
@@ -1205,7 +1216,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
             List<Number> stats = referenceService.findStatsByBrandAndYear(marque, annee, catId);
             chartContainer.removeAll();
-            chartContainer.add(buildBarChart(marque + " – " + annee, MOIS, stats.toArray(new Number[0])));
+            chartContainer.add(buildBarChart(marque + " – " + annee, months(), stats.toArray(new Number[0])));
         };
 
         marqueSel.addValueChangeListener(e -> refreshChart.run());
@@ -1275,11 +1286,11 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         HorizontalLayout nav = new HorizontalLayout();
         nav.getStyle().set("color", "#0000CC").set("font-size", "0.85rem");
         nav.add(
-                navLink("Informations",          "/mon-compte/informations"),
-                navLink("Mes enchères",          "/encheres"),
-                navLink("Ajouter un article",    "/ajouter-article"),
-                navLink("Faire de la publicité", "/publicite"),
-                navLink("Calendrier de mes ventes", "/calendrier")
+                navLink(getTranslation("account.nav.info"),          "/mon-compte/informations"),
+                navLink(getTranslation("account.nav.bids"),          "/encheres"),
+                navLink(getTranslation("account.nav.add"),    "/ajouter-article"),
+                navLink(getTranslation("account.nav.ads"), "/publicite"),
+                navLink(getTranslation("account.nav.calendar"), "/calendrier")
         );
         return nav;
     }
@@ -1296,16 +1307,16 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer la réception du paiement");
+        H4 titre = new H4(getTranslation("account.dlg.payment.received.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
             Integer refVendeur = articleService.findRefUtilisateurByEmail(email);
@@ -1355,7 +1366,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 """.formatted(nom));
         try {
             mailSender.send(msg);
-            Notification.show("Email envoyer");
+            Notification.show(getTranslation("account.notif.email.sent"));
         } catch (Exception e) {
             System.err.println(" Erreur envoi email acheteur : " + e.getMessage());
         }
@@ -1377,7 +1388,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 """.formatted(nom));
         try {
             mailSender.send(msg);
-            Notification.show("Email envoyer");
+            Notification.show(getTranslation("account.notif.email.sent"));
         } catch (Exception e) {
             System.err.println(" Erreur envoi email acheteur : " + e.getMessage());
         }
@@ -1399,7 +1410,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 """.formatted(nomArticle, nom));
         try {
             mailSender.send(msg);
-            Notification.show("Email envoyer");
+            Notification.show(getTranslation("account.notif.email.sent"));
         } catch (Exception e) {
             System.err.println("❌ Erreur envoi email acheteur : " + e.getMessage());
         }
@@ -1421,7 +1432,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 """.formatted(nomArticle, nom));
         try {
             mailSender.send(msg);
-            Notification.show("Email envoyer");
+            Notification.show(getTranslation("account.notif.email.sent"));
         } catch (Exception e) {
             System.err.println("❌ Erreur envoi email acheteur : " + e.getMessage());
         }
@@ -1438,10 +1449,10 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer le paiement");
+        H4 titre = new H4(getTranslation("account.btn.confirm.payment"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(fieldRow("Article", article.getNom()));
+        content.add(fieldRow(getTranslation("account.col.article"), article.getNom()));
 
         // Initialiser refAcheteur
         Integer personneId = this.referenceService.findPersonneId(article.getIdArticle().intValue());
@@ -1452,7 +1463,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         // Récupérer le vendeur
         Personne personne = this.personneService.findById(article.getRefVendeur().longValue());
         if (personne == null) {
-            Notification.show("Vendeur introuvable.");
+            Notification.show(getTranslation("account.notif.seller.not.found"));
             return;
         }
 
@@ -1469,7 +1480,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         // Vérifier la condition de paiement
         Integer refCond = article.getRefConditionPayement();
         if (refCond == null) {
-            Notification.show("Condition de paiement non définie.");
+            Notification.show(getTranslation("account.notif.payment.undefined"));
             return;
         }
 
@@ -1479,13 +1490,13 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 .filter(p -> p.id() == refCond.intValue())
                 .findFirst()
                 .ifPresent(p -> {
-                    content.add(fieldRow("Condition de paiement", p.nom()));
+                    content.add(fieldRow(getTranslation("account.field.payment.condition"), p.nom()));
 
                     if (refCond.equals(5)) {
                         // Twint
-                        content.add(fieldRow("Numéro Twint", personne.getNoTelephone()));
+                        content.add(fieldRow(getTranslation("account.field.twint"), personne.getNoTelephone()));
                         if (personne.getNoTelephone() == null || personne.getNoTelephone().isEmpty()) {
-                            Notification.show("Le compte Twint est manquant pour : " + personne.getNom());
+                            Notification.show(getTranslation("account.notif.twint.missing", personne.getNom()));
                             envoyerEmailCompteOuTwtinzManquant(personne.getEmail(), personne.getNom());
                         } else {
                             aEnvoyer[0] = true;
@@ -1493,9 +1504,9 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
                     } else if (refCond.equals(3)) {
                         // Virement bancaire
-                        content.add(fieldRow("Compte bancaire (IBAN)", personne.getIban()));
+                        content.add(fieldRow(getTranslation("account.field.iban"), personne.getIban()));
                         if (personne.getIban() == null || personne.getIban().isEmpty()) {
-                            Notification.show("Le compte bancaire est manquant pour : " + personne.getNom());
+                            Notification.show(getTranslation("account.notif.iban.missing", personne.getNom()));
                             envoyerEmailCompteOuTwtinzManquant(personne.getEmail(), personne.getNom());
                         } else {
                             aEnvoyer[0] = true;
@@ -1509,11 +1520,11 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 });
 
         // Boutons
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.setEnabled(aEnvoyer[0]);
 
@@ -1535,21 +1546,21 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer que vous êtes aller chercher l'article");
+        H4 titre = new H4(getTranslation("account.dlg.pickedup.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer la réception");
+        Button confirmerBtn = new Button(getTranslation("account.btn.confirm.reception"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
             //Notification.show("A aller cherher id : " + article.getIdAlivre());
             articleService.confirmerReception(article.getIdArticle().intValue(), article.getRefAcheteur().intValue(), article);
-            Notification.show("Réception confirmée pour : " + article.getNom());
+            Notification.show(getTranslation("account.notif.reception.confirmed", article.getNom()));
             dlg.close();
             showContent("myarticletopickup");
         });
@@ -1566,20 +1577,20 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer que l'acheteur est venu cherchers l'article");
+        H4 titre = new H4(getTranslation("account.dlg.buyerpickedup.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer la réception");
+        Button confirmerBtn = new Button(getTranslation("account.btn.confirm.reception"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
             articleService.confirmerReceptionVendeur(article.getIdArticle().intValue(), article.getRefVendeur().intValue(), article.getIdAlivre(), article);
-            Notification.show("Réception confirmée pour : " + article.getNom());
+            Notification.show(getTranslation("account.notif.reception.confirmed", article.getNom()));
             dlg.close();
             showContent("mywaitpickup");
         });
@@ -1597,20 +1608,20 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer la réception à domicile");
+        H4 titre = new H4(getTranslation("account.dlg.home.reception.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer la réception");
+        Button confirmerBtn = new Button(getTranslation("account.btn.confirm.reception"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
             articleService.confirmerReception(article.getIdArticle().intValue(), article.getRefAcheteur().intValue(), article);
-            Notification.show("Réception confirmée pour : " + article.getNom());
+            Notification.show(getTranslation("account.notif.reception.confirmed", article.getNom()));
             dlg.close();
             showContent("mywaitdeliveringbypost");
         });
@@ -1648,16 +1659,16 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer la livraison");
+        H4 titre = new H4(getTranslation("account.btn.confirm.delivery"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
 
         // ✅ Initialiser refAcheteur
@@ -1680,11 +1691,11 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         confirmerBtn.addClickListener(e -> {
             if (personne.getAdresse() == null || personne.getAdresse().length() == 0) {
                 envoyerEmailAdresseManquante(personne.getEmail(), personne.getNom());
-                Notification.show("L'acheteur n'a pas configurer son adresse ");
+                Notification.show(getTranslation("account.notif.address.missing"));
 
             }else {
                 this.articleService.updateStatutEstLivre(article.getIdArticle().intValue(), article, personne);
-                Notification.show("Livraison confirmée pour : " + article.getNom());
+                Notification.show(getTranslation("account.notif.delivery.confirmed", article.getNom()));
                 showContent("mywaitdelivering");
             }
             dlg.close();
@@ -1703,16 +1714,16 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer la livraison par postes");
+        H4 titre = new H4(getTranslation("account.dlg.delivery.post.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
 
         // ✅ Initialiser refAcheteur
@@ -1733,12 +1744,12 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         }
         if (personne.getAdresse() == null || personne.getAdresse().length() == 0) {
             envoyerEmailAdresseManquante(personne.getEmail(), personne.getNom());
-            Notification.show("L'acheteur n'a pas configurer son adresse ");
+            Notification.show(getTranslation("account.notif.address.missing"));
 
         }else {
             confirmerBtn.addClickListener(e -> {
                 this.articleService.updateStatutEstLivreParPoste(article.getIdArticle().intValue(), article, personne);
-                Notification.show("Livraison confirmée pour : " + article.getNom());
+                Notification.show(getTranslation("account.notif.delivery.confirmed", article.getNom()));
                 showContent("myobjectstodeliverByPost");
                 dlg.close();
             });
@@ -1757,7 +1768,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Adresse de l'acheteur");
+        H4 titre = new H4(getTranslation("account.dlg.buyer.address.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
 
@@ -1767,20 +1778,20 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         if (personneId != null) {
             Personne personne = this.personneService.findById(personneId.longValue());
             if (personne != null) {
-                TextField nom = new TextField("Nom et prénom");
+                TextField nom = new TextField(getTranslation("account.field.fullname"));
                 nom.setValue(personne.getNom() != null ? personne.getNom() : "");
                 nom.setReadOnly(true);
 
-                TextField adresse = new TextField("Adresse");
+                TextField adresse = new TextField(getTranslation("account.field.address"));
                 adresse.setValue(personne.getAdresse() != null ? personne.getAdresse() : "");
                 adresse.setReadOnly(true);
 
 
-                TextField ville = new TextField("Ville");
+                TextField ville = new TextField(getTranslation("account.field.city"));
                 ville.setValue(personne.getVille() != null ? personne.getVille(): "");
                 ville.setReadOnly(true);
 
-                TextField pays = new TextField("Pays");
+                TextField pays = new TextField(getTranslation("account.field.country"));
                 pays.setValue(personne.getPays() != null ? personne.getPays() : "");
                 pays.setReadOnly(true);
 
@@ -1788,7 +1799,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             }
         }
 
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("common.close"));
         fermerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         fermerBtn.addClickListener(e -> dlg.close());
 
@@ -1804,7 +1815,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Adresse du vendeur");
+        H4 titre = new H4(getTranslation("account.dlg.seller.address.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
 
@@ -1813,20 +1824,20 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         if (personneId != null) {
             Personne personne = this.personneService.findById(personneId.longValue());
             if (personne != null) {
-                TextField nom = new TextField("Nom et prénom");
+                TextField nom = new TextField(getTranslation("account.field.fullname"));
                 nom.setValue(personne.getNom() != null ? personne.getNom() : "");
                 nom.setReadOnly(true);
 
-                TextField adresse = new TextField("Adresse");
+                TextField adresse = new TextField(getTranslation("account.field.address"));
                 adresse.setValue(personne.getAdresse() != null ? personne.getAdresse() : "");
                 adresse.setReadOnly(true);
 
 
-                TextField ville = new TextField("Ville");
+                TextField ville = new TextField(getTranslation("account.field.city"));
                 ville.setValue(personne.getVille() != null ? personne.getVille(): "");
                 ville.setReadOnly(true);
 
-                TextField pays = new TextField("Pays");
+                TextField pays = new TextField(getTranslation("account.field.country"));
                 pays.setValue(personne.getPays() != null ? personne.getPays() : "");
                 pays.setReadOnly(true);
 
@@ -1834,7 +1845,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             }
         }
 
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("common.close"));
         fermerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         fermerBtn.addClickListener(e -> dlg.close());
 
@@ -1851,7 +1862,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Détails de la personne à livrer");
+        H4 titre = new H4(getTranslation("account.dlg.buyer.details.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
         Integer acheteurId = article.getRefAcheteur().intValue();
@@ -1859,15 +1870,15 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         if (acheteurId != null) {
             Personne personne = this.personneService.findById(acheteurId.longValue());
             if (personne != null) {
-                TextField nom = new TextField("Nom et prénom");
+                TextField nom = new TextField(getTranslation("account.field.fullname"));
                 nom.setValue(personne.getNom() != null ? personne.getNom() : "");
                 nom.setReadOnly(true);
 
-                TextField adresse = new TextField("Adresse");
+                TextField adresse = new TextField(getTranslation("account.field.address"));
                 adresse.setValue(personne.getAdresse() != null ? personne.getAdresse() : "");
                 adresse.setReadOnly(true);
 
-                TextField pays = new TextField("Pays");
+                TextField pays = new TextField(getTranslation("account.field.country"));
                 pays.setValue(personne.getPays() != null ? personne.getPays() : "");
                 pays.setReadOnly(true);
 
@@ -1875,7 +1886,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             }
         }
 
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("common.close"));
         fermerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         fermerBtn.addClickListener(e -> dlg.close());
 
@@ -1892,20 +1903,20 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Noter la qualité de l'article");
+        H4 titre = new H4(getTranslation("account.dlg.rate.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
-        content.add(new Span("Article : " + (article.getNom() != null ? article.getNom() : "—")));
+        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
 
-        ComboBox<Integer> comboNotes = new ComboBox<>("Note");
+        ComboBox<Integer> comboNotes = new ComboBox<>(getTranslation("account.field.rating"));
         comboNotes.setItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         content.add(comboNotes);
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
         annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
         confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
             Integer note = comboNotes.getValue();
@@ -1916,7 +1927,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                         refAcheteur.intValue(),
                         note
                 );
-                Notification.show("Note enregistrée !");
+                Notification.show(getTranslation("account.notif.rating.saved"));
             }
             dlg.close();
         });

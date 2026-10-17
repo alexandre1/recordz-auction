@@ -3,31 +3,42 @@ package com.example.recordz.ui;
 import com.example.recordz.model.domain.Personne;
 import com.example.recordz.service.PersonneService;
 import com.example.recordz.ui.layouts.MainLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @Route(value = "mon-compte/informations", layout = MainLayout.class)
-@PageTitle("Avant-Garde - Mes informations")
 @PermitAll
-class InformationsPersonnellesView extends VerticalLayout implements BeforeEnterObserver {
+public class InformationsPersonnellesView extends VerticalLayout
+        implements BeforeEnterObserver, HasDynamicTitle {
 
+    /** Valeurs stockées en base (français) ; seul l'affichage est traduit. */
+    private static final String[] PAYS = {"Suisse", "France", "Belgique", "Allemagne", "Italie"};
 
     private final PersonneService personneService;
 
     public InformationsPersonnellesView(PersonneService personneService) {
         this.personneService = personneService;
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("info.page.title");
     }
 
     private TextField field(String val) {
@@ -36,6 +47,7 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
         tf.setWidth("200px");
         return tf;
     }
+
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // 1. Récupérer l'email depuis le contexte de sécurité
@@ -55,7 +67,9 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
         getStyle()
                 .set("border-radius", "20px")
                 .set("overflow", "hidden")
-                .set("width", "640px")
+                .set("width", "100%")
+                .set("max-width", "640px")
+                .set("box-sizing", "border-box")
                 .set("margin-bottom", "24px");
 
         add(buildSecondaryNav());
@@ -71,7 +85,7 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
                 .set("overflow", "hidden")
                 .set("padding", "8px 16px");
 
-        // ✅ Utilisation de person.getXxx() pour préremplir les champs
+        // Utilisation de person.getXxx() pour préremplir les champs
         TextField prenomF  = field(nullSafe(person.getPrenom()));
         TextField nomF     = field(nullSafe(person.getNom()));
         TextField adresseF = field(nullSafe(person.getAdresse()));
@@ -86,28 +100,40 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
         TextField paypalF = new TextField();
         paypalF.setValue(nullSafe(person.getPaypalMe()));
         paypalF.setWidth("250px");
-        paypalF.setPlaceholder("paypal.me/votrecompte");
+        paypalF.setPlaceholder(getTranslation("info.placeholder.paypal"));
 
         Select<String> paysSel = new Select<>();
-        paysSel.setItems("Suisse", "France", "Belgique", "Allemagne", "Italie");
+        paysSel.setItems(PAYS);
+        paysSel.setItemLabelGenerator(this::countryLabel);   // valeur = français, libellé = langue de l'UI
         paysSel.setValue(nullSafe(person.getPays(), "Suisse"));
         paysSel.setWidth("200px");
 
         // Bouton Save qui appelle le service
-        Button send = new Button("Enregistrer", e -> {
+        Button send = new Button(getTranslation("info.btn.save"), e -> {
+            int npa = 0;
+            String npaText = npaF.getValue() == null ? "" : npaF.getValue().trim();
+            if (!npaText.isEmpty()) {
+                try {
+                    npa = Integer.parseInt(npaText);
+                } catch (NumberFormatException ex) {
+                    Notification.show(getTranslation("info.notif.npa.invalid"));
+                    return;
+                }
+            }
             person.setPrenom(prenomF.getValue());
             person.setNom(nomF.getValue());
             person.setAdresse(adresseF.getValue());
             person.setVille(villeF.getValue());
-            person.setNpa(npaF.getValue().isEmpty() ? 0 : Integer.parseInt(npaF.getValue()));
+            person.setNpa(npa);
             person.setNoTelephone(telF.getValue());
             person.setIban(ibanF.getValue());
             person.setPaypalMe(paypalF.getValue());
             person.setPays(paysSel.getValue());
             personneService.updateProfil(person);
+            Notification.show(getTranslation("info.notif.saved"));
         });
 
-        Button reset = new Button("Reset", e -> {
+        Button reset = new Button(getTranslation("info.btn.reset"), e -> {
             prenomF.clear(); nomF.clear(); adresseF.clear();
             villeF.clear();  npaF.clear(); telF.clear();
         });
@@ -116,19 +142,25 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
         reset.getStyle().set("background-color", "#E0E0E0");
 
         card.add(
-
-                row("Nom et prénom",      nomF),
-                rowComp("Pays", paysSel),
-                row("Adresse",  adresseF),
-                row("Ville",    villeF),
-                row("NPA",      npaF),
-                row("Téléphone", telF),
+                row(getTranslation("info.field.fullname"), nomF),
+                rowComp(getTranslation("info.field.country"), paysSel),
+                row(getTranslation("info.field.address"),  adresseF),
+                row(getTranslation("info.field.city"),     villeF),
+                row(getTranslation("info.field.zip"),      npaF),
+                row(getTranslation("info.field.phone"),    telF),
                 rowComp("IBAN", ibanF),
                 rowComp("PayPal", paypalF),
                 new HorizontalLayout(send, reset)
         );
 
         return card;
+    }
+
+    /** Libellé traduit d'un pays ; retombe sur la valeur brute si aucune traduction n'existe. */
+    private String countryLabel(String value) {
+        String key = "info.country." + value;
+        String translated = getTranslation(key);
+        return key.equals(translated) ? value : translated;
     }
 
     // Évite les NullPointerException sur les champs potentiellement null
@@ -140,44 +172,21 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
         return (value != null && !value.isEmpty()) ? value : fallback;
     }
 
-
-
     private HorizontalLayout row(String label, TextField field) {
-        HorizontalLayout r = new HorizontalLayout();
-        r.setAlignItems(Alignment.BASELINE);
-        r.getStyle()
-                .set("margin-bottom", "5px")
-                .set("padding-left", "8px");  // ← AJOUTER
-        Span lbl = new Span(label);
-        lbl.getStyle().set("width", "200px").set("color", "#0000CC").set("font-size", "0.85rem");
-        r.add(lbl, field);
-        return r;
+        return rowComp(label, field);
     }
-    private HorizontalLayout rowComp(String label, com.vaadin.flow.component.Component comp) {
+
+    private HorizontalLayout rowComp(String label, Component comp) {
         HorizontalLayout r = new HorizontalLayout();
         r.setAlignItems(Alignment.BASELINE);
         r.getStyle()
                 .set("margin-bottom", "5px")
-                .set("padding-left", "8px");  // ← AJOUTER
+                .set("padding-left", "8px");
         Span lbl = new Span(label);
         lbl.getStyle().set("width", "200px").set("color", "#0000CC").set("font-size", "0.85rem");
         r.add(lbl, comp);
         return r;
     }
-
-    private HorizontalLayout rowNote(String note, TextField field) {
-        HorizontalLayout r = new HorizontalLayout();
-        r.setAlignItems(Alignment.CENTER);
-        r.getStyle()
-                .set("margin-bottom", "5px")
-                .set("padding-left", "8px");  // ← AJOUTER
-        Span lbl = new Span(note);
-        lbl.getStyle().set("width", "200px").set("font-size", "0.75rem").set("color", "#0000CC");
-        r.add(lbl, field);
-        return r;
-    }
-
-
 
     private HorizontalLayout buildSecondaryNav() {
         HorizontalLayout nav = new HorizontalLayout();
@@ -185,11 +194,11 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
                 .set("color", "#0000CC")
                 .set("font-size", "0.85rem");
         nav.add(
-                navLink("Informations",       "/mon-compte/informations"),
-                navLink("Mes encheres",       "/encheres"),
-                navLink("Ajouter un article", "/ajouter-article"),
-                navLink("Faire de la publicité", "/publicite"),
-                navLink("Calendrier de mes ventes", "/calendrier")
+                navLink(getTranslation("account.nav.info"),     "/mon-compte/informations"),
+                navLink(getTranslation("account.nav.bids"),     "/encheres"),
+                navLink(getTranslation("account.nav.add"),      "/ajouter-article"),
+                navLink(getTranslation("account.nav.ads"),      "/publicite"),
+                navLink(getTranslation("account.nav.calendar"), "/calendrier")
         );
         return nav;
     }
@@ -202,5 +211,4 @@ class InformationsPersonnellesView extends VerticalLayout implements BeforeEnter
                 .set("text-decoration", "none");
         return a;
     }
-
 }

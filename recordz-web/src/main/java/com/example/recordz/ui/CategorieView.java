@@ -24,15 +24,14 @@ import com.vaadin.flow.component.dialog.Dialog;
 
 @Route(value = "categorie", layout = MainLayout.class)
 @AnonymousAllowed
-@PageTitle("Avant-Garde - Catégorie")
-public class CategorieView extends VerticalLayout implements HasUrlParameter<Integer> {
+public class CategorieView extends VerticalLayout implements HasUrlParameter<Integer>, HasDynamicTitle {
 
     private final ReferenceService referenceService;
     private final ArticleService   articleService;
 
     private final Select<String> categorieSelect     = new Select<>();
     private final Select<String> sousCategorieSelect = new Select<>();
-    private final Button         advSearch           = styledButton("Recherche avancée");
+    private final Button         advSearch           = styledButton(getTranslation("cat.adv.title"));
 
     private int currentPage = 1;
     private int totalPages  = 1;
@@ -54,6 +53,11 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
     private boolean sousCatChanging = false;
 
     private static final int PAGE_SIZE = 10;
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("cat.page.title");
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Constructeur
@@ -284,7 +288,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
         row.add(paginationBtn("›", base + "?page=" + (currentPage + 1), currentPage == totalPages));
         row.add(paginationBtn("»", base + "?page=" + totalPages,        currentPage == totalPages));
 
-        Span info = new Span("Page " + currentPage + " / " + totalPages);
+        Span info = new Span(getTranslation("main.page.info", String.valueOf(currentPage), String.valueOf(totalPages)));
         info.getStyle()
                 .set("font-size", "0.78rem").set("color", "#6100C1")
                 .set("margin-left", "8px").set("align-self", "center");
@@ -316,27 +320,27 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
     private void openRechercheAvancee() {
         Dialog dialog = new Dialog();
         ResponsiveHelper.dialogWidth(dialog, 500);
-        dialog.setHeaderTitle("Recherche avancée");
+        dialog.setHeaderTitle(getTranslation("cat.adv.title"));
 
         VerticalLayout content = new VerticalLayout();
         content.setSpacing(true);
         content.setPadding(false);
 
-        TextField nomField = new TextField("Nom de l'article");
+        TextField nomField = new TextField(getTranslation("main.header.name"));
         nomField.setWidthFull();
         nomField.setValue(filtreNom != null ? filtreNom : "");
 
-        TextField marqueField = new TextField("Marque / Fabricant");
+        TextField marqueField = new TextField(getTranslation("cat.field.brand"));
         marqueField.setWidthFull();
         marqueField.setValue(filtreMarque != null ? filtreMarque : "");
 
         Select<String> catSelect = new Select<>();
-        catSelect.setLabel("Catégorie");
+        catSelect.setLabel(getTranslation("cat.field.category"));
         catSelect.setItems(allCategories.stream().map(ReferenceService.CategorieItem::nom).toList());
         catSelect.setWidthFull();
 
         Select<String> sousCatSelect = new Select<>();
-        sousCatSelect.setLabel("Sous-catégorie");
+        sousCatSelect.setLabel(getTranslation("cat.field.subcategory"));
         sousCatSelect.setItems("--------");
         sousCatSelect.setValue("--------");
         sousCatSelect.setWidthFull();
@@ -369,8 +373,8 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
         });
 
         HorizontalLayout prixRow = new HorizontalLayout();
-        TextField prixMin = new TextField("Prix min (CHF)");
-        TextField prixMax = new TextField("Prix max (CHF)");
+        TextField prixMin = new TextField(getTranslation("cat.field.pricemin"));
+        TextField prixMax = new TextField(getTranslation("cat.field.pricemax"));
         prixMin.setWidth("48%");
         prixMax.setWidth("48%");
         prixMin.setValue(filtrePrixMin != null ? String.valueOf(filtrePrixMin) : "");
@@ -379,12 +383,12 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
         prixRow.setWidthFull();
 
         com.vaadin.flow.component.checkbox.Checkbox encheresOnly =
-                new com.vaadin.flow.component.checkbox.Checkbox("Enchères seulement");
+                new com.vaadin.flow.component.checkbox.Checkbox(getTranslation("cat.field.auctions.only"));
         encheresOnly.setValue(filtreEncheresOnly);
 
         content.add(nomField, marqueField, catSelect, sousCatSelect, dynamicFields, prixRow, encheresOnly);
 
-        Button rechercher = new Button("Rechercher", e -> {
+        Button rechercher = new Button(getTranslation("cat.btn.search"), e -> {
             filtreNom          = nomField.getValue().isBlank()   ? null : nomField.getValue();
             filtreMarque       = marqueField.getValue().isBlank() ? null : marqueField.getValue();
             filtreEncheresOnly = encheresOnly.getValue();
@@ -416,7 +420,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
             dialog.close();
         });
 
-        Button reinitialiser = new Button("Réinitialiser", e -> {
+        Button reinitialiser = new Button(getTranslation("cat.btn.reset"), e -> {
             filtreNom               = null;
             filtreMarque            = null;
             filtrePrixMin           = null;
@@ -428,7 +432,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
             dialog.close();
         });
 
-        Button annuler = new Button("Annuler", e -> dialog.close());
+        Button annuler = new Button(getTranslation("common.cancel"), e -> dialog.close());
 
         HorizontalLayout buttons = new HorizontalLayout(rechercher, reinitialiser, annuler);
         buttons.setSpacing(true);
@@ -451,13 +455,13 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
         );
 
         if (cat == ArticleCategory.VOITURE || cat == ArticleCategory.MOTO) {
-            form.add(taggedField("search_nb_km",       new TextField("Kilométrage max")));
-            form.add(taggedField("search_annee_min",   new TextField("Année min")));
-            form.add(taggedField("search_annee_max",   new TextField("Année max")));
-            form.add(taggedField("search_nb_cheveaux", new TextField("Chevaux min (CV)")));
+            form.add(taggedField("search_nb_km",       new TextField(getTranslation("cat.dyn.km.max"))));
+            form.add(taggedField("search_annee_min",   new TextField(getTranslation("cat.dyn.year.min"))));
+            form.add(taggedField("search_annee_max",   new TextField(getTranslation("cat.dyn.year.max"))));
+            form.add(taggedField("search_nb_cheveaux", new TextField(getTranslation("cat.dyn.hp.min"))));
 
             Select<String> carburantSelect = new Select<>();
-            carburantSelect.setLabel("Carburant");
+            carburantSelect.setLabel(getTranslation("cat.dyn.fuel"));
             carburantSelect.setId("search_essence");
             List<String> fuels = referenceService.findAllFuelTypes()
                     .stream().map(ReferenceService.ReferenceItem::nom).toList();
@@ -465,41 +469,41 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
             form.add(carburantSelect);
 
             Select<String> boiteSelect = new Select<>();
-            boiteSelect.setLabel("Boîte de vitesse");
+            boiteSelect.setLabel(getTranslation("cat.dyn.gearbox"));
             boiteSelect.setId("search_boite");
             List<String> boites = referenceService.findAllGearboxTypes()
                     .stream().map(ReferenceService.ReferenceItem::nom).toList();
             boiteSelect.setItems(boites.isEmpty() ? List.of("--------") : boites);
             form.add(boiteSelect);
         } else if (cat == ArticleCategory.IMMOBILIER) {
-            form.add(taggedField("search_nb_piece_min", new TextField("Nb pièces min")));
-            form.add(taggedField("search_surface_min",  new TextField("Surface min (m²)")));
-            form.add(taggedField("search_surface_max",  new TextField("Surface max (m²)")));
-            form.add(taggedField("search_lieu",         new TextField("Ville / Lieu")));
-            form.add(taggedField("search_npa",          new TextField("Code postal")));
+            form.add(taggedField("search_nb_piece_min", new TextField(getTranslation("cat.dyn.rooms.min"))));
+            form.add(taggedField("search_surface_min",  new TextField(getTranslation("cat.dyn.surface.min"))));
+            form.add(taggedField("search_surface_max",  new TextField(getTranslation("cat.dyn.surface.max"))));
+            form.add(taggedField("search_lieu",         new TextField(getTranslation("cat.dyn.place"))));
+            form.add(taggedField("search_npa",          new TextField(getTranslation("cat.dyn.zip"))));
         } else if (cat == ArticleCategory.VINS) {
-            form.add(taggedField("search_millesime_min", new TextField("Millésime min")));
-            form.add(taggedField("search_millesime_max", new TextField("Millésime max")));
+            form.add(taggedField("search_millesime_min", new TextField(getTranslation("cat.dyn.vintage.min"))));
+            form.add(taggedField("search_millesime_max", new TextField(getTranslation("cat.dyn.vintage.max"))));
 
             Select<String> typeVinSelect = new Select<>();
-            typeVinSelect.setLabel("Type de vin");
+            typeVinSelect.setLabel(getTranslation("cat.dyn.wine.type"));
             typeVinSelect.setId("search_type_vin");
             List<String> types = referenceService.findAllWineTypes()
                     .stream().map(ReferenceService.ReferenceItem::nom).toList();
             typeVinSelect.setItems(types.isEmpty() ? List.of("--------") : types);
             form.add(typeVinSelect);
         } else if (cat == ArticleCategory.DVD) {
-            form.add(taggedField("search_realisateur", new TextField("Réalisateur")));
-            form.add(taggedField("search_acteurs",     new TextField("Acteur(s)")));
-            form.add(taggedField("search_annee_min",   new TextField("Année min")));
-            form.add(taggedField("search_annee_max",   new TextField("Année max")));
+            form.add(taggedField("search_realisateur", new TextField(getTranslation("cat.dyn.director"))));
+            form.add(taggedField("search_acteurs",     new TextField(getTranslation("cat.dyn.actors"))));
+            form.add(taggedField("search_annee_min",   new TextField(getTranslation("cat.dyn.year.min"))));
+            form.add(taggedField("search_annee_max",   new TextField(getTranslation("cat.dyn.year.max"))));
         } else if (cat == ArticleCategory.LIVRES) {
-            form.add(taggedField("search_auteur",    new TextField("Auteur")));
-            form.add(taggedField("search_editeur",   new TextField("Éditeur")));
-            form.add(taggedField("search_annee_min", new TextField("Année min")));
+            form.add(taggedField("search_auteur",    new TextField(getTranslation("cat.dyn.author"))));
+            form.add(taggedField("search_editeur",   new TextField(getTranslation("cat.dyn.publisher"))));
+            form.add(taggedField("search_annee_min", new TextField(getTranslation("cat.dyn.year.min"))));
         } else if (cat == ArticleCategory.JEUX) {
             Select<String> typeJeuxSelect = new Select<>();
-            typeJeuxSelect.setLabel("Type de jeu");
+            typeJeuxSelect.setLabel(getTranslation("cat.dyn.game.type"));
             typeJeuxSelect.setId("search_type_jeux");
             List<String> types = referenceService.findAllGameTypes()
                     .stream().map(ReferenceService.ReferenceItem::nom).toList();
@@ -509,11 +513,11 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
 
         if (subcatId != null) {
             if (subcatId == ArticleSubCategory.TV_ECRAN_PLAT_ID) {
-                form.add(taggedField("search_dimension_min", new TextField("Pouces min")));
-                form.add(taggedField("search_dimension_max", new TextField("Pouces max")));
+                form.add(taggedField("search_dimension_min", new TextField(getTranslation("cat.dyn.inches.min"))));
+                form.add(taggedField("search_dimension_max", new TextField(getTranslation("cat.dyn.inches.max"))));
 
                 Select<String> ecranSelect = new Select<>();
-                ecranSelect.setLabel("Type d'écran");
+                ecranSelect.setLabel(getTranslation("cat.dyn.screen.type"));
                 ecranSelect.setId("search_type_ecran");
                 List<String> types = referenceService.findAllScreenTypes()
                         .stream().map(ReferenceService.ReferenceItem::nom).toList();
@@ -521,12 +525,12 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
                 form.add(ecranSelect);
             }
             if (ArticleSubCategory.INFO_PC_SUBCATS.contains(subcatId)) {
-                form.add(taggedField("search_ram",        new TextField("RAM (Go)")));
-                form.add(taggedField("search_processeur", new TextField("Processeur min (GHz)")));
-                form.add(taggedField("search_disque_dur", new TextField("Disque dur min (Go)")));
+                form.add(taggedField("search_ram",        new TextField(getTranslation("cat.dyn.ram"))));
+                form.add(taggedField("search_processeur", new TextField(getTranslation("cat.dyn.cpu"))));
+                form.add(taggedField("search_disque_dur", new TextField(getTranslation("cat.dyn.disk"))));
             }
             if (ArticleSubCategory.WEAR_SIZE_SUBCATS.contains(subcatId)) {
-                form.add(taggedField("search_taille", new TextField("Taille")));
+                form.add(taggedField("search_taille", new TextField(getTranslation("cat.dyn.size"))));
             }
         }
 
@@ -612,7 +616,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
                 .set("overflow", "hidden");
 
         if (articles.isEmpty()) {
-            Paragraph empty = new Paragraph("Aucun article disponible.");
+            Paragraph empty = new Paragraph(getTranslation("main.empty"));
             empty.getStyle().set("color", "#999").set("font-size", "0.9rem");
             table.add(empty);
         } else {
@@ -632,10 +636,10 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
                 .set("width", "100%")
                 .set("border-bottom", "2px solid #6600CC");
         header.add(
-                cell("Image",            "80px"),
-                cell("Nom de l'article", "210px"),
-                cell("Marque",           "165px"),
-                cell("Prix en CHF",      "130px")
+                cell(getTranslation("main.header.image"),            "80px"),
+                cell(getTranslation("main.header.name"), "210px"),
+                cell(getTranslation("main.header.brand"),           "165px"),
+                cell(getTranslation("main.header.price"),      "130px")
         );
         return header;
     }
@@ -660,7 +664,7 @@ public class CategorieView extends VerticalLayout implements HasUrlParameter<Int
             imgBox.getStyle().set("background-color", "#DDD").set("border", "1px solid #CCC");
         }
 
-        String nom = art.getNom() != null ? art.getNom() : "(sans nom)";
+        String nom = art.getNom() != null ? art.getNom() : getTranslation("main.no.name");
         Anchor nomLink = new Anchor("/detail/" + art.getIdArticle(), nom);
         nomLink.getStyle()
                 .set("color", "#0000CC").set("width", "210px")

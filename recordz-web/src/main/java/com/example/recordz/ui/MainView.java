@@ -3,20 +3,25 @@ package com.example.recordz.ui;
 import com.example.recordz.model.domain.Article;
 import com.example.recordz.service.ArticleService;
 import com.example.recordz.ui.layouts.MainLayout;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
 @Route(value = "", layout = MainLayout.class)
-@PageTitle("Avant-Garde")
 @PermitAll
-
-public class MainView extends VerticalLayout implements HasUrlParameter<Integer> {
+public class MainView extends VerticalLayout implements HasUrlParameter<Integer>, HasDynamicTitle {
 
     private static final int PAGE_SIZE = 10;
 
@@ -24,6 +29,11 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
 
     public MainView(ArticleService articleService) {
         this.articleService = articleService;
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("main.page.title");
     }
 
     @Override
@@ -42,13 +52,15 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
         add(buildPagination(currentPage, totalPages));
     }
 
+    // ── Pagination ────────────────────────────────────────────────────────
+
     private HorizontalLayout buildPagination(int currentPage, int totalPages) {
         HorizontalLayout row = new HorizontalLayout();
         row.setAlignItems(Alignment.CENTER);
         row.getStyle().set("padding", "12px 0").set("gap", "6px");
 
-        row.add(paginationBtn("«", "/1",                        currentPage == 1));
-        row.add(paginationBtn("‹", "/" + (currentPage - 1),    currentPage == 1));
+        row.add(paginationBtn("«", "/1",                     currentPage == 1));
+        row.add(paginationBtn("‹", "/" + (currentPage - 1), currentPage == 1));
 
         int start = Math.max(1, currentPage - 2);
         int end   = Math.min(totalPages, currentPage + 2);
@@ -82,7 +94,7 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
             if (!isActive) {
                 int p = i;
                 pageBtn.getElement().addEventListener("click", e ->
-                        // ✅ Format correct pour HasUrlParameter<Integer>
+                        // Format correct pour HasUrlParameter<Integer>
                         pageBtn.getUI().ifPresent(ui -> ui.navigate("/" + p))
                 );
             }
@@ -101,7 +113,9 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
         row.add(paginationBtn("›", "/" + (currentPage + 1), currentPage == totalPages));
         row.add(paginationBtn("»", "/" + totalPages,        currentPage == totalPages));
 
-        Span info = new Span("Page " + currentPage + " / " + totalPages);
+        // Paramètres passés en String : évite le séparateur de milliers de MessageFormat
+        Span info = new Span(getTranslation("main.page.info",
+                String.valueOf(currentPage), String.valueOf(totalPages)));
         info.getStyle()
                 .set("font-size", "0.78rem").set("color", "#6100C1")
                 .set("margin-left", "8px").set("align-self", "center");
@@ -109,7 +123,9 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
 
         return row;
     }
-    // ── Helper bouton pagination ──────────────────────────────
+
+    // ── Helper bouton pagination ──────────────────────────────────────────
+
     private Anchor paginationBtn(String label, String href, boolean disabled) {
         Anchor btn = new Anchor(disabled ? "#" : href, label);
         btn.getStyle()
@@ -127,18 +143,20 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
                 .set("font-weight", "bold");
         return btn;
     }
+
+    // ── Tableau des articles ──────────────────────────────────────────────
+
     private Div buildArticlesTable(List<Article> articles) {
         Div table = new Div();
-        //   border-radius: 25px;border: 2px solid #6100C1;padding: 20px
         table.add(buildTableHeader());
         table.getStyle()
                 .set("border-radius", "20px")
                 .set("border", "1px solid #6100C1")
                 .set("overflow", "hidden")
                 .set("padding-left", "8px");
-        ;
+
         if (articles.isEmpty()) {
-            Paragraph empty = new Paragraph("Aucun article disponible.");
+            Paragraph empty = new Paragraph(getTranslation("main.empty"));
             empty.getStyle().set("color", "#999").set("font-size", "0.9rem");
             table.add(empty);
         } else {
@@ -155,18 +173,18 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
         header.getStyle()
                 .set("font-weight", "bold")
                 .set("color", "#0000CC")
-                .set("padding", "4px 8px")       // ← padding horizontal
+                .set("padding", "4px 8px")
                 .set("width", "100%");
-                //.set("border-bottom", "2px solid #6600CC");  // ← ligne séparatrice
         header.add(
-                cell("Image",                 "80px"),   // ← doit matcher imgBox (60px + marge)
-                cell("Nom de l'article",      "210px"),
-                cell("Marque",                "165px"),
-                cell("Prix CHF", "130px"),
-                cell("Statut",           "130px")
+                cell(getTranslation("main.header.image"),  "80px"),   // doit matcher imgBox (60px + marge)
+                cell(getTranslation("main.header.name"),   "210px"),
+                cell(getTranslation("main.header.brand"),  "165px"),
+                cell(getTranslation("main.header.price"),  "130px"),
+                cell(getTranslation("main.header.status"), "130px")
         );
         return header;
     }
+
     private HorizontalLayout buildArticleRow(Article art) {
         HorizontalLayout row = new HorizontalLayout();
         row.setAlignItems(Alignment.CENTER);
@@ -197,7 +215,7 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
         }
 
         // Nom
-        String nom = art.getNom() != null ? art.getNom() : "(sans nom)";
+        String nom = art.getNom() != null ? art.getNom() : getTranslation("main.no.name");
         Anchor nomLink = new Anchor("/detail/" + art.getIdArticle(), nom);
         nomLink.getStyle()
                 .set("color", "#0000CC")
@@ -223,12 +241,12 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
                 .set("width", "130px")
                 .set("font-size", "0.85rem");
 
-        // ✅ Badge statut corrigé
+        // Badge statut
         Span statutSpan = new Span();
         statutSpan.getStyle().set("width", "130px");
 
         if (Integer.valueOf(1).equals(art.getPub())) {
-            Span badge = new Span("⭐ Article promu");
+            Span badge = new Span(getTranslation("main.promoted"));
             badge.getStyle()
                     .set("background-color", "#6100C1")
                     .set("color", "white")
@@ -240,7 +258,6 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
             statutSpan.add(badge);
         }
 
-        // ✅ Plus de 'a' parasite
         row.add(imgBox, nomLink, marqueSpan, prixSpan, statutSpan);
 
         Long id = art.getIdArticle();
@@ -250,6 +267,7 @@ public class MainView extends VerticalLayout implements HasUrlParameter<Integer>
 
         return row;
     }
+
     private Span cell(String text, String width) {
         Span s = new Span(text);
         s.getStyle().set("width", width).set("font-size", "0.9rem");

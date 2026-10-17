@@ -3,13 +3,11 @@ package com.example.recordz.service;
 import static org.jooq.impl.DSL.*;
 import com.example.recordz.model.domain.*;
 
-// ✅ Remplacer par
 import com.example.recordz.repository.ArticleRepository;
 import com.example.recordz.repository.ReferentielRepository;
-import com.fasterxml.jackson.core.SerializableString;
 import org.jooq.DSLContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.jooq.impl.DSL;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,6 +20,10 @@ public class ReferenceService {
     private static final int LANGUE_FR = 1;
     private final ReferentielRepository referentielRepository; // ← ajouter
     private final ArticleRepository articleRepository;
+
+    /** Fourni par le module web (langue de l'UI). Absent dans un contexte sans interface : français par défaut. */
+    @Autowired(required = false)
+    private CurrentLocaleProvider localeProvider;
 
 
     public ReferenceService(DSLContext dsl, ReferentielRepository referentielRepository, ArticleRepository articleRepository) {
@@ -350,7 +352,7 @@ public class ReferenceService {
             JOIN personne p ON p.id_personne = ap.ref_vendeur
             WHERE ap.ref_acheteur = ?
             """
-            , id).get(0).get("c", Integer.class);
+                , id).get(0).get("c", Integer.class);
 
         // Commentaires
         int nbCommentaires = dsl.fetch("""
@@ -739,64 +741,6 @@ public class ReferenceService {
     }
 
 
-    public String findCategorieLibelle(int idCategorie) {
-        return dsl.fetch("""
-                        SELECT libelle
-                        FROM libelle
-                        JOIN categorie_libelle_langue ON libelle.id_libelle = categorie_libelle_langue.ref_libelle
-                        WHERE categorie_libelle_langue.ref_categorie = ?
-            """, idCategorie)
-                .stream()
-                .findFirst()
-                .map(r -> r.get("libelle", String.class))
-                .orElse(null);
-    }
-
-
-
-    public String findSubCategorieLibelle(int idCategorie, int idSubcat) {
-        return dsl.fetch("""
-            SELECT l.libelle
-            FROM subcategorie_libelle_langue s
-            JOIN libelle l ON l.id_libelle = s.ref_libelle
-            WHERE s.ref_categorie    = ?
-              AND s.ref_subcategorie = ?
-              AND s.ref_langue       = ?
-            LIMIT 1
-            """, idCategorie, idSubcat, LANGUE_FR)
-                .stream()
-                .findFirst()
-                .map(r -> r.get("libelle", String.class))
-                .orElse(null);
-    }
-    public List<CategorieItem> findAllCategories() {
-        return dsl.fetch("""
-                        SELECT c.ref_categorie, l.libelle
-                                        FROM categorie_libelle_langue c               \s
-                                        JOIN libelle l ON l.id_libelle = c.ref_libelle
-                                        WHERE c.ref_langue = ?
-                                        ORDER BY l.libelle
-                """, LANGUE_FR)
-                .map(r -> new CategorieItem(
-                        r.get("ref_categorie", Integer.class),
-                        r.get("libelle", String.class)
-                ));
-    }
-
-    public List<SousCategorieItem> findSousCategoriesByCategorie(int idCategorie) {
-        return dsl.fetch("""
-            SELECT c.ref_subcategorie, l.libelle
-            FROM subcategorie_libelle_langue c
-            JOIN libelle l ON l.id_libelle = c.ref_libelle
-            WHERE c.ref_langue = ?
-            AND c.ref_categorie = ?
-            ORDER BY l.libelle
-            """, LANGUE_FR, idCategorie)
-                .map(r -> new SousCategorieItem(
-                        r.get("ref_subcategorie", Integer.class),
-                        r.get("libelle", String.class)
-                ));
-    }
     public List<ReferenceItem> findAllPayements() {
         return dsl.fetch("""
                 SELECT cpl.ref_condition_payement, l.libelle
@@ -930,4 +874,90 @@ public class ReferenceService {
                 .from(table(name("enchere")))
                 .where(field(name("enchere", "ref_article"), Long.class).eq((long) idArticle))
                 .fetchOne(0, int.class);
-    }}
+    }
+
+    /** Locale courante fournie par le module web (français par défaut). */
+    private Locale currentLocale() {
+        return localeProvider != null ? localeProvider.get() : Locale.FRENCH;
+    }
+
+    /** Table langue : FR=1, DE=2, EN=3. */
+    private static int langueId(Locale locale) {
+        String lang = locale == null ? "fr" : locale.getLanguage();
+        return switch (lang) {
+            case "de" -> 2;
+            case "en" -> 3;
+            default   -> LANGUE_FR;
+        };
+    }
+
+    // ── Catégories ────────────────────────────────────────────────────────
+    public List<CategorieItem> findAllCategories() {
+        return findAllCategories(currentLocale());
+    }
+
+    public List<CategorieItem> findAllCategories(Locale locale) {
+        // Base = libellé français ; remplacé par la traduction si elle existe
+        return dsl.fetch("""
+            SELECT fr.ref_categorie,
+                   COALESCE(lt.libelle, lf.libelle) AS libelle
+            FROM categorie_libelle_langue fr
+            JOIN libelle lf ON lf.id_libelle = fr.ref_libelle
+            LEFT JOIN categorie_libelle_langue tr
+                   ON tr.ref_categorie = fr.ref_categorie AND tr.ref_langue = ?
+            LEFT JOIN libelle lt ON lt.id_libelle = tr.ref_libelle
+            WHERE fr.ref_langue = ?
+            ORDER BY COALESCE(lt.libelle, lf.libelle)
+            """, langueId(locale), LANGUE_FR)
+                .map(r -> new CategorieItem(
+                        r.get("ref_categorie", Integer.class),
+                        r.get("libelle", String.class)));
+    }
+
+    // ── Sous-catégories (toujours jointes sur la catégorie) ───────────────
+    public List<SousCategorieItem> findSousCategoriesByCategorie(int idCategorie) {
+        return findSousCategoriesByCategorie(idCategorie, currentLocale());
+    }
+
+    public List<SousCategorieItem> findSousCategoriesByCategorie(int idCategorie, Locale locale) {
+        return dsl.fetch("""
+            SELECT fr.ref_subcategorie,
+                   COALESCE(lt.libelle, lf.libelle) AS libelle
+            FROM subcategorie_libelle_langue fr
+            JOIN libelle lf ON lf.id_libelle = fr.ref_libelle
+            LEFT JOIN subcategorie_libelle_langue tr
+                   ON tr.ref_categorie    = fr.ref_categorie
+                  AND tr.ref_subcategorie = fr.ref_subcategorie
+                  AND tr.ref_langue       = ?
+            LEFT JOIN libelle lt ON lt.id_libelle = tr.ref_libelle
+            WHERE fr.ref_langue = ? AND fr.ref_categorie = ?
+            ORDER BY COALESCE(lt.libelle, lf.libelle)
+            """, langueId(locale), LANGUE_FR, idCategorie)
+                .map(r -> new SousCategorieItem(
+                        r.get("ref_subcategorie", Integer.class),
+                        r.get("libelle", String.class)));
+    }
+
+    // ── Libellés d'une catégorie / sous-catégorie précise ─────────────────
+    public String findCategorieLibelle(int idCategorie) {
+        return findCategorieLibelle(idCategorie, currentLocale());
+    }
+
+    public String findCategorieLibelle(int idCategorie, Locale locale) {
+        return findAllCategories(locale).stream()
+                .filter(c -> c.id() == idCategorie)
+                .map(CategorieItem::nom)
+                .findFirst().orElse(null);
+    }
+
+    public String findSubCategorieLibelle(int idCategorie, int idSubcat) {
+        return findSubCategorieLibelle(idCategorie, idSubcat, currentLocale());
+    }
+
+    public String findSubCategorieLibelle(int idCategorie, int idSubcat, Locale locale) {
+        return findSousCategoriesByCategorie(idCategorie, locale).stream()
+                .filter(s -> s.id() == idSubcat)
+                .map(SousCategorieItem::nom)
+                .findFirst().orElse(null);
+    }
+}

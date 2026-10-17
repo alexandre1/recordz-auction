@@ -8,6 +8,7 @@ import com.example.recordz.model.domain.dto.ArticleSaveResult;
 import com.example.recordz.service.ArticleDynamicDataService;
 import com.example.recordz.service.ArticleSubmitService;
 import com.example.recordz.ui.layouts.MainLayout;
+import com.example.recordz.utils.VaadinI18NProvider;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -65,6 +66,10 @@ public class ArticleFormView extends VerticalLayout {
 
     private final VerticalLayout videoPanel;
 
+    private static final VaadinI18NProvider provider = new VaadinI18NProvider();
+
+    private final static String LABEL_PUBLIER_ARTICLE = "lbl_publier_article";
+
     public ArticleFormView(ArticleDynamicDataService dataService,
                            ArticleSubmitService submitService,
                            ArticleVideoBroadcaster videoBroadcaster,
@@ -93,7 +98,7 @@ public class ArticleFormView extends VerticalLayout {
                 .set("width", "600px")
                 .set("margin-bottom", "24px");
 
-        Button saveButton   = new Button("Publier l'article");
+        Button saveButton   = new Button(provider.getTranslation(LABEL_PUBLIER_ARTICLE, getLocale()));
         Button cancelButton = new Button("Annuler");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);

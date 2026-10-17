@@ -4,29 +4,32 @@ import com.example.recordz.ui.layouts.MainLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 @Route(value = "a-propos", layout = MainLayout.class)
-@PermitAll
+@AnonymousAllowed
+public class AProposView extends VerticalLayout implements HasDynamicTitle {
 
-@PageTitle("Avant-Garde - À propos")
-public class AProposView extends VerticalLayout {
     public AProposView() {
         getStyle()
                 .set("border-radius", "20px")
                 .set("border", "1px solid #6100C1")
-                .set("width", "800px")
+                .set("max-width", "800px")
                 .set("overflow", "hidden")
                 .set("padding-left", "8px");
+        setWidthFull();
         setPadding(true);
-        H2 title = new H2("À propos d'Avant-Garde");
+
+        H2 title = new H2(getTranslation("about.title"));
         title.getStyle().set("color", "#0000CC");
-        add(title, new Paragraph(
-                "Avant-Garde est la plateforme d'enchères suisse dédiée aux articles " +
-                        "de luxe, fashion, immobilier et bien plus encore. " +
-                        "Achetez et vendez en toute confiance en francs suisses (CHF)."
-        ));
+
+        add(title, new Paragraph(getTranslation("about.propos")));
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("about.page.title");
     }
 }
