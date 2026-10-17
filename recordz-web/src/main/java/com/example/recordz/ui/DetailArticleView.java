@@ -46,9 +46,8 @@ import java.time.format.DateTimeParseException;
 
 
 @Route(value = "detail/:articleId", layout = MainLayout.class)
-@PageTitle("Avant-Garde - Détail article")
 @PermitAll
-public class DetailArticleView extends VerticalLayout implements BeforeEnterObserver {
+public class DetailArticleView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
 
     private final ArticleService articleService;
     private final ReferenceService referenceService;
@@ -67,6 +66,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         this.referenceService = referenceService;
         this.personneService = personneService;
         this.calendrierService = calendrierService;
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("detail.pagetitle");
     }
 
     @Override
@@ -110,10 +114,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
                         buildView(a);
                     },
-                    () -> add(new Paragraph("Article introuvable."))
+                    () -> add(new Paragraph(getTranslation("detail.notfound")))
             );
         } catch (NumberFormatException e) {
-            add(new Paragraph("Identifiant invalide."));
+            add(new Paragraph(getTranslation("detail.invalidid")));
         }
     }
 
@@ -194,7 +198,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         section.setSpacing(false);
         section.setWidthFull();
 
-        H4 titre = new H4("🔨 Derniers enchérisseurs");
+        H4 titre = new H4(getTranslation("detail.bidders.title"));
         titre.getStyle().set("color", "#0000CC").set("margin-bottom", "8px");
         section.add(titre);
 
@@ -230,7 +234,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
             int total = referenceService.countEncherisseurs(idArticle);
             if (total == 0) {
-                Span aucun = new Span("Aucune offre pour le moment.");
+                Span aucun = new Span(getTranslation("detail.bidders.none"));
                 aucun.getStyle().set("font-size", "0.85rem").set("color", "#999");
                 listeZone.add(aucun);
                 pagination.setVisible(false);
@@ -340,7 +344,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         String complet = (p + " " + n).trim();
 
         if (complet.isBlank()) {
-            return new String[]{"Anonyme", "?"};
+            return new String[]{getTranslation("detail.anonymous"), "?"};
         }
         String[] mots = complet.split("\\s+");
         String initiales = mots.length > 1
@@ -356,14 +360,14 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         section.setSpacing(false);
         section.setWidthFull();
 
-        H4 titre = new H4("Questions & Commentaires");
+        H4 titre = new H4(getTranslation("detail.comments.title"));
         titre.getStyle().set("color", "#0000CC").set("margin-bottom", "8px");
         section.add(titre);
 
         var commentaires = referenceService.findCommentaires(article.getIdArticle().intValue());
 
         if (commentaires.isEmpty()) {
-            Span aucun = new Span("Aucun commentaire pour le moment.");
+            Span aucun = new Span(getTranslation("detail.comments.none"));
             aucun.getStyle().set("font-size", "0.85rem").set("color", "#999");
             section.add(aucun);
         } else {
@@ -378,7 +382,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         if (auth != null && auth.getPrincipal() instanceof OidcUser) {
             section.add(buildQuestionForm(article));
         } else {
-            Span loginMsg = new Span("Connectez-vous pour poser une question.");
+            Span loginMsg = new Span(getTranslation("detail.comments.login"));
             loginMsg.getStyle().set("font-size", "0.85rem").set("color", "#999");
             section.add(loginMsg);
         }
@@ -455,16 +459,16 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         form.setSpacing(true);
         form.setMaxWidth("560px");
 
-        H4 titreForm = new H4("Poser une question");
+        H4 titreForm = new H4(getTranslation("detail.ask.title"));
         titreForm.getStyle().set("color", "#0000CC").set("margin", "0");
         form.add(titreForm);
 
-        TextField questionField = new TextField("Sujet de la question");
-        questionField.setPlaceholder("Ex: Livraison possible ?");
+        TextField questionField = new TextField(getTranslation("detail.ask.subject"));
+        questionField.setPlaceholder(getTranslation("detail.ask.subject.ph"));
         questionField.setWidthFull();
 
-        TextArea texteField = new TextArea("Détail");
-        texteField.setPlaceholder("Décrivez votre question en détail…");
+        TextArea texteField = new TextArea(getTranslation("detail.ask.detail"));
+        texteField.setPlaceholder(getTranslation("detail.ask.detail.ph"));
         texteField.setWidthFull();
         texteField.setMinHeight("80px");
 
@@ -472,28 +476,28 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         errMsg.getStyle().set("color", "#CC0000").set("font-size", "0.8rem");
         errMsg.setVisible(false);
 
-        Button envoyerBtn = styledButton("Envoyer");
+        Button envoyerBtn = styledButton(getTranslation("detail.send"));
 
         envoyerBtn.addClickListener(e -> {
             String questionVal = questionField.getValue();
             String texteVal    = texteField.getValue();
 
             if (questionVal == null || questionVal.isBlank()) {
-                errMsg.setText("Veuillez saisir un sujet.");
+                errMsg.setText(getTranslation("detail.ask.err.subject"));
                 errMsg.setVisible(true);
                 return;
             }
             try {
                 var auth = SecurityContextHolder.getContext().getAuthentication();
                 if (auth == null || !(auth.getPrincipal() instanceof OidcUser oidcUser)) {
-                    errMsg.setText("Vous devez être connecté.");
+                    errMsg.setText(getTranslation("detail.err.notlogged"));
                     errMsg.setVisible(true);
                     return;
                 }
                 String email = oidcUser.getAttribute("email");
                 Integer idAuteur = referenceService.findPersonneIdByEmail(email);
                 if (idAuteur == null) {
-                    errMsg.setText("Votre compte n'est pas enregistré.");
+                    errMsg.setText(getTranslation("detail.err.noaccount"));
                     errMsg.setVisible(true);
                     return;
                 }
@@ -505,7 +509,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                         texteVal != null ? texteVal.trim() : ""
                 );
 
-                Notification.show("Votre question a été envoyée !", 3000,
+                Notification.show(getTranslation("detail.ask.sent"), 3000,
                         Notification.Position.TOP_CENTER);
 
                 questionField.clear();
@@ -514,7 +518,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 buildView(article);
 
             } catch (Exception ex) {
-                errMsg.setText("Erreur : " + ex.getMessage());
+                errMsg.setText(getTranslation("detail.error", String.valueOf(ex.getMessage())));
                 errMsg.setVisible(true);
             }
         });
@@ -542,14 +546,14 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     article.getRefCategorie(), article.getRefSubcategorie());
         }
 
-        col.add(fieldRow("Catégorie", catLibelle));
+        col.add(fieldRow(getTranslation("detail.f.category"), catLibelle));
         if (subCatLibelle != null && !subCatLibelle.isBlank()) {
-            col.add(fieldRow("Sous-catégorie", subCatLibelle));
+            col.add(fieldRow(getTranslation("detail.f.subcategory"), subCatLibelle));
         }
         col.add(
-                fieldRow("Nom",       article.getNom()),
-                fieldRow("Fabricant", article.getMarque()),
-                fieldRow("Prix", article.getPrix() != null
+                fieldRow(getTranslation("detail.f.name"),       article.getNom()),
+                fieldRow(getTranslation("detail.f.maker"), article.getMarque()),
+                fieldRow(getTranslation("detail.f.price"), article.getPrix() != null
                         ? String.format("%.2f CHF", article.getPrix())
                         : "—"),
                 gap()
@@ -563,78 +567,78 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
             if (cat == ArticleCategory.VOITURE || cat == ArticleCategory.MOTO) {
                 col.add(
-                        fieldRow("Chevaux (CV)",          str(article.getNbCheveaux())),
-                        fieldRow("Cylindres",             str(article.getNbCylindre())),
-                        fieldRow("Kilométrage",           str(article.getNbKm())),
-                        fieldRow("Année de fabrication",  str(article.getAnnee())),
-                        fieldRow("1ère immatriculation",  str(article.getPremiereImmatriculation()))
+                        fieldRow(getTranslation("detail.f.hp"),          str(article.getNbCheveaux())),
+                        fieldRow(getTranslation("detail.f.cylinders"),             str(article.getNbCylindre())),
+                        fieldRow(getTranslation("detail.f.km"),           str(article.getNbKm())),
+                        fieldRow(getTranslation("detail.f.yearMade"),  str(article.getAnnee())),
+                        fieldRow(getTranslation("detail.f.firstReg"),  str(article.getPremiereImmatriculation()))
                 );
 
                 if (article.getEssenceOuDiesel() != null)
                     referenceService.findAllFuelTypes().stream()
                             .filter(f -> f.id() == article.getEssenceOuDiesel())
                             .findFirst()
-                            .ifPresent(f -> col.add(fieldRow("Carburant", f.nom())));
+                            .ifPresent(f -> col.add(fieldRow(getTranslation("detail.f.fuel"), f.nom())));
 
                 if (article.getRefBoiteDeVitesse() != null)
                     referenceService.findAllGearboxTypes().stream()
                             .filter(g -> g.id() == article.getRefBoiteDeVitesse())
                             .findFirst()
-                            .ifPresent(g -> col.add(fieldRow("Boîte de vitesse", g.nom())));
+                            .ifPresent(g -> col.add(fieldRow(getTranslation("detail.f.gearbox"), g.nom())));
 
-                col.add(fieldRow("Climatisation",
-                        article.getClima() != null && article.getClima() == 1 ? "Oui" : "Non"));
+                col.add(fieldRow(getTranslation("detail.f.ac"),
+                        article.getClima() != null && article.getClima() == 1 ? getTranslation("detail.yes") : getTranslation("detail.no")));
             }
 
             else if (cat == ArticleCategory.LIVRES) {
                 col.add(
-                        fieldRow("Auteur",  article.getAuteur()),
-                        fieldRow("Éditeur", article.getMarque()),
-                        fieldRow("Année",   str(article.getAnnee()))
+                        fieldRow(getTranslation("detail.f.author"),  article.getAuteur()),
+                        fieldRow(getTranslation("detail.f.publisher"), article.getMarque()),
+                        fieldRow(getTranslation("detail.f.year"),   str(article.getAnnee()))
                 );
             }
 
             else if (cat == ArticleCategory.IMMOBILIER) {
                 col.add(
-                        fieldRow("Nombre de pièces",    str(article.getNbPiece())),
-                        fieldRow("Surface habitable",   str(article.getSurfaceHabitable())),
-                        fieldRow("Surface terrain",     str(article.getSuperficieTerrain())),
-                        fieldRow("Année construction",  str(article.getAnneeConstruction())),
-                        fieldRow("Adresse",             article.getAdresse()),
-                        fieldRow("Ville",               article.getLieu()),
-                        fieldRow("Code postal",         article.getNpa())
+                        fieldRow(getTranslation("detail.f.rooms"),    str(article.getNbPiece())),
+                        fieldRow(getTranslation("detail.f.living"),   str(article.getSurfaceHabitable())),
+                        fieldRow(getTranslation("detail.f.land"),     str(article.getSuperficieTerrain())),
+                        fieldRow(getTranslation("detail.f.yearBuilt"),  str(article.getAnneeConstruction())),
+                        fieldRow(getTranslation("detail.f.address"),             article.getAdresse()),
+                        fieldRow(getTranslation("detail.f.city"),               article.getLieu()),
+                        fieldRow(getTranslation("detail.f.zip"),         article.getNpa())
                 );
             }
 
             else if (cat == ArticleCategory.FASHION_FEMME
                     || cat == ArticleCategory.FASHION_HOMME
                     || cat == ArticleCategory.LINGERIE) {
-                col.add(fieldRow("Taille", str(article.getTaille())));
+                col.add(fieldRow(getTranslation("detail.f.size"), str(article.getTaille())));
             }
 
             else if (cat == ArticleCategory.VINS) {
-                col.add(fieldRow("Millésime", article.getTx()));
+                col.add(fieldRow(getTranslation("detail.f.vintage"), article.getTx()));
 
                 if (article.getRefTypeDeVin() != null)
                     referenceService.findAllWineTypes().stream()
                             .filter(w -> w.id() == article.getRefTypeDeVin())
                             .findFirst()
-                            .ifPresent(w -> col.add(fieldRow("Type de vin", w.nom())));
+                            .ifPresent(w -> col.add(fieldRow(getTranslation("detail.f.wineType"), w.nom())));
 
                 // ✅ CORRECTION : getRefCepage() (cohérent avec ArticleRepository.setRefCepage)
                 if (article.getRefCepage() != null)
                     referenceService.findAllCepages().stream()
                             .filter(w -> w.id() == article.getRefCepage())
                             .findFirst()
-                            .ifPresent(w -> col.add(fieldRow("Cépage", w.nom())));
+                            .ifPresent(w -> col.add(fieldRow(getTranslation("detail.f.grape"), w.nom())));
             }
 
             else if (cat == ArticleCategory.DVD) {
                 col.add(
-                        fieldRow("Acteur(s)",    article.getActeurs()),
-                        fieldRow("Réalisateur",  article.getRealisateur()),
-                        fieldRow("Durée (min)",  str(article.getDuree())),
-                        fieldRow("Année",        str(article.getAnnee()))
+                        fieldRow(getTranslation("detail.f.actors"),    article.getActeurs()),
+                        fieldRow(getTranslation("detail.f.director"),  article.getRealisateur()),
+                        fieldRow(getTranslation("detail.f.duration"),  str(article.getDuree())),
+                        fieldRow(getTranslation("detail.f.year"),        str(article.getAnnee()))
                 );
             }
 
@@ -643,23 +647,23 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     referenceService.findAllGameTypes().stream()
                             .filter(g -> g.id() == article.getRefTypeDeJeux())
                             .findFirst()
-                            .ifPresent(g -> col.add(fieldRow("Type de jeu", g.nom())));
+                            .ifPresent(g -> col.add(fieldRow(getTranslation("detail.f.gameType"), g.nom())));
             }
 
             if (subcatId != null) {
                 if (subcatId == ArticleSubCategory.TV_ECRAN_PLAT_ID) {
-                    col.add(fieldRow("Dimension (pouces)", str(article.getDimension())));
+                    col.add(fieldRow(getTranslation("detail.f.dimension"), str(article.getDimension())));
                     if (article.getRefTypeEcran() != null)
                         referenceService.findAllScreenTypes().stream()
                                 .filter(s -> s.id() == article.getRefTypeEcran())
                                 .findFirst()
-                                .ifPresent(s -> col.add(fieldRow("Type d'écran", s.nom())));
+                                .ifPresent(s -> col.add(fieldRow(getTranslation("detail.f.screenType"), s.nom())));
                 }
                 if (ArticleSubCategory.INFO_PC_SUBCATS.contains(subcatId)) {
                     col.add(
-                            fieldRow("Processeur (GHz)", str(article.getProcesseur())),
-                            fieldRow("RAM (Go)",          article.getRam()),
-                            fieldRow("Disque dur (Go)",   article.getDisqueDur())
+                            fieldRow(getTranslation("detail.f.cpu"), str(article.getProcesseur())),
+                            fieldRow(getTranslation("detail.f.ram"),          article.getRam()),
+                            fieldRow(getTranslation("detail.f.disk"),   article.getDisqueDur())
                     );
                 }
             }
@@ -668,12 +672,12 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         referenceService.findAllPayements().stream()
                 .filter(p -> p.id() == (article.getRefConditionPayement() != null ? article.getRefConditionPayement() : -1))
                 .findFirst()
-                .ifPresent(p -> col.add(fieldRow("Condition de paiement", p.nom())));
+                .ifPresent(p -> col.add(fieldRow(getTranslation("detail.f.payment"), p.nom())));
 
         referenceService.findAllLivraisons().stream()
                 .filter(l -> l.id() == (article.getRefModeDeLivraison() != null ? article.getRefModeDeLivraison() : -1))
                 .findFirst()
-                .ifPresent(l -> col.add(fieldRow("Condition de livraison", l.nom())));
+                .ifPresent(l -> col.add(fieldRow(getTranslation("detail.f.delivery"), l.nom())));
 
         return col;
     }
@@ -685,11 +689,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         col.setWidth("300px");
         col.setMaxWidth("100%");
 
-        col.add(fieldRow("Nombre de vues",    str(article.getVisites())));
+        col.add(fieldRow(getTranslation("detail.f.views"),    str(article.getVisites())));
         if (article.getEnchere() != null && article.getEnchere().equals(1)) {
-            col.add(fieldRow("Nombre d'enchères", str(article.getNbrEnchere())));
+            col.add(fieldRow(getTranslation("detail.f.bidsCount"), str(article.getNbrEnchere())));
         }
-        col.add(fieldRow("Quantité en stock", str(article.getQuantite())));
+        col.add(fieldRow(getTranslation("detail.f.stock"), str(article.getQuantite())));
         col.add(gap());
 
         // ── Vendeur ────────────────────────────────────────────
@@ -699,7 +703,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             String nomAffiche = personne.getNom() != null ? personne.getNom() : lienProfil;
             Anchor auteurLink = new Anchor("/profil/" + lienProfil, nomAffiche);
 
-            Span lbl = new Span("Vendeur : ");
+            Span lbl = new Span(getTranslation("detail.seller"));
             lbl.getStyle()
                     .set("font-size", "0.85rem")
                     .set("margin-right", "6px");
@@ -718,7 +722,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         // ── Bouton visiteurs ───────────────────────────────────
         // ✅ Même style que les autres boutons d'action
-        Button listeVisiteursBtn = styledButton("👥 Voir les visiteurs");
+        Button listeVisiteursBtn = styledButton(getTranslation("detail.visitors.btn"));
         listeVisiteursBtn.addClickListener(e -> showVisiteursDialog(article));
 
         // ── Boutons d'action ───────────────────────────────────
@@ -743,21 +747,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             );
             String date = article.getEnchereDateFin();
 
-            col.add(fieldRow("Dernière offre",
+            col.add(fieldRow(getTranslation("detail.f.lastOffer"),
                     derniereOffre != null
                             ? String.format("%.2f CHF", derniereOffre)
-                            : "Aucune offre"));
+                            : getTranslation("detail.noOffer")));
 
             if (date != null) {
-                col.add(fieldRow("Date fermeture enchère", date));
+                col.add(fieldRow(getTranslation("detail.f.closeDate"), date));
             }
-            Button offreBtn = styledButton("Faire une offre");
+            Button offreBtn = styledButton(getTranslation("detail.offer.make"));
             offreBtn.addClickListener(e -> showFaireOffreDialog(article, null, derniereOffre));
 
             if (immobilier) {
-                Button visiteBtn = styledButton("Demande de visites");
+                Button visiteBtn = styledButton(getTranslation("detail.visit.request"));
                 visiteBtn.addClickListener(e -> showDemandeDeVisite(article));
-                Button visiteCalendrier = styledButton("L'agenda des visites");
+                Button visiteCalendrier = styledButton(getTranslation("detail.agenda"));
                 visiteCalendrier.addClickListener(e -> ouvrirAgenda());
 
                 buttonsLayout.add(listeVisiteursBtn, offreBtn, visiteBtn, visiteCalendrier);
@@ -767,14 +771,14 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         } else {
 
-            Button offreBtn = styledButton("Acheter");
+            Button offreBtn = styledButton(getTranslation("detail.buy"));
             offreBtn.addClickListener(e -> showAcheterDialog(article));
 
             if (immobilier) {
-                Button visiteBtn = styledButton("Demande de visites");
+                Button visiteBtn = styledButton(getTranslation("detail.visit.request"));
                 visiteBtn.addClickListener(e -> showDemandeDeVisite(article));
 
-                Button visiteCalendrier = styledButton("L'agenda des visites");
+                Button visiteCalendrier = styledButton(getTranslation("detail.agenda"));
                 visiteCalendrier.addClickListener(e -> ouvrirAgenda());
 
                 buttonsLayout.add(listeVisiteursBtn, offreBtn, visiteBtn, visiteCalendrier);
@@ -794,7 +798,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
     /** ✅ Ouvre l'agenda du vendeur, en protégeant le cas "vendeur introuvable". */
     private void ouvrirAgenda() {
         if (personne == null || personne.getEmail() == null || personne.getEmail().isBlank()) {
-            Notification.show("Agenda indisponible : vendeur introuvable.", 3000,
+            Notification.show(getTranslation("detail.agenda.unavailable"), 3000,
                     Notification.Position.TOP_CENTER);
             return;
         }
@@ -809,13 +813,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         content.setPadding(true);
         content.setSpacing(false);
 
-        TextField reponseParEmail = new TextField("Réponse par email");
-        reponseParEmail.setPlaceholder("Votre email");
+        TextField reponseParEmail = new TextField(getTranslation("detail.visit.email"));
+        reponseParEmail.setPlaceholder(getTranslation("detail.visit.email.ph"));
         content.add(reponseParEmail);
 
         List<PaysPhone> pays = buildPaysList();
 
-        ComboBox<PaysPhone> indicatifBox = new ComboBox<>("Indicatif");
+        ComboBox<PaysPhone> indicatifBox = new ComboBox<>(getTranslation("detail.visit.dial"));
         indicatifBox.setItems(pays);
         indicatifBox.setItemLabelGenerator(p -> p.drapeau() + " " + p.indicatif());
         indicatifBox.setWidth("40%");
@@ -825,7 +829,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .findFirst()
                 .ifPresent(indicatifBox::setValue);
 
-        TextField reponseParTelephone = new TextField("Numéro");
+        TextField reponseParTelephone = new TextField(getTranslation("detail.visit.number"));
         reponseParTelephone.setPlaceholder("XX XXX XX XX");
         reponseParTelephone.setWidth("60%");
 
@@ -845,36 +849,36 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         phoneLayout.setWidthFull();
         content.add(phoneLayout);
 
-        TextField nom = new TextField("Nom");
-        nom.setPlaceholder("Votre nom");
+        TextField nom = new TextField(getTranslation("detail.visit.name"));
+        nom.setPlaceholder(getTranslation("detail.visit.name.ph"));
         content.add(nom);
 
-        TextField prenom = new TextField("Prénom");
-        prenom.setPlaceholder("Votre prénom");
+        TextField prenom = new TextField(getTranslation("detail.visit.firstname"));
+        prenom.setPlaceholder(getTranslation("detail.visit.firstname.ph"));
         content.add(prenom);
 
-        TextField adresse = new TextField("Adresse");
-        adresse.setPlaceholder("Votre adresse");
+        TextField adresse = new TextField(getTranslation("detail.visit.address"));
+        adresse.setPlaceholder(getTranslation("detail.visit.address.ph"));
         content.add(adresse);
 
-        TextArea commentaire = new TextArea("Commentaire");
-        commentaire.setPlaceholder("Votre commentaire");
+        TextArea commentaire = new TextArea(getTranslation("detail.visit.comment"));
+        commentaire.setPlaceholder(getTranslation("detail.visit.comment.ph"));
         content.add(commentaire);
 
-        DatePicker datePicker = new DatePicker("Date de rendez-vous");
+        DatePicker datePicker = new DatePicker(getTranslation("detail.visit.date"));
         datePicker.setValue(LocalDate.now());
         datePicker.setMin(LocalDate.now());
-        datePicker.setLocale(new java.util.Locale("fr", "CH"));
+        datePicker.setLocale(getLocale());
         content.add(datePicker);
 
-        TimePicker timePicker = new TimePicker("Heure du rendez-vous");
+        TimePicker timePicker = new TimePicker(getTranslation("detail.visit.time"));
         timePicker.setValue(LocalTime.of(9, 0));
         timePicker.setStep(Duration.ofMinutes(30));
         timePicker.setMin(LocalTime.of(8, 0));
         timePicker.setMax(LocalTime.of(18, 0));
         content.add(timePicker);
 
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("detail.close"));
         fermerBtn.getStyle()
                 .set("background-color", "#0000CC")
                 .set("color", "white")
@@ -882,7 +886,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .set("border", "none");
         fermerBtn.addClickListener(e -> dlg.close());
 
-        Button envoyerBtn = new Button("Envoyer");
+        Button envoyerBtn = new Button(getTranslation("detail.send"));
         envoyerBtn.getStyle()
                 .set("background-color", "#0000CC")
                 .set("color", "white")
@@ -891,7 +895,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         envoyerBtn.addClickListener(e -> {
             // ✅ Validation : date et heure obligatoires (LocalDateTime.of plante sur null)
             if (datePicker.getValue() == null || timePicker.getValue() == null) {
-                Notification.show("Veuillez choisir une date et une heure.", 3000,
+                Notification.show(getTranslation("detail.visit.pick"), 3000,
                         Notification.Position.TOP_CENTER);
                 return;
             }
@@ -932,11 +936,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                         );
                     }
                 }
-                Notification.show("Demande de visite envoyée !", 3000,
+                Notification.show(getTranslation("detail.visit.sent"), 3000,
                         Notification.Position.TOP_CENTER);
                 dlg.close();
             } catch (Exception ex) {
-                Notification.show("Erreur : " + ex.getMessage(), 3000,
+                Notification.show(getTranslation("detail.error", String.valueOf(ex.getMessage())), 3000,
                         Notification.Position.TOP_CENTER);
             }
         });
@@ -974,7 +978,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 """.formatted(nom, nomPrenom, commentaire, emailDemandeur, dateVisite));
         try {
             mailSender.send(msg);
-            Notification.show("Email envoyé");
+            Notification.show(getTranslation("detail.mail.sent"));
         } catch (Exception e) {
             System.err.println("Erreur envoi email vendeur : " + e.getMessage());
         }
@@ -992,23 +996,23 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private List<PaysPhone> buildPaysList() {
         return Arrays.asList(
-                new PaysPhone("CH", "+41",  "Suisse",        countryCodeToFlag("CH")),
-                new PaysPhone("FR", "+33",  "France",        countryCodeToFlag("FR")),
-                new PaysPhone("DE", "+49",  "Allemagne",     countryCodeToFlag("DE")),
-                new PaysPhone("IT", "+39",  "Italie",        countryCodeToFlag("IT")),
-                new PaysPhone("BE", "+32",  "Belgique",      countryCodeToFlag("BE")),
-                new PaysPhone("ES", "+34",  "Espagne",       countryCodeToFlag("ES")),
-                new PaysPhone("PT", "+351", "Portugal",      countryCodeToFlag("PT")),
-                new PaysPhone("GB", "+44",  "Royaume-Uni",   countryCodeToFlag("GB")),
-                new PaysPhone("US", "+1",   "États-Unis",    countryCodeToFlag("US")),
-                new PaysPhone("CA", "+1",   "Canada",        countryCodeToFlag("CA")),
-                new PaysPhone("JP", "+81",  "Japon",         countryCodeToFlag("JP")),
-                new PaysPhone("CN", "+86",  "Chine",         countryCodeToFlag("CN")),
-                new PaysPhone("BR", "+55",  "Brésil",        countryCodeToFlag("BR")),
-                new PaysPhone("AU", "+61",  "Australie",     countryCodeToFlag("AU")),
-                new PaysPhone("MA", "+212", "Maroc",         countryCodeToFlag("MA")),
-                new PaysPhone("SN", "+221", "Sénégal",       countryCodeToFlag("SN")),
-                new PaysPhone("TN", "+216", "Tunisie",       countryCodeToFlag("TN"))
+                new PaysPhone("CH", "+41",  countryName("CH"), countryCodeToFlag("CH")),
+                new PaysPhone("FR", "+33",  countryName("FR"), countryCodeToFlag("FR")),
+                new PaysPhone("DE", "+49",  countryName("DE"), countryCodeToFlag("DE")),
+                new PaysPhone("IT", "+39",  countryName("IT"), countryCodeToFlag("IT")),
+                new PaysPhone("BE", "+32",  countryName("BE"), countryCodeToFlag("BE")),
+                new PaysPhone("ES", "+34",  countryName("ES"), countryCodeToFlag("ES")),
+                new PaysPhone("PT", "+351", countryName("PT"), countryCodeToFlag("PT")),
+                new PaysPhone("GB", "+44",  countryName("GB"), countryCodeToFlag("GB")),
+                new PaysPhone("US", "+1",   countryName("US"), countryCodeToFlag("US")),
+                new PaysPhone("CA", "+1",   countryName("CA"), countryCodeToFlag("CA")),
+                new PaysPhone("JP", "+81",  countryName("JP"), countryCodeToFlag("JP")),
+                new PaysPhone("CN", "+86",  countryName("CN"), countryCodeToFlag("CN")),
+                new PaysPhone("BR", "+55",  countryName("BR"), countryCodeToFlag("BR")),
+                new PaysPhone("AU", "+61",  countryName("AU"), countryCodeToFlag("AU")),
+                new PaysPhone("MA", "+212", countryName("MA"), countryCodeToFlag("MA")),
+                new PaysPhone("SN", "+221", countryName("SN"), countryCodeToFlag("SN")),
+                new PaysPhone("TN", "+216", countryName("TN"), countryCodeToFlag("TN"))
         );
     }
 
@@ -1017,6 +1021,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         if (pays == null || numeroField.getValue().isBlank()) return "";
         String raw = numeroField.getValue().replaceAll("[^0-9]", "");
         return pays.indicatif() + raw;
+    }
+
+    /** Nom du pays dans la langue de l'interface (fr/en/de), sans table de traduction. */
+    private String countryName(String countryCode) {
+        return new Locale("", countryCode).getDisplayCountry(getLocale());
     }
 
     private String countryCodeToFlag(String countryCode) {
@@ -1044,7 +1053,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         content.setPadding(true);
         content.setSpacing(false);
 
-        H4 titre = new H4("👥 Visiteurs de l'article");
+        H4 titre = new H4(getTranslation("detail.visitors.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0").set("font-size", "1rem");
         content.add(titre);
 
@@ -1078,7 +1087,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             listeZone.removeAll();
 
             if (visiteurs.isEmpty()) {
-                Span aucun = new Span("Aucun visiteur enregistré.");
+                Span aucun = new Span(getTranslation("detail.visitors.none"));
                 aucun.getStyle().set("color", "#999").set("font-size", "0.85rem");
                 listeZone.add(aucun);
                 pagination.setVisible(false);
@@ -1091,11 +1100,11 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             tableHeader.setWidthFull();
             tableHeader.addClassName("hide-on-mobile");   // masqué sur petit écran (voir CSS)
             tableHeader.getStyle().set("padding", "6px 8px").set("margin-bottom", "4px");
-            Span hNom = new Span("Visiteur");
+            Span hNom = new Span(getTranslation("detail.visitors.h.visitor"));
             hNom.getStyle().set("width", "150px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
-            Span hEmail = new Span("Email");
+            Span hEmail = new Span(getTranslation("detail.visitors.h.email"));
             hEmail.getStyle().set("width", "120px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
-            Span hDate = new Span("Date de visite");
+            Span hDate = new Span(getTranslation("detail.visitors.h.date"));
             hDate.getStyle().set("font-size", "0.8rem").set("font-weight", "bold").set("white-space", "nowrap");
             tableHeader.add(hNom, hEmail, hDate);
             listeZone.add(tableHeader);
@@ -1166,7 +1175,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         renderPage.run();
         content.add(listeZone, pagination, new Hr());
 
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("detail.close"));
         fermerBtn.setWidthFull();
         fermerBtn.getStyle()
                 .set("background-color", "#0000CC")
@@ -1190,24 +1199,24 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Faire une offre");
+        H4 titre = new H4(getTranslation("detail.offer.make"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre);
         content.add(new Hr());
 
-        Span nomArticle = new Span("Article : " + (article.getNom() != null ? article.getNom() : "—"));
+        Span nomArticle = new Span(getTranslation("detail.article", article.getNom() != null ? article.getNom() : "—"));
         nomArticle.getStyle().set("font-size", "0.9rem");
         content.add(nomArticle);
 
-        Span prixActuel = new Span("Prix actuel : "
-                + (prixReference != null ? String.format("%.2f", prixReference) : "—") + " CHF");
+        Span prixActuel = new Span(getTranslation("detail.currentPrice",
+                prixReference != null ? String.format("%.2f", prixReference) : "—"));
         prixActuel.getStyle().set("font-size", "0.9rem").set("color", "#555");
         content.add(prixActuel);
         content.add(new Hr());
 
-        TextField montantField = new TextField("Votre offre (CHF)");
+        TextField montantField = new TextField(getTranslation("detail.offer.amount"));
         montantField.setWidth("100%");
-        montantField.setPlaceholder("Ex: 150.00");
+        montantField.setPlaceholder(getTranslation("detail.offer.amount.ph"));
         if (offreField != null && !offreField.getValue().isBlank()) {
             montantField.setValue(offreField.getValue());
         }
@@ -1225,13 +1234,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.END
         );
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("detail.cancel"));
         annulerBtn.getStyle()
                 .set("background-color", "#E0E0E0")
                 .set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Confirmer");
+        Button confirmerBtn = new Button(getTranslation("detail.confirm"));
         confirmerBtn.getStyle()
                 .set("background-color", "#0000CC")
                 .set("color", "white")
@@ -1240,7 +1249,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         confirmerBtn.addClickListener(e -> {
             String valeur = montantField.getValue().replace(",", ".");
             if (valeur.isBlank()) {
-                errMsg.setText("Veuillez saisir un montant.");
+                errMsg.setText(getTranslation("detail.offer.empty"));
                 errMsg.setVisible(true);
                 return;
             }
@@ -1248,15 +1257,14 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 double montant = Double.parseDouble(valeur);
                 // ✅ CORRECTION : on compare à la dernière offre (ou au prix de départ s'il n'y en a pas)
                 if (prixReference != null && montant <= prixReference) {
-                    errMsg.setText("Votre offre doit être supérieure au prix actuel ("
-                            + String.format("%.2f", prixReference) + " CHF).");
+                    errMsg.setText(getTranslation("detail.offer.tooLow", String.format("%.2f", prixReference)));
                     errMsg.setVisible(true);
                     return;
                 }
 
                 var auth = SecurityContextHolder.getContext().getAuthentication();
                 if (auth == null || !(auth.getPrincipal() instanceof OidcUser oidcUser)) {
-                    errMsg.setText("Vous devez être connecté pour faire une offre.");
+                    errMsg.setText(getTranslation("detail.offer.needLogin"));
                     errMsg.setVisible(true);
                     return;
                 }
@@ -1266,7 +1274,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 Integer idVendeur  = referenceService.findIdVendeur(article.getIdArticle().intValue());
 
                 if (idAcheteur == null) {
-                    errMsg.setText("Votre compte n'est pas enregistré.");
+                    errMsg.setText(getTranslation("detail.err.noaccount"));
                     errMsg.setVisible(true);
                     return;
                 }
@@ -1278,21 +1286,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                             montant
                     );
                     Notification.show(
-                            "Offre de " + montant + " CHF enregistrée !",
+                            getTranslation("detail.offer.saved", String.valueOf(montant)),
                             3000,
                             Notification.Position.TOP_CENTER
                     );
                     dlg.close();
                 } else {
-                    errMsg.setText("Impossible d'enchérir sur un article vous appartenant.");
+                    errMsg.setText(getTranslation("detail.offer.own"));
                     errMsg.setVisible(true);
                 }
 
             } catch (NumberFormatException ex) {
-                errMsg.setText("Montant invalide.");
+                errMsg.setText(getTranslation("detail.offer.invalid"));
                 errMsg.setVisible(true);
             } catch (Exception ex) {
-                errMsg.setText("Erreur : " + ex.getMessage());
+                errMsg.setText(getTranslation("detail.error", String.valueOf(ex.getMessage())));
                 errMsg.setVisible(true);
             }
         });
@@ -1311,21 +1319,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         content.setPadding(true);
         content.setSpacing(true);
 
-        H4 titre = new H4("Confirmer l'achat");
+        H4 titre = new H4(getTranslation("detail.buy.title"));
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre);
         content.add(new Hr());
 
-        Span nomArticle = new Span("Article : " + (article.getNom() != null ? article.getNom() : "—"));
+        Span nomArticle = new Span(getTranslation("detail.article", article.getNom() != null ? article.getNom() : "—"));
         nomArticle.getStyle().set("font-size", "0.9rem");
         content.add(nomArticle);
 
-        Span prixFixe = new Span("Prix : " + (article.getPrix() != null ? article.getPrix() + " CHF" : "—"));
+        Span prixFixe = new Span(getTranslation("detail.price", article.getPrix() != null ? article.getPrix() + " CHF" : "—"));
         prixFixe.getStyle().set("font-size", "0.9rem").set("color", "#555");
         content.add(prixFixe);
         content.add(new Hr());
 
-        Span confirm = new Span("Souhaitez-vous acheter cet article au prix affiché ?");
+        Span confirm = new Span(getTranslation("detail.buy.question"));
         confirm.getStyle().set("font-size", "0.9rem");
         content.add(confirm);
 
@@ -1341,13 +1349,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.END
         );
 
-        Button annulerBtn = new Button("Annuler");
+        Button annulerBtn = new Button(getTranslation("detail.cancel"));
         annulerBtn.getStyle()
                 .set("background-color", "#E0E0E0")
                 .set("border", "1px solid #999");
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button("Acheter");
+        Button confirmerBtn = new Button(getTranslation("detail.buy"));
         confirmerBtn.getStyle()
                 .set("background-color", "#0000CC")
                 .set("color", "white")
@@ -1357,7 +1365,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             try {
                 var auth = SecurityContextHolder.getContext().getAuthentication();
                 if (auth == null || !(auth.getPrincipal() instanceof OidcUser oidcUser)) {
-                    errMsg.setText("Vous devez être connecté pour acheter.");
+                    errMsg.setText(getTranslation("detail.buy.needLogin"));
                     errMsg.setVisible(true);
                     return;
                 }
@@ -1365,7 +1373,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 String email = oidcUser.getAttribute("email");
                 Integer idAcheteur = referenceService.findPersonneIdByEmail(email);
                 if (idAcheteur == null) {
-                    errMsg.setText("Votre compte n'est pas enregistré.");
+                    errMsg.setText(getTranslation("detail.err.noaccount"));
                     errMsg.setVisible(true);
                     return;
                 }
@@ -1375,7 +1383,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 int stock = article.getQuantite() != null ? article.getQuantite() : 0;
                 if (stock - 1 < 0) {
                     Notification.show(
-                            "L'article n'est plus disponible en stock",
+                            getTranslation("detail.buy.outOfStock"),
                             3000,
                             Notification.Position.TOP_CENTER
                     );
@@ -1398,14 +1406,14 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 );
 
                 Notification.show(
-                        "Achat confirmé pour " + article.getPrix() + " CHF !",
+                        getTranslation("detail.buy.done", String.valueOf(article.getPrix())),
                         3000,
                         Notification.Position.TOP_CENTER
                 );
                 dlg.close();
 
             } catch (Exception ex) {
-                errMsg.setText("Erreur : " + ex.getMessage());
+                errMsg.setText(getTranslation("detail.error", String.valueOf(ex.getMessage())));
                 errMsg.setVisible(true);
             }
         });
@@ -1424,7 +1432,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         FullCalendar calendar = FullCalendarBuilder.create().build();
         calendar.setSizeFull();
-        calendar.setLocale(Locale.FRENCH);
+        calendar.setLocale(getLocale());
         calendar.changeView(CalendarViewImpl.DAY_GRID_MONTH);
 
         List<EvenementCalendrier> evenements = calendrierService
@@ -1442,7 +1450,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         calendar.addEntryClickedListener(event -> {
             Entry clicked = event.getEntry();
             Notification.show(
-                    "Visite : " + clicked.getTitle(),
+                    getTranslation("detail.visit.title", String.valueOf(clicked.getTitle())),
                     3000,
                     Notification.Position.BOTTOM_CENTER
             );
@@ -1450,7 +1458,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         Button prev  = new Button(VaadinIcon.ANGLE_LEFT.create(),  e -> calendar.previous());
         Button next  = new Button(VaadinIcon.ANGLE_RIGHT.create(), e -> calendar.next());
-        Button today = new Button("Aujourd'hui", e -> calendar.today());
+        Button today = new Button(getTranslation("detail.today"), e -> calendar.today());
 
         Select<CalendarView> viewSelect = new Select<>();
         viewSelect.setItems(
@@ -1461,7 +1469,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         viewSelect.setValue(CalendarViewImpl.DAY_GRID_MONTH);
         viewSelect.addValueChangeListener(e -> calendar.changeView(e.getValue()));
 
-        Button fermerBtn = new Button("Fermer", e -> dlg.close());
+        Button fermerBtn = new Button(getTranslation("detail.close"), e -> dlg.close());
         fermerBtn.getStyle()
                 .set("background-color", "#0000CC")
                 .set("color", "white")

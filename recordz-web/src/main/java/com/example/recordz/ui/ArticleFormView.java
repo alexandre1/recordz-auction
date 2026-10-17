@@ -8,7 +8,6 @@ import com.example.recordz.model.domain.dto.ArticleSaveResult;
 import com.example.recordz.service.ArticleDynamicDataService;
 import com.example.recordz.service.ArticleSubmitService;
 import com.example.recordz.ui.layouts.MainLayout;
-import com.example.recordz.utils.VaadinI18NProvider;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -28,11 +27,10 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +41,7 @@ import java.util.Set;
 
 @PermitAll
 @Route(value = "ajouter-article", layout = MainLayout.class)
-@PageTitle("Ajouter un article")
-public class ArticleFormView extends VerticalLayout {
+public class ArticleFormView extends VerticalLayout implements HasDynamicTitle {
 
     private static final int QR_SIZE_PX = 180;
 
@@ -66,9 +63,12 @@ public class ArticleFormView extends VerticalLayout {
 
     private final VerticalLayout videoPanel;
 
-    private static final VaadinI18NProvider provider = new VaadinI18NProvider();
-
     private final static String LABEL_PUBLIER_ARTICLE = "lbl_publier_article";
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("artview.pagetitle");
+    }
 
     public ArticleFormView(ArticleDynamicDataService dataService,
                            ArticleSubmitService submitService,
@@ -80,15 +80,13 @@ public class ArticleFormView extends VerticalLayout {
         this.videoPanel = buildVideoCapturePanel();
         this.videoPanel.setVisible(false); // masqué tant qu'aucune catégorie pertinente n'est choisie
 
-        String lang = resolveLang();
-
         setPadding(true);
         setSpacing(true);
 
         removeAll();
         add((buildSecondaryNav()));
 
-        DynamicArticleForm form = new DynamicArticleForm(dataService, lang);
+        DynamicArticleForm form = new DynamicArticleForm(dataService); // langue = celle de l'interface (UI.getLocale())
         form.setOnCategoryChanged(catId ->
                 videoPanel.setVisible(catId != null && CATEGORIES_REQUIRANT_VIDEO.contains(catId)));
         form.getStyle()
@@ -98,15 +96,15 @@ public class ArticleFormView extends VerticalLayout {
                 .set("width", "600px")
                 .set("margin-bottom", "24px");
 
-        Button saveButton   = new Button(provider.getTranslation(LABEL_PUBLIER_ARTICLE, getLocale()));
-        Button cancelButton = new Button("Annuler");
+        Button saveButton   = new Button(getTranslation(LABEL_PUBLIER_ARTICLE));
+        Button cancelButton = new Button(getTranslation("artview.cancel"));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         saveButton.addClickListener(e -> {
             // 1. Validation
             if (!form.isValid()) {
-                Notification.show("Veuillez corriger les erreurs avant de publier.",
+                Notification.show(getTranslation("artview.fixErrors"),
                         3000, Notification.Position.TOP_CENTER);
                 return;
             }
@@ -128,8 +126,8 @@ public class ArticleFormView extends VerticalLayout {
 
 
                 String message = result.pendingEntrupyAuthentication()
-                        ? "Article #" + result.articleId() + " enregistré — en attente de vérification d'authenticité."
-                        : "Article #" + result.articleId() + " publié avec succès !";
+                        ? getTranslation("artview.saved.pending", String.valueOf(result.articleId()))
+                        : getTranslation("artview.saved.ok", String.valueOf(result.articleId()));
 
                 Notification notif = Notification.show(
                         message, 4000, Notification.Position.TOP_CENTER);
@@ -142,7 +140,7 @@ public class ArticleFormView extends VerticalLayout {
                 // Afficher la cause racine
                 Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                 Notification notif = Notification.show(
-                        "Erreur : " + cause.getMessage(),
+                        getTranslation("artview.error", String.valueOf(cause.getMessage())),
                         8000, Notification.Position.TOP_CENTER);
                 notif.addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
@@ -191,11 +189,11 @@ public class ArticleFormView extends VerticalLayout {
         phoneIcon.getStyle().set("color", "#6100C1").set("margin-bottom", "8px");
         panel.add(phoneIcon);
 
-        Span title = new Span("Confirmez depuis votre téléphone");
+        Span title = new Span(getTranslation("artview.video.title"));
         title.getStyle().set("font-weight", "600").set("font-size", "1rem").set("margin-bottom", "4px");
         panel.add(title);
 
-        Span subtitle = new Span("Scannez ce code avec l'appareil photo de votre téléphone pour filmer l'article.");
+        Span subtitle = new Span(getTranslation("artview.video.subtitle"));
         subtitle.getStyle()
                 .set("font-size", "0.82rem")
                 .set("color", "var(--lumo-secondary-text-color)")
@@ -210,7 +208,7 @@ public class ArticleFormView extends VerticalLayout {
                 .set("padding", "12px")
                 .set("border-radius", "12px")
                 .set("border", "1px solid var(--lumo-contrast-10pct)");
-        Image qr = new Image(buildQrResource(buildMobileUploadUrl()), "QR code capture vidéo");
+        Image qr = new Image(buildQrResource(buildMobileUploadUrl()), getTranslation("artview.video.qrAlt"));
         qr.setWidth(QR_SIZE_PX + "px");
         qr.setHeight(QR_SIZE_PX + "px");
         qrBox.add(qr);
@@ -229,7 +227,7 @@ public class ArticleFormView extends VerticalLayout {
         spinner.setWidth("160px");
         waitingState.add(spinner);
 
-        Span waitingLabel = new Span("En attente de confirmation…");
+        Span waitingLabel = new Span(getTranslation("artview.video.waiting"));
         waitingLabel.getStyle().set("font-size", "0.82rem").set("color", "var(--lumo-secondary-text-color)")
                 .set("margin-top", "6px");
         waitingState.add(waitingLabel);
@@ -243,7 +241,7 @@ public class ArticleFormView extends VerticalLayout {
         Icon checkIcon = VaadinIcon.CHECK_CIRCLE.create();
         checkIcon.setSize("22px");
         checkIcon.getStyle().set("color", "#1a7f37");
-        Span confirmedLabel = new Span("Vidéo confirmée");
+        Span confirmedLabel = new Span(getTranslation("artview.video.confirmed"));
         confirmedLabel.getStyle().set("font-weight", "600").set("color", "#1a7f37");
         confirmedState = new HorizontalLayout(checkIcon, confirmedLabel);
         confirmedState.setAlignItems(Alignment.CENTER);
@@ -258,7 +256,7 @@ public class ArticleFormView extends VerticalLayout {
 
     private void onVideoReceived(String videoPath) {
         this.receivedVideoPath = videoPath;
-        videoStatusLabel.setText("Vidéo reçue ✔");
+        videoStatusLabel.setText(getTranslation("artview.video.received"));
     }
 
     /**
@@ -293,28 +291,17 @@ public class ArticleFormView extends VerticalLayout {
         });
     }
 
-    private static String resolveLang() {
-        try {
-            VaadinSession session = VaadinSession.getCurrent();
-            if (session != null) {
-                String lang = (String) session.getAttribute("lang");
-                if (lang != null && !lang.isBlank()) return lang.toLowerCase();
-            }
-        } catch (Exception ignored) {}
-        return "fr";
-    }
-
     private HorizontalLayout buildSecondaryNav() {
         HorizontalLayout nav = new HorizontalLayout();
         nav.getStyle()
                 .set("color", "#0000CC")
                 .set("font-size", "0.85rem");
         nav.add(
-                navLink("Informations",       "/mon-compte/informations"),
-                navLink("Mes encheres",       "/encheres"),
-                navLink("Ajouter un article", "/ajouter-article"),
-                navLink("Faire de la publicité", "/publicite"),
-                navLink("Calendrier de mes ventes", "/calendrier")
+                navLink(getTranslation("account.nav.info"),     "/mon-compte/informations"),
+                navLink(getTranslation("account.nav.bids"),     "/encheres"),
+                navLink(getTranslation("account.nav.add"),      "/ajouter-article"),
+                navLink(getTranslation("account.nav.ads"),      "/publicite"),
+                navLink(getTranslation("account.nav.calendar"), "/calendrier")
         );
         return nav;
     }

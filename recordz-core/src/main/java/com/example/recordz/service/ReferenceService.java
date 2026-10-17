@@ -33,16 +33,7 @@ public class ReferenceService {
     }
 
     public List<ReferenceItem> findAllTypesEnchere() {
-        return dsl.fetch("""
-            SELECT id, libelle
-            FROM condition_enchere_libelle_langue cel
-            JOIN libelle l ON l.id_libelle = cel.ref_libelle
-            WHERE cel.ref_langue = ?
-            """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("id", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("condition_enchere_libelle_langue", "id");
     }
 
 
@@ -140,14 +131,14 @@ public class ReferenceService {
     }
     // ✅ Nouveau code
     public List<ReferenceItem> findAllFuelTypes() {
-        return referentielRepository.findAllFuelTypes();
+        return findLocalized("type_essence_libelle_langue", "ref_type_essence");
     }
 
     public List<ReferenceItem> findAllGearboxTypes() {
-        return referentielRepository.findAllGearboxTypes();
+        return findLocalized("boite_de_vitesse_libelle_langue", "ref_boite_de_vitesse");
     }
     public List<ReferenceItem> findAllWineTypes() {
-        return referentielRepository.findAllWineTypes();
+        return findLocalized("type_de_vin_libelle_langue", "ref_type_de_vin");
     }
     // Retourne : [nom, prenom, date, question, texte]
     public List<String[]> findCommentaires(int idArticle) {
@@ -238,11 +229,11 @@ public class ReferenceService {
     }
 
     public List<ReferenceItem> findAllGameTypes() {
-        return referentielRepository.findAllGameTypes();
+        return findLocalized("type_de_jeux_libelle_langue", "ref_type_de_jeux");
     }
 
     public List<ReferenceItem> findAllScreenTypes() {
-        return referentielRepository.findAllScreenTypes();
+        return findLocalized("type_ecran_libelle_langue", "ref_type_ecran");
     }
     public void enregistrerAchat(int idArticle, int idAcheteur, Double prix, Integer quantite, Integer refConditionPayement, Integer refModeLivraiso) {
 
@@ -605,8 +596,7 @@ public class ReferenceService {
     }
     // ── Location ou achat (Location / Achat) ─────────────────────────────
     public List<ReferenceItem> findAllLocationOuAchat() {
-        return dsl.fetch("SELECT l.ref_location_ou_achat, lb.libelle FROM location_ou_achat_libelle_langue l JOIN libelle lb ON lb.id_libelle = l.ref_libelle WHERE l.ref_langue = 1")
-                .map(r -> new ReferenceItem(r.get(0, Integer.class), r.get(1, String.class)));
+        return findLocalized("location_ou_achat_libelle_langue", "ref_location_ou_achat");
     }
 
     public List<ReferenceItem> findAllPays() {
@@ -742,67 +732,22 @@ public class ReferenceService {
 
 
     public List<ReferenceItem> findAllPayements() {
-        return dsl.fetch("""
-                SELECT cpl.ref_condition_payement, l.libelle
-                FROM condition_payement_libelle_langue cpl
-                JOIN libelle l ON l.id_libelle = cpl.ref_libelle
-                WHERE cpl.ref_langue = ?
-                """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("ref_condition_payement", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("condition_payement_libelle_langue", "ref_condition_payement");
     }
 
     public List<ReferenceItem> findAllLivraisons() {
-        return dsl.fetch("""
-                SELECT cll.ref_mode_de_livraison, l.libelle
-                FROM condition_livraison_libelle_langue cll
-                JOIN libelle l ON l.id_libelle = cll.ref_libelle
-                WHERE cll.ref_langue = ?
-                """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("ref_mode_de_livraison", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("condition_livraison_libelle_langue", "ref_mode_de_livraison");
     }
 
     public List<ReferenceItem> findAllLivraisonsParVendeur(int refVendeur) {
-        return dsl.fetch("""
-                SELECT cll.ref_mode_de_livraison, l.libelle
-                FROM condition_livraison_libelle_langue cll
-                JOIN libelle l ON l.id_libelle = cll.ref_libelle
-                WHERE cll.ref_langue = ?
-                """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("ref_mode_de_livraison", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("condition_livraison_libelle_langue", "ref_mode_de_livraison");
     }
 
     public List<ReferenceItem> findAllEtats() {
-        return dsl.fetch("""
-                SELECT ell.ref_etat, l.libelle
-                FROM etat_libelle_langue ell
-                JOIN libelle l ON l.id_libelle = ell.ref_libelle
-                WHERE ell.ref_langue = ?
-                """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("ref_etat", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("etat_libelle_langue", "ref_etat");
     }
     public List<ReferenceItem> findAllMois() {
-        return dsl.fetch("""
-                    SELECT ell.ref_mois, l.libelle
-                    FROM mois_libelle_langue ell
-                    JOIN libelle l ON l.id_libelle = ell.ref_libelle
-                    WHERE ell.ref_langue = ?                    
-                    """, LANGUE_FR)
-                .map(r -> new ReferenceItem(
-                        r.get("ref_mois", Integer.class),
-                        r.get("libelle", String.class)
-                ));
+        return findLocalized("mois_libelle_langue", "ref_mois");
     }
 
 
@@ -877,6 +822,31 @@ public class ReferenceService {
     }
 
     /** Locale courante fournie par le module web (français par défaut). */
+    /**
+     * Liste de référence "xxx_libelle_langue" dans la langue courante de l'interface.
+     * Base = lignes françaises ; libellé remplacé par la traduction EN/DE si elle existe.
+     * (table et refCol sont des constantes du code, jamais des saisies utilisateur.)
+     */
+    private List<ReferenceItem> findLocalized(String table, String refCol) {
+        return findLocalized(table, refCol, currentLocale());
+    }
+
+    private List<ReferenceItem> findLocalized(String table, String refCol, Locale locale) {
+        String sql = """
+            SELECT fr.%1$s AS ref_id, COALESCE(lt.libelle, lf.libelle) AS libelle
+            FROM %2$s fr
+            JOIN libelle lf ON lf.id_libelle = fr.ref_libelle
+            LEFT JOIN %2$s tr ON tr.%1$s = fr.%1$s AND tr.ref_langue = ?
+            LEFT JOIN libelle lt ON lt.id_libelle = tr.ref_libelle
+            WHERE fr.ref_langue = ?
+            ORDER BY fr.%1$s
+            """.formatted(refCol, table);
+        return dsl.fetch(sql, langueId(locale), LANGUE_FR)
+                .map(r -> new ReferenceItem(
+                        r.get("ref_id", Integer.class),
+                        r.get("libelle", String.class)));
+    }
+
     private Locale currentLocale() {
         return localeProvider != null ? localeProvider.get() : Locale.FRENCH;
     }

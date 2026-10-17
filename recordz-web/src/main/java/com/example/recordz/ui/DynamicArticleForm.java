@@ -5,6 +5,7 @@ import com.example.recordz.model.domain.ArticleSubCategory;
 import com.example.recordz.model.domain.dto.ArticleFormData;
 import com.example.recordz.service.ArticleDynamicDataService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -38,13 +39,13 @@ public class DynamicArticleForm extends VerticalLayout {
     private final Div dynamicFieldsContainer;
 
     // ---- Champs communs ----
-    private final TextField    nameField        = new TextField("Nom de l'article");
-    private final TextArea     descriptionField = new TextArea("Description");
-    private final NumberField  priceField       = new NumberField("Prix (CHF)");
+    private final TextField    nameField        = new TextField(getTranslation("artform.name"));
+    private final TextArea     descriptionField = new TextArea(getTranslation("artform.description"));
+    private final NumberField  priceField       = new NumberField(getTranslation("artform.price"));
     private final Select<ArticleDynamicDataService.LabelValue> paymentSelect  = new Select<>();
     private final Select<ArticleDynamicDataService.LabelValue> deliverySelect = new Select<>();
     private final Select<ArticleDynamicDataService.LabelValue> conditionSelect = new Select<>();
-    private final IntegerField quantityField    = new IntegerField("Quantité");
+    private final IntegerField quantityField    = new IntegerField(getTranslation("artform.quantity"));
 
     // ---- Upload image ----
     private final MemoryBuffer uploadBuffer = new MemoryBuffer();
@@ -74,6 +75,7 @@ public class DynamicArticleForm extends VerticalLayout {
     private IntegerField bookYearField;
     // Immo
     private Select<ArticleDynamicDataService.LabelValue> immoTypeSelect, immoCountrySelect, immoRegionSelect;
+    private String      immoRegionKind;   // "CANTON", "DEPARTEMENT" ou null
     private TextField   immoCityField, immoAddressField, immoPostalField, immoBuildYearField, immoTerrainField;
     private IntegerField immoRoomsField, immoSurfaceField;
     // Vins
@@ -97,9 +99,25 @@ public class DynamicArticleForm extends VerticalLayout {
     // Fabricant
     private TextField fabricantField;
 
+    /** Langue de l'interface (fr / en / de) pour charger les listes depuis la base. */
+    private static String currentLang() {
+        UI ui = UI.getCurrent();
+        String l = ui != null ? ui.getLocale().getLanguage() : "fr";
+        return switch (l) {
+            case "en" -> "en";
+            case "de" -> "de";
+            default   -> "fr";
+        };
+    }
+
+    /** Utilise automatiquement la langue sélectionnée dans l'interface. */
+    public DynamicArticleForm(ArticleDynamicDataService dataService) {
+        this(dataService, currentLang());
+    }
+
     public DynamicArticleForm(ArticleDynamicDataService dataService, String lang) {
         this.dataService = dataService;
-        this.lang = lang;
+        this.lang = lang != null ? lang : currentLang();
 
         setSpacing(true);
         setPadding(true);
@@ -112,7 +130,7 @@ public class DynamicArticleForm extends VerticalLayout {
         dynamicFieldsContainer.getStyle().set("width", "100%");
 
         add(
-                new H3("Ajouter un article"),
+                new H3(getTranslation("artform.title")),
                 buildCommonForm(),
                 categorySelect,
                 subCategorySelect,
@@ -219,8 +237,9 @@ public class DynamicArticleForm extends VerticalLayout {
         if (immoCountrySelect != null) d.refPays            = selectedId(immoCountrySelect);
         if (immoRegionSelect  != null) {
             // Canton ou Département selon le select visible
-            if ("Canton".equals(immoRegionSelect.getLabel()))       d.refCanton      = selectedId(immoRegionSelect);
-            else if ("Département".equals(immoRegionSelect.getLabel())) d.refDepartement = selectedId(immoRegionSelect);
+            // (basé sur immoRegionKind et non sur le libellé, qui est maintenant traduit)
+            if ("CANTON".equals(immoRegionKind))              d.refCanton      = selectedId(immoRegionSelect);
+            else if ("DEPARTEMENT".equals(immoRegionKind))    d.refDepartement = selectedId(immoRegionSelect);
         }
         if (immoCityField     != null) d.lieu               = immoCityField.getValue();
         if (immoAddressField  != null) d.adresse            = immoAddressField.getValue();
@@ -269,21 +288,21 @@ public class DynamicArticleForm extends VerticalLayout {
     public boolean isValid() {
         boolean ok = true;
         if (nameField.getValue() == null || nameField.getValue().isBlank()) {
-            nameField.setErrorMessage("Le nom est obligatoire");
+            nameField.setErrorMessage(getTranslation("artform.err.name"));
             nameField.setInvalid(true);
             ok = false;
         } else {
             nameField.setInvalid(false);
         }
         if (categorySelect.getValue() == null) {
-            categorySelect.setErrorMessage("Veuillez choisir une catégorie");
+            categorySelect.setErrorMessage(getTranslation("artform.err.category"));
             categorySelect.setInvalid(true);
             ok = false;
         } else {
             categorySelect.setInvalid(false);
         }
         if (priceField.getValue() == null || priceField.getValue() < 0) {
-            priceField.setErrorMessage("Prix invalide");
+            priceField.setErrorMessage(getTranslation("artform.err.price"));
             priceField.setInvalid(true);
             ok = false;
         } else {
@@ -304,20 +323,20 @@ public class DynamicArticleForm extends VerticalLayout {
         );
 
         nameField.setRequired(true);
-        nameField.setPlaceholder("Nom de l'article");
+        nameField.setPlaceholder(getTranslation("artform.name"));
         descriptionField.setMinHeight("80px");
         priceField.setMin(0);
         priceField.setSuffixComponent(new Div());
 
-        paymentSelect.setLabel("Condition de paiement");
+        paymentSelect.setLabel(getTranslation("artform.payment"));
         paymentSelect.setItems(dataService.loadPaymentConditions(lang));
         paymentSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
-        deliverySelect.setLabel("Condition de livraison");
+        deliverySelect.setLabel(getTranslation("artform.delivery"));
         deliverySelect.setItems(dataService.loadDeliveryConditions(lang));
         deliverySelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
-        conditionSelect.setLabel("État");
+        conditionSelect.setLabel(getTranslation("artform.condition"));
         conditionSelect.setItems(dataService.loadConditionOptions(lang));
         conditionSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
@@ -333,9 +352,9 @@ public class DynamicArticleForm extends VerticalLayout {
             uploadedContentType = event.getMIMEType();
         });
 
-        Span imageNote = new Span("Le fichier ne doit pas dépasser 1Mo");
+        Span imageNote = new Span(getTranslation("artform.imageNote"));
         imageNote.getStyle().set("font-size", "0.8rem").set("color", "#666");
-        Span imageLbl = new Span("Image");
+        Span imageLbl = new Span(getTranslation("artform.image"));
         imageLbl.getStyle().set("width", "165px").set("font-size", "0.85rem").set("color", "#0000CC");
         HorizontalLayout imageRow = new HorizontalLayout(imageLbl, upload, imageNote);
         imageRow.setAlignItems(Alignment.BASELINE);
@@ -357,23 +376,23 @@ public class DynamicArticleForm extends VerticalLayout {
         section.setPadding(false);
         section.setSpacing(false);
 
-        auctionSelect.setLabel("Avec enchère ?");
+        auctionSelect.setLabel(getTranslation("artform.auction"));
         auctionSelect.setItems(dataService.loadAuctionOptions(lang));
         auctionSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
         FormLayout auctionForm = new FormLayout();
 
-        auctionStartField = new TextField("Date de début");
+        auctionStartField = new TextField(getTranslation("artform.auctionStart"));
         auctionStartField.setReadOnly(true);
         auctionStartField.setValue(java.time.LocalDate.now().toString());
 
         auctionDurationSelect = new Select<>();
-        auctionDurationSelect.setLabel("Durée (jours)");
+        auctionDurationSelect.setLabel(getTranslation("artform.auctionDuration"));
         auctionDurationSelect.setItems(
                 java.util.stream.IntStream.rangeClosed(1, 30).boxed().toList()
         );
 
-        auctionEndField = new TextField("Date de fin");
+        auctionEndField = new TextField(getTranslation("artform.auctionEnd"));
         auctionEndField.setReadOnly(true);
 
         auctionDurationSelect.addValueChangeListener(e -> {
@@ -394,7 +413,7 @@ public class DynamicArticleForm extends VerticalLayout {
     // =========================================================================
 
     private ComboBox<ArticleDynamicDataService.LabelValue> buildCategorySelect() {
-        ComboBox<ArticleDynamicDataService.LabelValue> select = new ComboBox<>("Catégorie");
+        ComboBox<ArticleDynamicDataService.LabelValue> select = new ComboBox<>(getTranslation("artform.category"));
         select.setItems(dataService.loadCategories(lang));
         select.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
         select.setWidth("100%");
@@ -403,7 +422,7 @@ public class DynamicArticleForm extends VerticalLayout {
     }
 
     private ComboBox<ArticleDynamicDataService.LabelValue> buildSubCategorySelect() {
-        ComboBox<ArticleDynamicDataService.LabelValue> select = new ComboBox<>("Sous-catégorie");
+        ComboBox<ArticleDynamicDataService.LabelValue> select = new ComboBox<>(getTranslation("artform.subcategory"));
         select.setWidth("100%");
         select.setVisible(false);
         return select;
@@ -434,7 +453,7 @@ public class DynamicArticleForm extends VerticalLayout {
 
         if (cat != ArticleCategory.LINGERIE && cat != ArticleCategory.IMMOBILIER
                 && cat != ArticleCategory.LIVRES && cat != ArticleCategory.DVD) {
-            fabricantField = new TextField("Fabricant / Marque");
+            fabricantField = new TextField(getTranslation("artform.maker"));
             fabricantField.setRequired(true);
             form.add(fabricantField);
         }
@@ -446,7 +465,7 @@ public class DynamicArticleForm extends VerticalLayout {
 
         if (cat == ArticleCategory.JEUX) {
             gameTypeSelect = new Select<>();
-            gameTypeSelect.setLabel("Type de jeu");
+            gameTypeSelect.setLabel(getTranslation("artform.gameType"));
             gameTypeSelect.setItems(dataService.loadGameTypes(lang));
             gameTypeSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
             form.add(gameTypeSelect, 2);
@@ -457,12 +476,12 @@ public class DynamicArticleForm extends VerticalLayout {
         if (subcatId == ArticleSubCategory.TV_ECRAN_PLAT_ID) addTvFields(form);
         if (ArticleSubCategory.INFO_PC_SUBCATS.contains(subcatId)) addPcFields(form);
         if (ArticleSubCategory.WEAR_SIZE_SUBCATS.contains(subcatId)) {
-            clothingSizeField = new TextField("Taille");
+            clothingSizeField = new TextField(getTranslation("artform.size"));
             form.add(clothingSizeField);
         }
 
         if (form.getChildren().findAny().isPresent())
-            dynamicFieldsContainer.add(new H3(cat.getLabel()), form);
+            dynamicFieldsContainer.add(new H3(categorySelect.getValue() != null ? categorySelect.getValue().label() : cat.getLabel()), form);
     }
 
     // =========================================================================
@@ -470,24 +489,24 @@ public class DynamicArticleForm extends VerticalLayout {
     // =========================================================================
 
     private void addCarFields(FormLayout form) {
-        form.add(new H3("Caractéristiques véhicule"), 2);
-        carHorseField    = new NumberField("Chevaux (CV)");
-        carCylinderField = new NumberField("Nombre de cylindres");
-        carKmField       = new NumberField("Kilométrage");
-        carYearFabField     = new TextField("Année de fabrication");
-        carYearServiceField = new TextField("1ère immatriculation");
+        form.add(new H3(getTranslation("artform.car.title")), 2);
+        carHorseField    = new NumberField(getTranslation("artform.car.hp"));
+        carCylinderField = new NumberField(getTranslation("artform.car.cylinders"));
+        carKmField       = new NumberField(getTranslation("artform.car.km"));
+        carYearFabField     = new TextField(getTranslation("artform.car.yearMade"));
+        carYearServiceField = new TextField(getTranslation("artform.car.firstReg"));
 
         carFuelSelect = new Select<>();
-        carFuelSelect.setLabel("Type de carburant");
+        carFuelSelect.setLabel(getTranslation("artform.car.fuel"));
         carFuelSelect.setItems(dataService.loadFuelTypes(lang));
         carFuelSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
         carGearboxSelect = new Select<>();
-        carGearboxSelect.setLabel("Boîte de vitesse");
+        carGearboxSelect.setLabel(getTranslation("artform.car.gearbox"));
         carGearboxSelect.setItems(dataService.loadGearboxTypes(lang));
         carGearboxSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
-        carClimaCheck = new Checkbox("Climatisation");
+        carClimaCheck = new Checkbox(getTranslation("artform.car.ac"));
 
         form.add(carHorseField, carCylinderField, carKmField,
                 carYearFabField, carYearServiceField,
@@ -495,27 +514,27 @@ public class DynamicArticleForm extends VerticalLayout {
     }
 
     private void addBookFields(FormLayout form) {
-        bookAuthorField = new TextField("Auteur");
-        bookEditorField = new TextField("Éditeur");
+        bookAuthorField = new TextField(getTranslation("artform.book.author"));
+        bookEditorField = new TextField(getTranslation("artform.book.publisher"));
         bookYearField   = buildYearField();
         form.add(bookAuthorField, bookEditorField, bookYearField);
     }
 
     private void addImmobilierFields(FormLayout form) {
-        form.add(new H3("Informations immobilier"), 2);
+        form.add(new H3(getTranslation("artform.immo.title")), 2);
 
         immoTypeSelect = new Select<>();
-        immoTypeSelect.setLabel("Achat ou location");
+        immoTypeSelect.setLabel(getTranslation("artform.immo.type"));
         immoTypeSelect.setItems(dataService.loadLocationOrBuyOptions(lang));
         immoTypeSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
         immoCountrySelect = new Select<>();
-        immoCountrySelect.setLabel("Pays");
+        immoCountrySelect.setLabel(getTranslation("artform.country"));
         immoCountrySelect.setItems(dataService.loadCountries());
         immoCountrySelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
         immoRegionSelect = new Select<>();
-        immoRegionSelect.setLabel("Canton / Département");
+        immoRegionSelect.setLabel(getTranslation("artform.immo.region"));
         immoRegionSelect.setVisible(false);
 
         immoCountrySelect.addValueChangeListener(e -> {
@@ -523,13 +542,16 @@ public class DynamicArticleForm extends VerticalLayout {
                 String country = e.getValue().label();
                 if ("Suisse".equals(country)) {
                     immoRegionSelect.setItems(dataService.loadCantons(lang));
-                    immoRegionSelect.setLabel("Canton");
+                    immoRegionSelect.setLabel(getTranslation("artform.canton"));
+                    immoRegionKind = "CANTON";
                     immoRegionSelect.setVisible(true);
                 } else if ("France".equals(country)) {
                     immoRegionSelect.setItems(dataService.loadDepartements());
-                    immoRegionSelect.setLabel("Département");
+                    immoRegionSelect.setLabel(getTranslation("artform.departement"));
+                    immoRegionKind = "DEPARTEMENT";
                     immoRegionSelect.setVisible(true);
                 } else {
+                    immoRegionKind = null;
                     immoRegionSelect.setVisible(false);
                 }
                 immoRegionSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
@@ -537,13 +559,13 @@ public class DynamicArticleForm extends VerticalLayout {
             }
         });
 
-        immoCityField    = new TextField("Ville");
-        immoAddressField = new TextField("Adresse");
-        immoPostalField  = new TextField("Code postal");
-        immoRoomsField   = new IntegerField("Nombre de pièces");
-        immoSurfaceField = new IntegerField("Surface habitable (m²)");
-        immoTerrainField = new TextField("Surface terrain (m²)");
-        immoBuildYearField = new TextField("Année de construction");
+        immoCityField    = new TextField(getTranslation("artform.immo.city"));
+        immoAddressField = new TextField(getTranslation("artform.immo.address"));
+        immoPostalField  = new TextField(getTranslation("artform.immo.zip"));
+        immoRoomsField   = new IntegerField(getTranslation("artform.immo.rooms"));
+        immoSurfaceField = new IntegerField(getTranslation("artform.immo.living"));
+        immoTerrainField = new TextField(getTranslation("artform.immo.land"));
+        immoBuildYearField = new TextField(getTranslation("artform.immo.yearBuilt"));
 
         form.add(immoTypeSelect, immoCountrySelect, immoRegionSelect,
                 immoCityField, immoAddressField, immoPostalField,
@@ -551,23 +573,23 @@ public class DynamicArticleForm extends VerticalLayout {
     }
 
     private void addVinFields(FormLayout form) {
-        form.add(new H3("Caractéristiques du vin"), 2);
+        form.add(new H3(getTranslation("artform.wine.title")), 2);
 
-        wineCountrySelect = new ComboBox<>("Pays");
+        wineCountrySelect = new ComboBox<>(getTranslation("artform.country"));
         wineCountrySelect.setItems(dataService.loadWineCountries());
         wineCountrySelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
-        wineRegionSelect = new ComboBox<>("Région");
+        wineRegionSelect = new ComboBox<>(getTranslation("artform.wine.region"));
         wineRegionSelect.setVisible(false);
 
-        wineCepageSelect = new ComboBox<>("Cépage");
+        wineCepageSelect = new ComboBox<>(getTranslation("artform.wine.grape"));
         wineCepageSelect.setItems(dataService.loadCepages());
         wineCepageSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
-        wineMillesimeField = new TextField("Millésime");
-        wineMillesimeField.setPlaceholder("ex: 2018");
+        wineMillesimeField = new TextField(getTranslation("artform.wine.vintage"));
+        wineMillesimeField.setPlaceholder(getTranslation("artform.wine.vintage.ph"));
 
         wineTypeSelect = new Select<>();
-        wineTypeSelect.setLabel("Type de vin");
+        wineTypeSelect.setLabel(getTranslation("artform.wine.type"));
         wineTypeSelect.setItems(dataService.loadWineTypes(lang));
         wineTypeSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
 
@@ -587,26 +609,26 @@ public class DynamicArticleForm extends VerticalLayout {
     }
 
     private void addDvdFields(FormLayout form) {
-        dvdActorsField   = new TextField("Acteur(s)");
-        dvdDirectorField = new TextField("Réalisateur");
+        dvdActorsField   = new TextField(getTranslation("artform.dvd.actors"));
+        dvdDirectorField = new TextField(getTranslation("artform.dvd.director"));
         dvdYearField     = buildYearField();
-        dvdDurationField = new TextField("Durée (min)");
+        dvdDurationField = new TextField(getTranslation("artform.dvd.duration"));
         form.add(dvdActorsField, dvdDirectorField, dvdYearField, dvdDurationField);
     }
 
     private void addTvFields(FormLayout form) {
         tvScreenTypeSelect = new Select<>();
-        tvScreenTypeSelect.setLabel("Type d'écran");
+        tvScreenTypeSelect.setLabel(getTranslation("artform.tv.screenType"));
         tvScreenTypeSelect.setItems(dataService.loadScreenTypes(lang));
         tvScreenTypeSelect.setItemLabelGenerator(ArticleDynamicDataService.LabelValue::label);
-        tvDimensionField = new TextField("Dimension (pouces)");
+        tvDimensionField = new TextField(getTranslation("artform.tv.dimension"));
         form.add(tvScreenTypeSelect, tvDimensionField);
     }
 
     private void addPcFields(FormLayout form) {
-        pcProcessorField = new NumberField("Processeur (GHz)");
-        pcRamField       = new TextField("RAM (Go)");
-        pcHddField       = new TextField("Disque dur (Go)");
+        pcProcessorField = new NumberField(getTranslation("artform.pc.cpu"));
+        pcRamField       = new TextField(getTranslation("artform.pc.ram"));
+        pcHddField       = new TextField(getTranslation("artform.pc.disk"));
         form.add(pcProcessorField, pcRamField, pcHddField);
     }
 
@@ -624,6 +646,7 @@ public class DynamicArticleForm extends VerticalLayout {
         immoTypeSelect = immoCountrySelect = immoRegionSelect = null;
         immoCityField = immoAddressField = immoPostalField = immoBuildYearField = immoTerrainField = null;
         immoRoomsField = immoSurfaceField = null;
+        immoRegionKind = null;
         wineCountrySelect = wineRegionSelect = null;
         wineCepageSelect = null; wineCepageSelect = null;
         gameTypeSelect = null;
@@ -634,7 +657,7 @@ public class DynamicArticleForm extends VerticalLayout {
     }
 
     private IntegerField buildYearField() {
-        IntegerField f = new IntegerField("Année");
+        IntegerField f = new IntegerField(getTranslation("artform.year"));
         f.setMin(1900);
         f.setMax(java.time.Year.now().getValue());
         f.setStepButtonsVisible(true);
