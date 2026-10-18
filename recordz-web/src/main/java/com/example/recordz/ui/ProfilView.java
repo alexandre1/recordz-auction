@@ -15,9 +15,9 @@ import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
 
 @Route(value = "profil/:username", layout = MainLayout.class)
-@PageTitle("Recordz — Profil")
 @PermitAll
-public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
+// @PageTitle est statique : remplacé par HasDynamicTitle pour suivre la langue.
+public class ProfilView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
 
     private final AuthenticatedUser authenticatedUser;
     private final PersonneService personneService;
@@ -39,6 +39,12 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
         setSpacing(false);
 
     }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("profil.pagetitle");
+    }
+
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         String username = event.getRouteParameters().get("username").orElse(null);
@@ -49,13 +55,13 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
         // Charger la personne depuis l'URL, pas l'utilisateur connecté
         Personne personne = personneService.findByNomUtilisateur(username);
         if (personne == null) {
-            add(new Paragraph("Profil introuvable."));
+            add(new Paragraph(getTranslation("profil.notfound")));
             return;
         }
 
         // Vider ce qui a été ajouté dans le constructeur
         removeAll();
-        H2 titre = new H2("👤 Profil de " + personne.getNomUtilisateur());
+        H2 titre = new H2("👤 " + getTranslation("profil.title", personne.getNomUtilisateur()));
         titre.getStyle().set("color", "#6100C1").set("margin-bottom", "16px");
         add(titre);
 
@@ -97,25 +103,25 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
         Integer idPersonne = referenceService.findPersonneIdByUsername(email);
 
-        table.add(rowClickable("Nombre d'encheres ouvertes",        str(s.enchOuv()),     () -> showEncheres(idPersonne)));
+        table.add(rowClickable(getTranslation("profil.stat.enchOuv"),      str(s.enchOuv()),     () -> showEncheres(idPersonne)));
 //        table.add(rowClickable   ("Nombre d'enchères ouvertes",        str(s.enchOuv()))),  () -> showEncheres(idPersonnee)));
-        table.add(rowField   ("Nombre d'enchères fermées",         str(s.enchFerm())));
-        table.add(rowClickable("Nombre de ventes directes ouvertes",  str(s.ventesOuv()),   () -> showVentes(idPersonne, false)));
-        table.add(rowClickable("Nombre de ventes directes fermées",   str(s.ventesFerm()),  () -> showVentes(idPersonne, true)));
-        table.add(rowField   ("Nombre d'évaluations des ventes",   str(s.evalVentes())));
-        table.add(rowClickable("Nombre d'évaluations des achats",  str(s.evalAchats()),     () -> showEvalAchats(idPersonne)));
-        table.add(rowClickable("Articles achetés par l'utilisateur", str(s.nbArticlesAchetes()), () -> showArticlesAchetes(idPersonne)));
-        table.add(rowClickable("Commentaires faits par l'utilisateur", str(s.nbCommentaires()), () -> showCommentaires(idPersonne)));
+        table.add(rowField   (getTranslation("profil.stat.enchFerm"),      str(s.enchFerm())));
+        table.add(rowClickable(getTranslation("profil.stat.ventesOuv"),    str(s.ventesOuv()),   () -> showVentes(idPersonne, false)));
+        table.add(rowClickable(getTranslation("profil.stat.ventesFerm"),   str(s.ventesFerm()),  () -> showVentes(idPersonne, true)));
+        table.add(rowField   (getTranslation("profil.stat.evalVentes"),    str(s.evalVentes())));
+        table.add(rowClickable(getTranslation("profil.stat.evalAchats"),   str(s.evalAchats()),     () -> showEvalAchats(idPersonne)));
+        table.add(rowClickable(getTranslation("profil.stat.achetes"),      str(s.nbArticlesAchetes()), () -> showArticlesAchetes(idPersonne)));
+        table.add(rowClickable(getTranslation("profil.stat.commentaires"), str(s.nbCommentaires()), () -> showCommentaires(idPersonne)));
         return table;
     }
 
     private void showEvaluationnVentes(Integer idPersonne, boolean vendues) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle(vendues ? "Evaluation des ventes" : "Evaluation des ventes"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.evalVentes")));
 
         var articles = referenceService.findVentesDirectes(idPersonne, vendues);
         if (articles.isEmpty()) {
-            detailZone.add(emptyMsg("Aucune vente."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.vente")));
             return;
         }
 
@@ -145,16 +151,16 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
     private void showVisiteurs(String email) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle("Derniers visiteurs"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.visiteurs")));
 
         var visiteurs = referenceService.findVisiteursVendeur(email);
         if (visiteurs.isEmpty()) {
-            detailZone.add(emptyMsg("Aucun visiteur enregistré."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.visiteur")));
             return;
         }
 
         Div t = newTable();
-        t.add(tableHeader("Nom", "Prénom"));
+        t.add(tableHeader(getTranslation("profil.col.nom"), getTranslation("profil.col.prenom")));
         for (String[] v : visiteurs) {
             t.add(tableRow(v[0], v[1]));
         }
@@ -163,22 +169,24 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
     private void showEncheres( Integer idPersonne) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle("Encheres ouvertes"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.encheres")));
 
         var articles = referenceService.findVentesEncheres(idPersonne);
         if (articles.isEmpty()) {
-            detailZone.add(emptyMsg("Aucune vente."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.vente")));
             return;
         }
         detailZone.add(buildArticlesTable(articles));
     }
     private void showVentes(Integer idPersonne, boolean vendues) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle(vendues ? "Ventes directes fermées" : "Ventes directes ouvertes"));
+        detailZone.add(sectionTitle(vendues
+                ? getTranslation("profil.section.ventesFermees")
+                : getTranslation("profil.section.ventesOuvertes")));
 
         var articles = referenceService.findVentesDirectes(idPersonne, vendues);
         if (articles.isEmpty()) {
-            detailZone.add(emptyMsg("Aucune vente."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.vente")));
             return;
         }
         detailZone.add(buildArticlesTable(articles));
@@ -186,11 +194,11 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
     private void showEvalAchats(Integer idPersonne) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle("Évaluations des achats"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.evalAchats")));
 
         var evals = referenceService.findVEvalAAchatForProfil(idPersonne);
         if (evals.isEmpty()) {
-            detailZone.add(emptyMsg("Aucune évaluation."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.eval")));
             return;
         }
         detailZone.add(buildArticlesEvaluation(evals));
@@ -198,11 +206,11 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
     private void showArticlesAchetes(Integer idPersonne) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle("Articles achetés"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.achetes")));
 
         var articles = referenceService.findArticlesAchetes(idPersonne);
         if (articles.isEmpty()) {
-            detailZone.add(emptyMsg("Aucun article acheté."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.achete")));
             return;
         }
         detailZone.add(buildArticlesTable(articles));
@@ -210,15 +218,19 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
     private void showCommentaires(Integer idPersonne) {
         detailZone.removeAll();
-        detailZone.add(sectionTitle("Commentaires faits"));
+        detailZone.add(sectionTitle(getTranslation("profil.section.commentaires")));
 
         var comments = referenceService.findCommentairesByPersonneId(idPersonne);
         if (comments.isEmpty()) {
-            detailZone.add(emptyMsg("Aucun commentaire."));
+            detailZone.add(emptyMsg(getTranslation("profil.empty.commentaire")));
             return;
         }
         Div t = newTable();
-        t.add(tableHeader("Date", "Question", "Texte", "Article"));
+        t.add(tableHeader(
+                getTranslation("profil.col.date"),
+                getTranslation("profil.col.question"),
+                getTranslation("profil.col.texte"),
+                getTranslation("profil.col.article")));
         for (String[] c : comments) {
             HorizontalLayout row = new HorizontalLayout();
             row.getStyle().set("padding", "6px 8px").set("border-bottom", "1px solid #EEE");
@@ -231,7 +243,7 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
             }
 
             // Lien vers l'article
-            Anchor lien = new Anchor("/detail/" + c[3], "Voir l'article");
+            Anchor lien = new Anchor("/detail/" + c[3], getTranslation("profil.link.voirArticle"));
             lien.getStyle()
                     .set("color", "#0000CC")
                     .set("font-size", "0.85rem")
@@ -244,7 +256,10 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
     // ── Builder table articles (image, nom, prix) ─────────────
     private Div buildArticlesTable(java.util.List<String[]> articles) {
         Div t = newTable();
-        t.add(tableHeader("Image", "Nom de l'article", "Prix CHF"));
+        t.add(tableHeader(
+                getTranslation("profil.col.image"),
+                getTranslation("profil.col.nomArticle"),
+                getTranslation("profil.col.prix")));
 
         for (String[] art : articles) {
             HorizontalLayout row = new HorizontalLayout();
@@ -330,8 +345,9 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
         header.getStyle()
                 .set("font-weight", "bold").set("color", "#0000CC")
                 .set("padding", "4px 8px").set("width", "100%");
-                //.set("border-bottom", "2px solid #6600CC");
-        header.add(cell("Statistique", "340px"), cell("Valeur", "120px"));
+        //.set("border-bottom", "2px solid #6600CC");
+        header.add(cell(getTranslation("profil.header.stat"), "340px"),
+                cell(getTranslation("profil.header.value"), "120px"));
         return header;
     }
 
@@ -350,7 +366,7 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
         h.getStyle()
                 .set("font-weight", "bold").set("color", "#0000CC")
                 .set("padding", "4px 8px");
-                //.set("border-bottom", "2px solid #6600CC");
+        //.set("border-bottom", "2px solid #6600CC");
         for (String col : cols) h.add(cell(col, "200px"));
         return h;
     }
@@ -425,7 +441,7 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
         // ── En-tête coloré ────────────────────────────────────
         Div header = new Div();
-        H4 titre = new H4("👥 Derniers visiteurs");
+        H4 titre = new H4("👥 " + getTranslation("profil.section.visiteurs"));
         titre.getStyle()
                 .set("color", "white")
                 .set("margin", "0")
@@ -442,7 +458,7 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
                     .set("padding", "20px")
                     .set("color", "#999")
                     .set("font-size", "0.85rem");
-            emptyBox.setText("Aucun visiteur enregistré.");
+            emptyBox.setText(getTranslation("profil.empty.visiteur"));
             content.add(emptyBox);
         } else {
             // ── En-tête tableau ───────────────────────────────
@@ -454,14 +470,14 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
                     .set("padding", "6px 8px")
                     .set("margin-bottom", "4px");
 
-            Span hNom = new Span("Visiteur");
+            Span hNom = new Span(getTranslation("profil.dialog.visiteur"));
             hNom.getStyle()
                     .set("width", "180px")
                     .set("font-size", "0.8rem")
                     .set("font-weight", "bold");
             //.set("color", "#6100C1");
 
-            Span hEmail = new Span("Email");
+            Span hEmail = new Span(getTranslation("profil.dialog.email"));
             hEmail.getStyle()
                     .set("font-size", "0.8rem")
                     .set("font-weight", "bold");
@@ -524,7 +540,7 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
 
         // ── Bouton fermer ─────────────────────────────────────
         content.add(new Hr());
-        Button fermerBtn = new Button("Fermer");
+        Button fermerBtn = new Button(getTranslation("profil.dialog.fermer"));
         fermerBtn.setWidthFull();
         fermerBtn.getStyle()
                 .set("background-color", "#0000CC")
@@ -546,10 +562,10 @@ public class ProfilView extends VerticalLayout implements BeforeEnterObserver {
         header.getStyle()
                 .set("font-weight", "bold").set("color", "#0000CC")
                 .set("padding", "4px 8px");
-        header.add(cell("Image",            "100px"));
-        header.add(cell("Nom de l'article", "300px"));
-        header.add(cell("Prix CHF",         "150px"));
-        header.add(cell("Note",             "80px"));
+        header.add(cell(getTranslation("profil.col.image"),      "100px"));
+        header.add(cell(getTranslation("profil.col.nomArticle"), "300px"));
+        header.add(cell(getTranslation("profil.col.prix"),       "150px"));
+        header.add(cell(getTranslation("profil.col.note"),       "80px"));
         t.add(header);
 
         for (String[] art : articles) {
