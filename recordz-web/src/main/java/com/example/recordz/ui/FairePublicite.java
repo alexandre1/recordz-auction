@@ -23,10 +23,11 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import java.util.List;
 
 @Route(value = "publicite", layout = MainLayout.class)
-@PageTitle("Recordz — Faire de la publicité")
 @PermitAll
 
-public class FairePublicite extends VerticalLayout implements HasUrlParameter<Integer>  {
+// @PageTitle est statique : on le remplace par HasDynamicTitle pour que le
+// titre de l'onglet suive la langue de l'utilisateur.
+public class FairePublicite extends VerticalLayout implements HasUrlParameter<Integer>, HasDynamicTitle {
 
     private final ArticleService    articleService;
     private final EnchereService    enchereService;
@@ -44,13 +45,18 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
     public FairePublicite(ArticleService articleService,
                           EnchereService enchereService,
                           AuthenticatedUser authenticatedUser,ReferenceService  referenceService) {
-        add(new H2("🔨 Faire de la publicite"));
+        add(new H2("🔨 " + getTranslation("publicite.title")));
         this.articleService    = articleService;
         this.enchereService    = enchereService;
         this.authenticatedUser = authenticatedUser;
         this.referenceService  = referenceService;
 
         setPadding(true);
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("publicite.pagetitle");
     }
 
     @Override
@@ -92,7 +98,7 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
                 .set("padding-left", "8px");
         ;
         if (articles.isEmpty()) {
-            Paragraph empty = new Paragraph("Aucun article disponible.");
+            Paragraph empty = new Paragraph(getTranslation("publicite.empty"));
             empty.getStyle().set("color", "#999").set("font-size", "0.9rem");
             table.add(empty);
         } else {
@@ -113,10 +119,10 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
                 .set("width", "100%")
                 .set("border-bottom", "2px solid #6600CC");  // ← ligne séparatrice
         header.add(
-                cell("Image",                 "80px"),   // ← doit matcher imgBox (60px + marge)
-                cell("Nom de l'article",      "210px"),
-                cell("Marque",                "165px"),
-                cell("Prix CHF", "130px")
+                cell(getTranslation("publicite.table.image"), "80px"),   // ← doit matcher imgBox (60px + marge)
+                cell(getTranslation("publicite.table.name"),  "210px"),
+                cell(getTranslation("publicite.table.brand"), "165px"),
+                cell(getTranslation("publicite.table.price"), "130px")
         );
         return header;
     }
@@ -151,7 +157,7 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
         }
 
         // Nom – lien vers détail
-        String nom = art.getNom() != null ? art.getNom() : "(sans nom)";
+        String nom = art.getNom() != null ? art.getNom() : getTranslation("publicite.noname");
         Anchor nomLink = new Anchor("/detail/" + art.getIdArticle(), nom);
         nomLink.getStyle()
                 .set("color", "#0000CC")
@@ -250,7 +256,7 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
         row.add(paginationBtn("›", "/" + (currentPage + 1), currentPage == totalPages));
         row.add(paginationBtn("»", "/" + totalPages,        currentPage == totalPages));
 
-        Span info = new Span("Page " + currentPage + " / " + totalPages);
+        Span info = new Span(getTranslation("publicite.page", currentPage, totalPages));
         info.getStyle()
                 .set("font-size", "0.78rem").set("color", "#6100C1")
                 .set("margin-left", "8px").set("align-self", "center");
@@ -282,11 +288,11 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
                 .set("color", "#0000CC")
                 .set("font-size", "0.85rem");
         nav.add(
-                navLink("Informations",       "/mon-compte/informations"),
-                navLink("Mes encheres",       "/encheres"),
-                navLink("Ajouter un article", "/ajouter-article"),
-                navLink("Faire de la publicité", "#"),
-                navLink("Calendrier de mes ventes", "/calendrier")
+                navLink(getTranslation("publicite.nav.informations"), "/mon-compte/informations"),
+                navLink(getTranslation("publicite.nav.encheres"),     "/encheres"),
+                navLink(getTranslation("publicite.nav.ajouter"),      "/ajouter-article"),
+                navLink(getTranslation("publicite.nav.publicite"),    "#"),
+                navLink(getTranslation("publicite.nav.calendrier"),   "/calendrier")
         );
         return nav;
     }
@@ -318,44 +324,45 @@ public class FairePublicite extends VerticalLayout implements HasUrlParameter<In
                 .set("padding-left", "8px");
         ;
         grid.addColumn(Article::getNom)
-                .setHeader("Article").setSortable(true).setFlexGrow(2);
+                .setHeader(getTranslation("publicite.col.article")).setSortable(true).setFlexGrow(2);
 
         grid.addColumn(Article::getMarque)
-                .setHeader("Marque").setSortable(true);
+                .setHeader(getTranslation("publicite.col.marque")).setSortable(true);
 
         grid.addColumn(a -> a.getPrix() != null ? a.getPrix() + " CHF" : "—")
-                .setHeader("Prix de départ");
+                .setHeader(getTranslation("publicite.col.prixdepart"));
 
 // ✅ CORRECTION
         grid.addColumn(a -> {
                     Double derniereOffre = referenceService.findDerniereOffre(a.getIdArticle().intValue());
                     return derniereOffre != null ? derniereOffre + " CHF" : "—";
                 })
-                .setHeader("Meilleure offre");
+                .setHeader(getTranslation("publicite.col.meilleureoffre"));
         grid.addColumn(Article::getEnchereDateFin)
-                .setHeader("Fin le");
+                .setHeader(getTranslation("publicite.col.fin"));
         grid.addComponentColumn(article -> {
-            Button pub = styledButton("Faire de la pub");
+            Button pub = styledButton(getTranslation("publicite.btn.pub"));
             pub.addClickListener(e -> {
                 // accès à l'article de la ligne
                 faireUnePub(article);
             });
             return pub;
-        }).setHeader("Publicité");return grid;
+        }).setHeader(getTranslation("publicite.col.publicite"));
+        return grid;
     }
 
     private void faireUnePub(Article article) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Publicité — " + article.getNom());
+        dialog.setHeaderTitle(getTranslation("publicite.dialog.titre", article.getNom()));
 
-        Text info = new Text("Mettre en avant cet article pour attirer plus d'enchérisseurs.");
+        Text info = new Text(getTranslation("publicite.dialog.info"));
 
-        Button confirmer = styledButton("Activer la pub");
-        Button annuler = new Button("Annuler", e -> dialog.close());
+        Button confirmer = styledButton(getTranslation("publicite.dialog.confirmer"));
+        Button annuler = new Button(getTranslation("publicite.dialog.annuler"), e -> dialog.close());
 
         confirmer.addClickListener(e -> {
             this.articleService.updateFaitDeLapublicite(article.getIdArticle().intValue());
-            Notification.show("Publicité activée pour : " + article.getNom());
+            Notification.show(getTranslation("publicite.notif.activee", article.getNom()));
             dialog.close();
 
             // CORRECTION : on ne reconstruit plus les colonnes (buildGrid()),

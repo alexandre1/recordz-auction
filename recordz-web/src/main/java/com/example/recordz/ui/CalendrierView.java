@@ -15,7 +15,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,13 +34,18 @@ import java.util.Locale;
 
 
 @Route(value = "calendrier", layout = MainLayout.class)
-@PageTitle("Calendrier des enchères")
 @PermitAll
-public class CalendrierView extends VerticalLayout implements BeforeEnterObserver {
+// @PageTitle est statique : remplacé par HasDynamicTitle pour suivre la langue.
+public class CalendrierView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
 
     private final PersonneService personneService;
 
     private final CalendrierService calendrierService;
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("calendrier.pagetitle");
+    }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -74,11 +79,11 @@ public class CalendrierView extends VerticalLayout implements BeforeEnterObserve
                 .set("color", "#0000CC")
                 .set("font-size", "0.85rem");
         nav.add(
-                navLink("Informations",             "/mon-compte/informations"),
-                navLink("Mes encheres",             "/encheres"),
-                navLink("Ajouter un article",       "/ajouter-article"),
-                navLink("Faire de la publicité",    "/publicite"),
-                navLink("Calendrier de mes ventes", "/calendrier")
+                navLink(getTranslation("calendrier.nav.informations"), "/mon-compte/informations"),
+                navLink(getTranslation("calendrier.nav.encheres"),     "/encheres"),
+                navLink(getTranslation("calendrier.nav.ajouter"),      "/ajouter-article"),
+                navLink(getTranslation("calendrier.nav.publicite"),    "/publicite"),
+                navLink(getTranslation("calendrier.nav.calendrier"),   "/calendrier")
         );
         return nav;
     }
@@ -97,60 +102,77 @@ public class CalendrierView extends VerticalLayout implements BeforeEnterObserve
 
         FullCalendar calendar = FullCalendarBuilder.create().build();
         calendar.setSizeFull();
-        calendar.setLocale(Locale.FRENCH);
+        // Langue de l'utilisateur (au lieu de Locale.FRENCH en dur) : traduit
+        // aussi les noms de mois et de jours affichés par FullCalendar.
+        calendar.setLocale(getLocale());
         calendar.changeView(CalendarViewImpl.DAY_GRID_MONTH);
 
-    // ── Charger les événements depuis la DB ──────────────
+        // ── Charger les événements depuis la DB ──────────────
 
         List<EvenementCalendrier> evenements = calendrierService.findArticlesByVendeurAndStatut(email);
 
         evenements.forEach(evt ->
 
-    {
-        Entry entry = new Entry();
-        entry.setTitle(evt.getTitre());
-        entry.setStart(evt.getDebut());
-        entry.setEnd(evt.getFin());
-        entry.setColor(evt.getCouleur());
-        calendar.getEntryProvider()
-                .asInMemory()
-                .addEntry(entry);
-    });
+        {
+            Entry entry = new Entry();
+            entry.setTitle(evt.getTitre());
+            entry.setStart(evt.getDebut());
+            entry.setEnd(evt.getFin());
+            entry.setColor(evt.getCouleur());
+            calendar.getEntryProvider()
+                    .asInMemory()
+                    .addEntry(entry);
+        });
 
-    // ── Clic sur un événement ────────────────────────────
+        // ── Clic sur un événement ────────────────────────────
         calendar.addEntryClickedListener(event ->
 
-    {
-        Entry clicked = event.getEntry();
-        Notification.show(
-                "Enchère : " + clicked.getTitle(),
-                3000,
-                Notification.Position.BOTTOM_CENTER
-        );
-    });
+        {
+            Entry clicked = event.getEntry();
+            Notification.show(
+                    getTranslation("calendrier.notif.enchere", clicked.getTitle()),
+                    3000,
+                    Notification.Position.BOTTOM_CENTER
+            );
+        });
 
-    // ── Barre de navigation ──────────────────────────────
-    Button prev = new Button(VaadinIcon.ANGLE_LEFT.create(), e -> calendar.previous());
-    Button next = new Button(VaadinIcon.ANGLE_RIGHT.create(), e -> calendar.next());
-    Button today = new Button("Aujourd'hui", e -> calendar.today());
+        // ── Barre de navigation ──────────────────────────────
+        Button prev = new Button(VaadinIcon.ANGLE_LEFT.create(), e -> calendar.previous());
+        Button next = new Button(VaadinIcon.ANGLE_RIGHT.create(), e -> calendar.next());
+        Button today = new Button(getTranslation("calendrier.btn.today"), e -> calendar.today());
 
-    Select<CalendarView> viewSelect = new Select<>();
+        Select<CalendarView> viewSelect = new Select<>();
         viewSelect.setItems(
-    CalendarViewImpl.DAY_GRID_MONTH,
-    CalendarViewImpl.TIME_GRID_WEEK,
-    CalendarViewImpl.LIST_WEEK
+                CalendarViewImpl.DAY_GRID_MONTH,
+                CalendarViewImpl.TIME_GRID_WEEK,
+                CalendarViewImpl.LIST_WEEK
         );
+        // Sans ce générateur, le Select affiche le nom technique de l'enum.
+        viewSelect.setItemLabelGenerator(this::viewLabel);
         viewSelect.setValue(CalendarViewImpl.DAY_GRID_MONTH);
         viewSelect.addValueChangeListener(e ->
-            calendar.changeView(e.getValue())
-            );
+                calendar.changeView(e.getValue())
+        );
 
-    HorizontalLayout toolbar = new HorizontalLayout(
-            prev, today, next, viewSelect
-    );
+        HorizontalLayout toolbar = new HorizontalLayout(
+                prev, today, next, viewSelect
+        );
         toolbar.setAlignItems(Alignment.CENTER);
-    add(toolbar, calendar);
-    setSizeFull();
-    expand(calendar);
+        add(toolbar, calendar);
+        setSizeFull();
+        expand(calendar);
+    }
+
+    private String viewLabel(CalendarView view) {
+        if (view == CalendarViewImpl.DAY_GRID_MONTH) {
+            return getTranslation("calendrier.view.month");
+        }
+        if (view == CalendarViewImpl.TIME_GRID_WEEK) {
+            return getTranslation("calendrier.view.week");
+        }
+        if (view == CalendarViewImpl.LIST_WEEK) {
+            return getTranslation("calendrier.view.list");
+        }
+        return view.getClientSideValue();
     }
 }
