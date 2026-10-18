@@ -7,10 +7,7 @@ import com.example.recordz.service.EnchereService;
 import com.example.recordz.service.ReferenceService;
 import com.example.recordz.ui.layouts.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -72,9 +69,15 @@ public class EncheresView extends VerticalLayout implements HasUrlParameter<Inte
         setPadding(true);
         setSpacing(false);
 
-        // Le titre est ajouté ici : un removeAll() le supprimerait s'il était posé dans le constructeur
-        add(new H2("🔨 " + getTranslation("enc.title")));
+// Menu en premier, comme dans InformationsPersonnellesView
         add(buildSecondaryNav());
+        add(new Hr());
+
+// Le titre passe sous le menu (ajouté ici : un removeAll() le supprimerait s'il était posé dans le constructeur)
+        H2 titre = new H2("🔨 " + getTranslation("enc.title"));
+        titre.getStyle().set("margin", "8px 0");
+        add(titre);
+
         add(buildPagination(currentPage, totalPages));
 
         List<Article> articles = articleService.findActiveArticlesByVendeur(
@@ -82,8 +85,7 @@ public class EncheresView extends VerticalLayout implements HasUrlParameter<Inte
         );
         grid.setItems(articles);
         add(grid);
-        add(buildPagination(currentPage, totalPages));
-    }
+        add(buildPagination(currentPage, totalPages));    }
 
     // ── Pagination ────────────────────────────────────────────
 

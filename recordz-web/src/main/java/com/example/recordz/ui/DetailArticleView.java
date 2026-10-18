@@ -6,6 +6,7 @@ import com.example.recordz.model.domain.Article;
 import com.example.recordz.service.CalendrierService;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.springframework.mail.SimpleMailMessage;
 import com.example.recordz.service.ArticleService;
 import com.example.recordz.service.PersonneService;
@@ -35,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import org.vaadin.stefan.fullcalendar.*;
 
@@ -48,6 +48,14 @@ import java.time.format.DateTimeParseException;
 @Route(value = "detail/:articleId", layout = MainLayout.class)
 @PermitAll
 public class DetailArticleView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
+
+    /**
+     * Source des images de drapeaux.
+     * - CDN : "https://flagcdn.com/w40/%s.png" (nécessite img-src https://flagcdn.com si CSP)
+     * - Local : "/flags/%s.svg" avec les SVG de flag-icons placés dans
+     *   src/main/resources/META-INF/resources/flags/ (ex. ch.svg, fr.svg…)
+     */
+    private static final String FLAG_URL_PATTERN = "https://flagcdn.com/w40/%s.png";
 
     private final ArticleService articleService;
     private final ReferenceService referenceService;
@@ -821,8 +829,37 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         ComboBox<PaysPhone> indicatifBox = new ComboBox<>(getTranslation("detail.visit.dial"));
         indicatifBox.setItems(pays);
-        indicatifBox.setItemLabelGenerator(p -> p.drapeau() + " " + p.indicatif());
-        indicatifBox.setWidth("40%");
+        indicatifBox.setWidth("45%");
+
+        // Texte utilisé pour le filtrage et pour la valeur affichée dans le champ fermé
+        indicatifBox.setItemLabelGenerator(p -> p.code() + " " + p.indicatif());
+
+        // ✅ Drapeaux en images (Windows n'affiche pas les emojis de drapeaux) :
+        // rendu de chaque ligne de la liste déroulante = image + nom du pays + indicatif
+        indicatifBox.setRenderer(new ComponentRenderer<>(p -> {
+            HorizontalLayout ligne = new HorizontalLayout();
+            ligne.setAlignItems(Alignment.CENTER);
+            ligne.setPadding(false);
+            ligne.setSpacing(true);
+
+            ligne.add(createFlagImage(p.code()), new Span(p.nom() + " " + p.indicatif()));
+            return ligne;
+        }));
+
+        // ✅ Drapeau du pays sélectionné, affiché dans le champ fermé (préfixe)
+        Image flagPrefix = createFlagImage("CH");
+        flagPrefix.setVisible(false);
+        indicatifBox.setPrefixComponent(flagPrefix);
+
+        // Le listener doit être ajouté AVANT le setValue initial pour afficher le drapeau au chargement
+        indicatifBox.addValueChangeListener(e -> {
+            PaysPhone p = e.getValue();
+            flagPrefix.setVisible(p != null);
+            if (p != null) {
+                flagPrefix.setSrc(flagUrl(p.code()));
+                flagPrefix.setAlt(p.code());
+            }
+        });
 
         pays.stream()
                 .filter(p -> p.code().equals("CH"))
@@ -831,7 +868,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         TextField reponseParTelephone = new TextField(getTranslation("detail.visit.number"));
         reponseParTelephone.setPlaceholder("XX XXX XX XX");
-        reponseParTelephone.setWidth("60%");
+        reponseParTelephone.setWidth("55%");
 
         reponseParTelephone.addValueChangeListener(e -> {
             PaysPhone selected = indicatifBox.getValue();
@@ -996,23 +1033,23 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
     private List<PaysPhone> buildPaysList() {
         return Arrays.asList(
-                new PaysPhone("CH", "+41",  countryName("CH"), countryCodeToFlag("CH")),
-                new PaysPhone("FR", "+33",  countryName("FR"), countryCodeToFlag("FR")),
-                new PaysPhone("DE", "+49",  countryName("DE"), countryCodeToFlag("DE")),
-                new PaysPhone("IT", "+39",  countryName("IT"), countryCodeToFlag("IT")),
-                new PaysPhone("BE", "+32",  countryName("BE"), countryCodeToFlag("BE")),
-                new PaysPhone("ES", "+34",  countryName("ES"), countryCodeToFlag("ES")),
-                new PaysPhone("PT", "+351", countryName("PT"), countryCodeToFlag("PT")),
-                new PaysPhone("GB", "+44",  countryName("GB"), countryCodeToFlag("GB")),
-                new PaysPhone("US", "+1",   countryName("US"), countryCodeToFlag("US")),
-                new PaysPhone("CA", "+1",   countryName("CA"), countryCodeToFlag("CA")),
-                new PaysPhone("JP", "+81",  countryName("JP"), countryCodeToFlag("JP")),
-                new PaysPhone("CN", "+86",  countryName("CN"), countryCodeToFlag("CN")),
-                new PaysPhone("BR", "+55",  countryName("BR"), countryCodeToFlag("BR")),
-                new PaysPhone("AU", "+61",  countryName("AU"), countryCodeToFlag("AU")),
-                new PaysPhone("MA", "+212", countryName("MA"), countryCodeToFlag("MA")),
-                new PaysPhone("SN", "+221", countryName("SN"), countryCodeToFlag("SN")),
-                new PaysPhone("TN", "+216", countryName("TN"), countryCodeToFlag("TN"))
+                new PaysPhone("CH", "+41",  countryName("CH")),
+                new PaysPhone("FR", "+33",  countryName("FR")),
+                new PaysPhone("DE", "+49",  countryName("DE")),
+                new PaysPhone("IT", "+39",  countryName("IT")),
+                new PaysPhone("BE", "+32",  countryName("BE")),
+                new PaysPhone("ES", "+34",  countryName("ES")),
+                new PaysPhone("PT", "+351", countryName("PT")),
+                new PaysPhone("GB", "+44",  countryName("GB")),
+                new PaysPhone("US", "+1",   countryName("US")),
+                new PaysPhone("CA", "+1",   countryName("CA")),
+                new PaysPhone("JP", "+81",  countryName("JP")),
+                new PaysPhone("CN", "+86",  countryName("CN")),
+                new PaysPhone("BR", "+55",  countryName("BR")),
+                new PaysPhone("AU", "+61",  countryName("AU")),
+                new PaysPhone("MA", "+212", countryName("MA")),
+                new PaysPhone("SN", "+221", countryName("SN")),
+                new PaysPhone("TN", "+216", countryName("TN"))
         );
     }
 
@@ -1028,16 +1065,28 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         return new Locale("", countryCode).getDisplayCountry(getLocale());
     }
 
-    private String countryCodeToFlag(String countryCode) {
-        return countryCode.chars()
-                .mapToObj(c -> String.valueOf(Character.toChars(c - 'A' + 0x1F1E6)))
-                .collect(Collectors.joining());
+    /** URL de l'image du drapeau pour un code pays ISO (ex. "CH" -> .../ch.png). */
+    private String flagUrl(String countryCode) {
+        return String.format(FLAG_URL_PATTERN, countryCode.toLowerCase(Locale.ROOT));
     }
 
-    public record PaysPhone(String code, String indicatif, String nom, String drapeau) {
+    /** Image de drapeau de taille fixe (24 x 18 px). */
+    private Image createFlagImage(String countryCode) {
+        Image flag = new Image(flagUrl(countryCode), countryCode);
+        flag.setWidth("24px");
+        flag.setHeight("18px");
+        flag.getStyle()
+                .set("object-fit", "cover")
+                .set("border-radius", "2px")
+                .set("box-shadow", "0 0 1px rgba(0,0,0,0.4)")
+                .set("flex-shrink", "0");
+        return flag;
+    }
+
+    public record PaysPhone(String code, String indicatif, String nom) {
         @Override
         public String toString() {
-            return drapeau + " " + nom + " (" + indicatif + ")";
+            return nom + " (" + indicatif + ")";
         }
     }
 

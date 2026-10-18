@@ -2,9 +2,12 @@ package com.example.recordz.ui;
 
 import com.example.recordz.model.domain.Personne;
 import com.example.recordz.service.PersonneService;
+import com.example.recordz.ui.PaysPhoneUtil.PaysPhone;
+import com.example.recordz.ui.PaysPhoneUtil.PhoneParts;
 import com.example.recordz.ui.layouts.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -12,7 +15,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -22,13 +24,16 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
+import java.util.List;
+import java.util.Locale;
+
 @Route(value = "mon-compte/informations", layout = MainLayout.class)
 @PermitAll
 public class InformationsPersonnellesView extends VerticalLayout
         implements BeforeEnterObserver, HasDynamicTitle {
 
-    /** Valeurs stockées en base (français) ; seul l'affichage est traduit. */
-    private static final String[] PAYS = {"Suisse", "France", "Belgique", "Allemagne", "Italie"};
+    /** Préfixe PayPal fixe : affiché dans le champ, non éditable et non traduit. */
+    private static final String PAYPAL_PREFIX = "paypal.me/";
 
     private final PersonneService personneService;
 
@@ -85,28 +90,98 @@ public class InformationsPersonnellesView extends VerticalLayout
                 .set("overflow", "hidden")
                 .set("padding", "8px 16px");
 
+        // ── Liste des pays (même source que DetailArticleView) ──
+        List<PaysPhone> pays = PaysPhoneUtil.buildList(getLocale());
+
+        // Pays de la personne : la valeur en base est le nom français ("Suisse", "France"…)
+        PaysPhone suisse = PaysPhoneUtil.findByCode(pays, "CH");
+        final PaysPhone paysInit = java.util.Optional
+                .ofNullable(PaysPhoneUtil.findByFrenchName(pays, person.getPays()))
+                .orElse(suisse);
+
+        // Téléphone : indicatif + numéro déduits du numéro stocké
+        PhoneParts tel = PaysPhoneUtil.splitStored(person.getNoTelephone(), paysInit, pays);
+
         // Utilisation de person.getXxx() pour préremplir les champs
         TextField prenomF  = field(nullSafe(person.getPrenom()));
         TextField nomF     = field(nullSafe(person.getNom()));
+        nomF.setReadOnly(true);
         TextField adresseF = field(nullSafe(person.getAdresse()));
+
         TextField villeF   = field(nullSafe(person.getVille()));
         TextField npaF     = field(person.getNpa() != null ? person.getNpa().toString() : "");
-        TextField telF     = field(nullSafe(person.getNoTelephone()));
         TextField ibanF    = new TextField();
         ibanF.setValue(nullSafe(person.getIban()));
         ibanF.setWidth("250px");
         ibanF.setPlaceholder("CH00 0000 0000 0000 0000 0");
 
+        // ── PayPal : "paypal.me/" est un préfixe fixe (non éditable, non traduit),
+        //    seul le nom du compte est saisi ──
         TextField paypalF = new TextField();
-        paypalF.setValue(nullSafe(person.getPaypalMe()));
-        paypalF.setWidth("250px");
-        paypalF.setPlaceholder(getTranslation("info.placeholder.paypal"));
+        Span paypalPrefix = new Span(PAYPAL_PREFIX);
+        paypalPrefix.getStyle().set("color", "#555").set("font-size", "0.85rem");
+        paypalF.setPrefixComponent(paypalPrefix);
+        paypalF.setPlaceholder("username");           // volontairement non traduit
+        paypalF.setWidth("280px");
+        paypalF.setValue(extractPaypalUser(person.getPaypalMe()));
 
-        Select<String> paysSel = new Select<>();
-        paysSel.setItems(PAYS);
-        paysSel.setItemLabelGenerator(this::countryLabel);   // valeur = français, libellé = langue de l'UI
-        paysSel.setValue(nullSafe(person.getPays(), "Suisse"));
+        // Si l'utilisateur colle un lien complet, on ne garde que le nom du compte
+        paypalF.addValueChangeListener(e -> {
+            String clean = extractPaypalUser(e.getValue());
+            if (!clean.equals(e.getValue())) {
+                paypalF.setValue(clean);
+            }
+        });
+
+        // ── Pays : ComboBox avec drapeaux ──
+        ComboBox<PaysPhone> paysSel = new ComboBox<>();
+        paysSel.setItems(pays);
+        PaysPhoneUtil.applyFlags(paysSel, false);   // avant setValue
+        paysSel.setValue(paysInit);
         paysSel.setWidth("200px");
+
+        // ── Téléphone : indicatif (avec drapeau) + numéro ──
+        ComboBox<PaysPhone> indicatifBox = new ComboBox<>();
+        indicatifBox.setItems(pays);
+        PaysPhoneUtil.applyFlags(indicatifBox, true);   // avant setValue
+        indicatifBox.setValue(tel.pays());
+        indicatifBox.setWidth("160px");
+
+        TextField telF = new TextField();
+        telF.setValue(tel.numero());
+        telF.setWidth("190px");
+        telF.setPlaceholder("XX XXX XX XX");
+
+        // Mise en forme du numéro selon le pays de l'indicatif
+        // (un numéro saisi en "+..." est laissé tel quel)
+        telF.addValueChangeListener(e -> {
+            String v = e.getValue();
+            PaysPhone dial = indicatifBox.getValue();
+            if (v == null || v.isBlank() || v.trim().startsWith("+") || dial == null) return;
+            String formatted = PaysPhoneUtil.formatAsYouType(v, dial.code());
+            if (!formatted.equals(v)) {
+                telF.setValue(formatted);
+            }
+        });
+
+        // Quand l'utilisateur change l'indicatif, on reformate le numéro saisi
+        indicatifBox.addValueChangeListener(e -> {
+            String v = telF.getValue();
+            PaysPhone dial = e.getValue();
+            if (dial == null || v == null || v.isBlank() || v.trim().startsWith("+")) return;
+            telF.setValue(PaysPhoneUtil.formatAsYouType(v, dial.code()));
+        });
+
+        // Quand l'utilisateur change le pays, l'indicatif suit
+        // (isFromClient : on ne touche pas à l'indicatif lors du préremplissage)
+        paysSel.addValueChangeListener(e -> {
+            if (e.isFromClient() && e.getValue() != null) {
+                indicatifBox.setValue(e.getValue());
+            }
+        });
+
+        HorizontalLayout phoneLayout = new HorizontalLayout(indicatifBox, telF);
+        phoneLayout.setAlignItems(Alignment.BASELINE);
 
         // Bouton Save qui appelle le service
         Button send = new Button(getTranslation("info.btn.save"), e -> {
@@ -120,16 +195,31 @@ public class InformationsPersonnellesView extends VerticalLayout
                     return;
                 }
             }
+
+            PaysPhone paysChoisi = paysSel.getValue() != null ? paysSel.getValue() : paysInit;
+            PaysPhone dial = indicatifBox.getValue() != null ? indicatifBox.getValue() : paysChoisi;
+
+            // Numéro enregistré au format international sans zéro de tête : "+41791234567"
+            String telE164 = PaysPhoneUtil.toE164(telF.getValue(), dial.code());
+            if (telE164 == null) {
+                Notification.show(getTranslation("info.notif.phone.invalid"));
+                return;
+            }
+
+            // PayPal : on enregistre "paypal.me/nomDuCompte" (ou vide si rien n'est saisi)
+            String paypalUser = extractPaypalUser(paypalF.getValue());
+
             person.setPrenom(prenomF.getValue());
             person.setNom(nomF.getValue());
             person.setAdresse(adresseF.getValue());
             person.setVille(villeF.getValue());
             person.setNpa(npa);
-            person.setNoTelephone(telF.getValue());
+            person.setNoTelephone(telE164);
             person.setIban(ibanF.getValue());
-            person.setPaypalMe(paypalF.getValue());
-            person.setPays(paysSel.getValue());
+            person.setPaypalMe(paypalUser.isEmpty() ? "" : PAYPAL_PREFIX + paypalUser);
+            person.setPays(paysChoisi.nomFrancais());   // valeur stockée en français
             personneService.updateProfil(person);
+            telF.setValue(PaysPhoneUtil.splitStored(telE164, dial, pays).numero());
             Notification.show(getTranslation("info.notif.saved"));
         });
 
@@ -147,7 +237,7 @@ public class InformationsPersonnellesView extends VerticalLayout
                 row(getTranslation("info.field.address"),  adresseF),
                 row(getTranslation("info.field.city"),     villeF),
                 row(getTranslation("info.field.zip"),      npaF),
-                row(getTranslation("info.field.phone"),    telF),
+                rowComp(getTranslation("info.field.phone"), phoneLayout),
                 rowComp("IBAN", ibanF),
                 rowComp("PayPal", paypalF),
                 new HorizontalLayout(send, reset)
@@ -156,20 +246,23 @@ public class InformationsPersonnellesView extends VerticalLayout
         return card;
     }
 
-    /** Libellé traduit d'un pays ; retombe sur la valeur brute si aucune traduction n'existe. */
-    private String countryLabel(String value) {
-        String key = "info.country." + value;
-        String translated = getTranslation(key);
-        return key.equals(translated) ? value : translated;
-    }
-
     // Évite les NullPointerException sur les champs potentiellement null
     private String nullSafe(String value) {
         return value != null ? value : "";
     }
 
-    private String nullSafe(String value, String fallback) {
-        return (value != null && !value.isEmpty()) ? value : fallback;
+    /**
+     * Extrait le nom du compte d'une valeur comme "paypal.me/xyz",
+     * "https://www.paypal.me/xyz" ou "xyz".
+     */
+    private String extractPaypalUser(String value) {
+        if (value == null) return "";
+        String s = value.trim();
+        int i = s.toLowerCase(Locale.ROOT).indexOf(PAYPAL_PREFIX);
+        if (i >= 0) {
+            s = s.substring(i + PAYPAL_PREFIX.length());
+        }
+        return s.replaceAll("[\\s/]+", "");
     }
 
     private HorizontalLayout row(String label, TextField field) {
