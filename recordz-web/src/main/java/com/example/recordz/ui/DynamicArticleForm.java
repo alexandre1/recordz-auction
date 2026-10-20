@@ -23,9 +23,21 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class DynamicArticleForm extends VerticalLayout {
+
+    /**
+     * ✅ Catégories dont TOUTES les sous-catégories affichent le champ "Taille"
+     * (habits femmes, hommes, enfants + lingerie, comme dans DetailArticleView).
+     *
+     * On compare sur le NOM de l'enum plutôt que sur la constante, pour que cette classe
+     * compile même si FASHION_ENFANT n'existe pas encore dans ArticleCategory :
+     * dans ce cas, ajoute la constante dans l'enum (avec son id de base) et le champ apparaît.
+     */
+    private static final Set<String> CATEGORIES_AVEC_TAILLE = Set.of(
+            "FASHION_FEMME", "FASHION_HOMME", "FASHION_ENFANT", "LINGERIE");
 
     // ---- Services ----
     private final ArticleDynamicDataService dataService;
@@ -144,8 +156,13 @@ public class DynamicArticleForm extends VerticalLayout {
                 refreshSubCategories(catId);
                 refreshDynamicFields(catId, -1);
                 if (onCategoryChanged != null) onCategoryChanged.accept(catId);
-            } else if (onCategoryChanged != null) {
-                onCategoryChanged.accept(null);
+            } else {
+                // ✅ Aucune catégorie : on vide aussi les champs dynamiques et la sous-catégorie
+                dynamicFieldsContainer.removeAll();
+                clearDynamicRefs();
+                subCategorySelect.clear();
+                subCategorySelect.setVisible(false);
+                if (onCategoryChanged != null) onCategoryChanged.accept(null);
             }
         });
         subCategorySelect.addValueChangeListener(e -> {
@@ -268,7 +285,8 @@ public class DynamicArticleForm extends VerticalLayout {
 
         // ---- TV ----
         if (tvScreenTypeSelect != null) d.refTypeEcran = selectedId(tvScreenTypeSelect);
-        if (tvDimensionField   != null) d.dimension    = tvDimensionField.getValue() != null ? Integer.parseInt(tvDimensionField.getValue()) : null;
+        // ✅ CORRECTION : Integer.parseInt("") (champ vide) ou texte non numérique levait une exception
+        if (tvDimensionField   != null) d.dimension    = parseIntOrNull(tvDimensionField.getValue());
 
         // ---- PC ----
         if (pcProcessorField != null) d.processeur = pcProcessorField.getValue();
@@ -440,7 +458,19 @@ public class DynamicArticleForm extends VerticalLayout {
     // CHAMPS DYNAMIQUES
     // =========================================================================
 
+    /**
+     * @param subcatId id de la sous-catégorie, ou -1 si seule la catégorie vient d'être choisie.
+     */
     private void refreshDynamicFields(int catId, int subcatId) {
+        // ✅ Quand seule la sous-catégorie change, on conserve ce que l'utilisateur
+        // a déjà saisi dans "fabricant" et "taille" (avant, ces champs étaient vidés).
+        String previousMaker = null;
+        String previousSize  = null;
+        if (subcatId != -1) {
+            previousMaker = fabricantField   != null ? fabricantField.getValue()   : null;
+            previousSize  = clothingSizeField != null ? clothingSizeField.getValue() : null;
+        }
+
         dynamicFieldsContainer.removeAll();
         clearDynamicRefs();
 
@@ -455,6 +485,7 @@ public class DynamicArticleForm extends VerticalLayout {
                 && cat != ArticleCategory.LIVRES && cat != ArticleCategory.DVD) {
             fabricantField = new TextField(getTranslation("artform.maker"));
             fabricantField.setRequired(true);
+            if (previousMaker != null) fabricantField.setValue(previousMaker);
             form.add(fabricantField);
         }
 
@@ -475,13 +506,25 @@ public class DynamicArticleForm extends VerticalLayout {
 
         if (subcatId == ArticleSubCategory.TV_ECRAN_PLAT_ID) addTvFields(form);
         if (ArticleSubCategory.INFO_PC_SUBCATS.contains(subcatId)) addPcFields(form);
-        if (ArticleSubCategory.WEAR_SIZE_SUBCATS.contains(subcatId)) {
+
+        // ✅ CORRECTION : le champ "Taille" dépend maintenant de la CATÉGORIE (habits femmes,
+        // hommes, enfants, lingerie) et non plus d'une liste d'ids de sous-catégories.
+        // Il s'affiche donc dès le choix de la catégorie, pour toutes ses sous-catégories,
+        // et n'est plus exposé par erreur à des ids de sous-catégories qui existent aussi
+        // dans d'autres catégories (ex. les ids 1 à 4 des vins).
+        if (showsSizeField(cat)) {
             clothingSizeField = new TextField(getTranslation("artform.size"));
+            if (previousSize != null) clothingSizeField.setValue(previousSize);
             form.add(clothingSizeField);
         }
 
         if (form.getChildren().findAny().isPresent())
             dynamicFieldsContainer.add(new H3(categorySelect.getValue() != null ? categorySelect.getValue().label() : cat.getLabel()), form);
+    }
+
+    /** Vrai si la catégorie est une catégorie "habits" (toutes sous-catégories confondues). */
+    private boolean showsSizeField(ArticleCategory cat) {
+        return cat != null && CATEGORIES_AVEC_TAILLE.contains(cat.name());
     }
 
     // =========================================================================
@@ -605,7 +648,8 @@ public class DynamicArticleForm extends VerticalLayout {
             }
         });
 
-        form.add(wineCountrySelect, wineRegionSelect, wineMillesimeField, wineTypeSelect, wineMillesimeField,wineCepageSelect);
+        // ✅ CORRECTION : wineMillesimeField était ajouté deux fois
+        form.add(wineCountrySelect, wineRegionSelect, wineMillesimeField, wineTypeSelect, wineCepageSelect);
     }
 
     private void addDvdFields(FormLayout form) {
@@ -647,8 +691,13 @@ public class DynamicArticleForm extends VerticalLayout {
         immoCityField = immoAddressField = immoPostalField = immoBuildYearField = immoTerrainField = null;
         immoRoomsField = immoSurfaceField = null;
         immoRegionKind = null;
+        // ✅ CORRECTION : wineMillesimeField et wineTypeSelect n'étaient pas remis à null
+        // (ancienne valeur collectée à tort après un changement de catégorie), et
+        // wineCepageSelect était réinitialisé deux fois.
         wineCountrySelect = wineRegionSelect = null;
-        wineCepageSelect = null; wineCepageSelect = null;
+        wineCepageSelect = null;
+        wineMillesimeField = null;
+        wineTypeSelect = null;
         gameTypeSelect = null;
         dvdActorsField = dvdDirectorField = dvdDurationField = null; dvdYearField = null;
         tvScreenTypeSelect = null; tvDimensionField = null;
@@ -662,6 +711,13 @@ public class DynamicArticleForm extends VerticalLayout {
         f.setMax(java.time.Year.now().getValue());
         f.setStepButtonsVisible(true);
         return f;
+    }
+
+    /** Convertit un texte en entier, retourne null si vide ou non numérique. */
+    private Integer parseIntOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return Integer.parseInt(s.trim()); }
+        catch (NumberFormatException e) { return null; }
     }
 
     /** Extrait l'id (value) d'un Select<LabelValue>, retourne null si rien de sélectionné */
