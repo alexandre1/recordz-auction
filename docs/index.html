@@ -212,12 +212,13 @@
           <li><a href="#beta" data-i18n="nav.beta">Bêta privée</a></li>
         </ul>
       </nav>
-      <div class="lang-switch" role="group" aria-label="Langue / Language">
+      <div class="lang-switch" role="group" aria-label="Langue / Language / Sprache">
         <button type="button" id="lang-fr" aria-pressed="true">FR</button>
         <button type="button" id="lang-en" aria-pressed="false">EN</button>
+        <button type="button" id="lang-de" aria-pressed="false">DE</button>
       </div>
     </div>
-    <p class="badge"><span class="dot" aria-hidden="true"></span><span data-i18n="badge.status">Bêta privée · inscriptions ouvertes · Suisse romande</span></p>
+    <p class="badge"><span class="dot" aria-hidden="true"></span><span data-i18n="badge.status">Bêta privée · inscriptions ouvertes · Toute la Suisse</span></p>
     <div class="mark">
       <h1>Chic<br>Overdose</h1>
       <div class="echo" aria-hidden="true"><span>Overdose</span><span>Overdose</span></div>
@@ -438,7 +439,7 @@
         'nav.choix': 'Choix techniques',
         'nav.fondateur': 'Fondateur',
         'nav.beta': 'Bêta privée',
-        'badge.status': 'Bêta privée · inscriptions ouvertes · Suisse romande',
+        'badge.status': 'Bêta privée · inscriptions ouvertes · Toute la Suisse',
         'intro.lede': 'La place de marché suisse du luxe et de l’immobilier&nbsp;: enchères et ventes directes, sans frais de mise en ligne, sans commission.',
         'intro.cta.beta': 'Rejoindre la bêta privée',
         'intro.cta.concept': 'Découvrir le concept',
@@ -527,7 +528,7 @@
         'nav.choix': 'Tech choices',
         'nav.fondateur': 'Founder',
         'nav.beta': 'Private beta',
-        'badge.status': 'Private beta · sign-ups open · French-speaking Switzerland',
+        'badge.status': 'Private beta · sign-ups open · All of Switzerland',
         'intro.lede': 'Switzerland’s marketplace for luxury and real estate: auctions and direct sales, no listing fees, no commission.',
         'intro.cta.beta': 'Join the private beta',
         'intro.cta.concept': 'Discover the concept',
@@ -608,6 +609,95 @@
         'footer.tagline': 'Project in development, run by Avant-Garde Technologies in Belfaux (Fribourg).',
         'meta.title': 'Chic Overdose – Switzerland\u2019s marketplace for luxury and real estate',
         'meta.description': 'Chic Overdose: auctions and direct sales of luxury goods and real estate in Switzerland (clothing, automotive, wine, video games, computing…), no fees, no commission.'
+      },
+      de: {
+        'nav.concept': 'Konzept',
+        'nav.demos': 'Demos',
+        'nav.technique': 'Technisches Datenblatt',
+        'nav.choix': 'Technische Entscheidungen',
+        'nav.fondateur': 'Gründer',
+        'nav.beta': 'Private Beta',
+        'badge.status': 'Private Beta · Anmeldung offen · ganze Schweiz',
+        'intro.lede': 'Der Schweizer Marktplatz für Luxus und Immobilien: Auktionen und Direktverkäufe, ohne Inseratgebühren, ohne Provision.',
+        'intro.cta.beta': 'Der privaten Beta beitreten',
+        'intro.cta.concept': 'Das Konzept entdecken',
+        'intro.cta.demos': 'Die Demos ansehen',
+        'intro.cta.technique': 'Das technische Datenblatt ansehen',
+        'concept.title': 'Ein Marktplatz für Luxus und Immobilien in der Schweiz',
+        'concept.auctions.title': 'Auktionen',
+        'concept.auctions.desc': 'Käufer bieten bis zum Ablauf, und das höchste Gebot gewinnt.',
+        'concept.direct.title': 'Direktverkäufe',
+        'concept.direct.desc': 'Der Verkäufer legt den Preis fest, der Käufer kauft sofort, neu oder gebraucht.',
+        'concept.fees.title': 'Keine Gebühren, keine Provision',
+        'concept.fees.desc': 'Einen Artikel einzustellen kostet nichts, und auf den Verkauf wird keine Provision erhoben.',
+        'concept.ch.title': 'Für die ganze Schweiz gemacht',
+        'concept.ch.desc': 'Der Katalog ist nach Kategorien und nach Kanton gegliedert.',
+        'concept.cats.title': 'Alle Luxusprodukte, und noch mehr',
+        'concept.cats.desc': 'Der Marktplatz umfasst das gesamte Spektrum an Luxusprodukten sowie Immobilien, in zahlreichen Kategorien:',
+        'concept.cats.clothing': 'Kleidung',
+        'concept.cats.automotive': 'Automobil',
+        'concept.cats.realestate': 'Immobilien',
+        'concept.cats.wine': 'Wein',
+        'concept.cats.videogames': 'Videospiele',
+        'concept.cats.computing': 'Informatik',
+        'concept.cats.more': 'Und viele weitere',
+        'demos.title': 'Chic Overdose in Aktion',
+        'demos.item1': 'Demo 1',
+        'demos.item2': 'Demo 2',
+        'demos.item3': 'Demo 3',
+        'demos.fallback': 'Ihr Browser kann dieses Video nicht abspielen.',
+        'demos.open': 'Video auf GitHub öffnen',
+        'demos.openGithub': 'Auf GitHub öffnen',
+        'demos.newTab': ' (öffnet in einem neuen Tab)',
+        'technique.title': 'Technisches Datenblatt',
+        'technique.language': 'Sprache',
+        'technique.framework': 'Framework',
+        'technique.webui': 'Web-Oberfläche',
+        'technique.database': 'Datenbank',
+        'technique.dataaccess': 'Datenzugriff',
+        'technique.migrations': 'Migrationen',
+        'technique.cache': 'Cache',
+        'technique.auth': 'Authentifizierung',
+        'technique.auth.value': 'Spring Security, OAuth2 (Google Sign-In)',
+        'technique.build': 'Build',
+        'technique.build.value': 'Maven Multi-Module',
+        'technique.env': 'Umgebung',
+        'choix.title': 'Die Entscheidungen hinter dem Code',
+        'choix.desc': 'Chic Overdose basiert auf einem modernen Java-Stack, der so aufgebaut ist, dass er lesbar, sicher und schnell bleibt, während das Projekt wächst.',
+        'choice1.title': 'Ein aktueller Technologie-Stack',
+        'choice1.p1': 'Java 21 und Spring Boot 3.4 ermöglichen es, die neuesten Sprachfunktionen zu nutzen, etwa Virtual Threads und erweitertes Pattern Matching.',
+        'choice1.p2': 'Mit Vaadin 25 wird die Web-Oberfläche vollständig in Java geschrieben, ohne ein schweres JavaScript-Framework wie React oder Angular nebenher pflegen zu müssen.',
+        'choice2.title': 'Eine Schichtenarchitektur',
+        'choice2.p1': 'Das Projekt ist ein Maven-Multi-Module-Build, der die Geschäftslogik (<code>recordz-core</code>) vom Web-Teil (<code>recordz-web</code>) trennt.',
+        'choice2.p2': 'Die Verzeichnisse folgen derselben Aufteilung: <code>config</code>, <code>security</code>, <code>model/domain</code>, <code>repository</code>, <code>service</code> und <code>ui</code>. Der Code bleibt einfach zu warten und weiterzuentwickeln.',
+        'choice3.title': 'Beherrschte Daten',
+        'choice3.p1': 'jOOQ (3.19) stellt SQL in den Vordergrund: volle Kontrolle, Präzision und Abfrageleistung, was bei einer Auktionsanwendung zählt.',
+        'choice3.p2': 'Referenztabellen wie die Schweizer Kantone und die Kategorien werden mit <code>@Cacheable</code> zwischengespeichert, um unnötige Zugriffe auf MySQL 9 zu vermeiden.',
+        'choice3.p3': 'Flyway versioniert das Datenbankschema und macht jede Produktivsetzung zuverlässig.',
+        'choice4.title': 'Moderne Authentifizierung',
+        'choice4.p1': 'Spring Security und OAuth2 erlauben die Anmeldung mit Google (Google Sign-In). Die Benutzerprofile werden automatisch von <code>CustomOAuth2UserService</code> synchronisiert, ohne klassisches Passwort.',
+        'choice5.title': 'Ein Projekt, das sich leicht übernehmen lässt',
+        'choice5.p1': 'Eine Datei <code>docker-compose.yml</code> orchestriert die Dienste, allen voran MySQL: Ein neuer Entwickler startet das Projekt in wenigen Minuten.',
+        'choice5.p2': 'Das README beschreibt das Datenschema (Schweizer Markt, Auktionen, Kantone) und bietet eine Schritt-für-Schritt-Anleitung für den Einstieg.',
+        'beta.title': 'Private Beta',
+        'beta.subtitle': 'Anmeldung nur mit Gmail-Adressen möglich.',
+        'beta.desc': 'Hinterlassen Sie Ihre Gmail-Adresse, um Zugang zur privaten Beta zu erhalten, sobald ein Platz frei wird.',
+        'beta.label': 'Gmail-Adresse',
+        'beta.submit': 'Anmelden',
+        'beta.noscript': 'Aktivieren Sie JavaScript, um sich für die Beta anzumelden.',
+        'beta.msg.invalid': 'Bitte geben Sie eine gültige Gmail-Adresse ein (z. B. name@gmail.com).',
+        'beta.msg.sending': 'Anmeldung läuft…',
+        'beta.msg.ok': 'Danke! Ihre Adresse wurde für die private Beta registriert.',
+        'beta.msg.error': 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es gleich noch einmal.',
+        'founder.title': 'Hinter dem Projekt',
+        'founder.role': 'Gründer und technischer Leiter',
+        'founder.desc': 'Alexandre ist ein erfahrener, sorgfältiger und pragmatischer Software-Ingenieur und entwickelt robuste, sichere und leistungsfähige Unternehmensanwendungen. Er beherrscht die gesamte Kette: von der Datenbankmodellierung über die Oberfläche bis hin zu Sicherheit und Container-Deployment.',
+        'founder2.role': 'Gründerin und CEO',
+        'founder3.role': 'Videoeditor und Spezialist für digitale Inhalte',
+        'founder3.desc': 'Meekat unterstützt das Projekt mit professionellem Videoschnitt, Content-Erstellung und visueller Kommunikation und hilft dabei, komplexe Ideen in klare und ansprechende Inhalte für Investoren, Partner und Zielgruppen zu verwandeln.',
+        'footer.tagline': 'Projekt in Entwicklung, getragen von Avant-Garde Technologies in Belfaux (Freiburg).',
+        'meta.title': 'Chic Overdose – Der Schweizer Marktplatz für Luxus und Immobilien',
+        'meta.description': 'Chic Overdose: Auktionen und Direktverkäufe von Luxusprodukten und Immobilien in der Schweiz (Kleidung, Automobil, Wein, Videospiele, Informatik…), ohne Gebühren und ohne Provision.'
       }
     };
 
@@ -617,6 +707,7 @@
     var metaDescEl = document.getElementById('meta-description');
     var btnFr = document.getElementById('lang-fr');
     var btnEn = document.getElementById('lang-en');
+    var btnDe = document.getElementById('lang-de');
 
     function applyLang(lang) {
       var dict = translations[lang] || translations.fr;
@@ -636,6 +727,7 @@
 
       btnFr.setAttribute('aria-pressed', String(lang === 'fr'));
       btnEn.setAttribute('aria-pressed', String(lang === 'en'));
+      btnDe.setAttribute('aria-pressed', String(lang === 'de'));
 
       htmlEl.setAttribute('data-lang', lang);
       try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
@@ -644,12 +736,16 @@
     function initialLang() {
       var stored = null;
       try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-      if (stored === 'fr' || stored === 'en') return stored;
-      return (navigator.language || '').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en';
+      if (stored === 'fr' || stored === 'en' || stored === 'de') return stored;
+      var nav = (navigator.language || '').toLowerCase();
+      if (nav.indexOf('fr') === 0) return 'fr';
+      if (nav.indexOf('de') === 0) return 'de';
+      return 'en';
     }
 
     btnFr.addEventListener('click', function () { applyLang('fr'); });
     btnEn.addEventListener('click', function () { applyLang('en'); });
+    btnDe.addEventListener('click', function () { applyLang('de'); });
 
     applyLang(initialLang());
 
