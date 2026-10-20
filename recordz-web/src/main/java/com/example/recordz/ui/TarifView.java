@@ -6,14 +6,14 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
 @Route(value = "tarif", layout = MainLayout.class)
 @PermitAll
-@PageTitle("Avant-Garde - Tarifs")
-public class TarifView extends VerticalLayout {
+public class TarifView extends VerticalLayout implements HasDynamicTitle {
+
     public TarifView() {
         getStyle()
                 .set("border-radius", "20px")
@@ -22,17 +22,17 @@ public class TarifView extends VerticalLayout {
                 .set("width", "800px")
                 .set("padding-left", "8px");
         setPadding(true);
-        H2 title = new H2("Tarifs");
+
+        H2 title = new H2(getTranslation("tarif.title"));
         title.getStyle().set("color", "#0000CC");
         add(title);
 
         Div table = new Div();
 
         String[][] rows = {
-                {"Mise en vente standard", "Gratuit"},
-                {"Commission sur vente", "0%"},
-                {"Article mis en vedette", "1000 CHF"},
-                {"Publicité", "Sur devis"}
+                {getTranslation("tarif.standard.label"),    getTranslation("tarif.standard.value")},
+                {getTranslation("tarif.commission.label"),  "0%"},
+                {getTranslation("tarif.featured.label"),    "1000 CHF"},
         };
         for (String[] r : rows) {
             HorizontalLayout row = new HorizontalLayout();
@@ -44,5 +44,10 @@ public class TarifView extends VerticalLayout {
             table.add(row);
         }
         add(table);
+    }
+
+    @Override
+    public String getPageTitle() {
+        return getTranslation("tarif.page.title");
     }
 }
