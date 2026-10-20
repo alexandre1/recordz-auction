@@ -4,8 +4,13 @@ package com.example.recordz.ui;
 import com.example.recordz.model.domain.*;
 import com.example.recordz.model.domain.Article;
 import com.example.recordz.service.CalendrierService;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.Autocomplete;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.springframework.mail.SimpleMailMessage;
 import com.example.recordz.service.ArticleService;
@@ -129,6 +134,28 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         }
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Helpers responsive pour les boîtes de dialogue
+    // ══════════════════════════════════════════════════════════
+
+    /**
+     * Configuration commune des dialogues :
+     * - largeur plafonnée à la fenêtre (min(px, 96vw)) au lieu d'une valeur fixe
+     * - hauteur max en dvh (tient compte de la barre d'adresse mobile, contrairement à vh)
+     * - optionnel : classe CSS "responsive-dialog" => plein écran sur téléphone
+     *   (voir la feuille de style fournie avec ce fichier)
+     */
+    private void configureDialog(Dialog dlg, int maxWidthPx, boolean fullscreenOnMobile) {
+        dlg.setWidth("min(" + maxWidthPx + "px, 96vw)");
+        dlg.setMaxWidth("100vw");
+        dlg.setMaxHeight("92dvh");
+        if (fullscreenOnMobile) {
+            dlg.addClassName("responsive-dialog");
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════
+
     private void buildView(Article article) {
         removeAll();
         setPadding(true);
@@ -226,15 +253,8 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         Button prevBtn = new Button("◀");
         Button nextBtn = new Button("▶");
         Span pageInfo = new Span();
-        for (Button btn : new Button[]{prevBtn, nextBtn}) {
-            btn.getStyle()
-                    .set("background", "none")
-                    .set("border", "1px solid #6100C1")
-                    .set("color", "#6100C1")
-                    .set("border-radius", "20px")
-                    .set("cursor", "pointer")
-                    .set("padding", "2px 10px");
-        }
+        stylePageButton(prevBtn);
+        stylePageButton(nextBtn);
         pageInfo.getStyle().set("font-size", "0.8rem");
 
         Runnable renderPage = () -> {
@@ -309,11 +329,13 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .set("font-size", "0.8rem")
                 .set("flex-shrink", "0");
 
+        // ✅ Largeur flexible (avant : 150px fixes) : le nom s'adapte à la place disponible
         Span nomSpan = new Span(affichage.trim());
         nomSpan.getStyle()
                 .set("font-size", "0.85rem")
-                .set("width", "150px")
-                .set("flex-shrink", "0");
+                .set("flex", "1 1 120px")
+                .set("min-width", "0")
+                .set("overflow-wrap", "anywhere");
         if (nomUtilisateur != null && !nomUtilisateur.isBlank()) {
             nomSpan.getStyle().set("cursor", "pointer").set("color", "#0000CC");
             nomSpan.addClickListener(e -> nomSpan.getUI().ifPresent(ui ->
@@ -326,8 +348,8 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .set("font-size", "0.85rem")
                 .set("font-weight", "bold")
                 .set("color", "#0000CC")
-                .set("width", "110px")
-                .set("flex-shrink", "0");
+                .set("flex", "0 0 auto")
+                .set("white-space", "nowrap");
 
         Span dateSpan = new Span(formatDateVisite(o.length > 3 ? o[3] : null));
         dateSpan.getStyle()
@@ -813,23 +835,29 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         buildCalendrierArticle(personne.getEmail());
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Dialogue : demande de visite
+    //  ✅ En-tête + pied de page fixes, contenu qui défile, plein écran sur téléphone,
+    //     FormLayout responsive, claviers mobiles adaptés.
+    // ══════════════════════════════════════════════════════════
     private void showDemandeDeVisite(Article article) {
         Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 420);
+        configureDialog(dlg, 480, true);
+        dlg.setCloseOnOutsideClick(false); // évite de perdre la saisie d'un tap accidentel
+        dlg.setHeaderTitle(getTranslation("detail.visit.request"));
 
-        VerticalLayout content = new VerticalLayout();
-        content.setPadding(true);
-        content.setSpacing(false);
-
-        TextField reponseParEmail = new TextField(getTranslation("detail.visit.email"));
+        // ── Email (clavier avec @ sur mobile) ──
+        EmailField reponseParEmail = new EmailField(getTranslation("detail.visit.email"));
         reponseParEmail.setPlaceholder(getTranslation("detail.visit.email.ph"));
-        content.add(reponseParEmail);
+        reponseParEmail.setClearButtonVisible(true);
+        reponseParEmail.setAutocomplete(Autocomplete.EMAIL);
+        reponseParEmail.setWidthFull();
 
+        // ── Téléphone ──
         List<PaysPhone> pays = buildPaysList();
 
         ComboBox<PaysPhone> indicatifBox = new ComboBox<>(getTranslation("detail.visit.dial"));
         indicatifBox.setItems(pays);
-        indicatifBox.setWidth("45%");
 
         // Texte utilisé pour le filtrage et pour la valeur affichée dans le champ fermé
         indicatifBox.setItemLabelGenerator(p -> p.code() + " " + p.indicatif());
@@ -868,7 +896,9 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         TextField reponseParTelephone = new TextField(getTranslation("detail.visit.number"));
         reponseParTelephone.setPlaceholder("XX XXX XX XX");
-        reponseParTelephone.setWidth("55%");
+        // ✅ Clavier numérique téléphone + autocomplétion du navigateur
+        reponseParTelephone.getElement().setAttribute("inputmode", "tel");
+        reponseParTelephone.setAutocomplete(Autocomplete.TEL);
 
         reponseParTelephone.addValueChangeListener(e -> {
             PaysPhone selected = indicatifBox.getValue();
@@ -881,54 +911,65 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
         });
 
+        // ✅ Au lieu de 45 % / 55 % : les champs passent à la ligne si la place manque (écrans ~360 px)
+        indicatifBox.setMinWidth("140px");
+        indicatifBox.getStyle().set("flex", "1 1 140px");
+        reponseParTelephone.setMinWidth("160px");
+        reponseParTelephone.getStyle().set("flex", "2 1 180px");
+
         HorizontalLayout phoneLayout = new HorizontalLayout(indicatifBox, reponseParTelephone);
         phoneLayout.setAlignItems(Alignment.BASELINE);
         phoneLayout.setWidthFull();
-        content.add(phoneLayout);
+        phoneLayout.setPadding(false);
+        phoneLayout.getStyle().set("flex-wrap", "wrap");
 
+        // ── Identité / adresse ──
         TextField nom = new TextField(getTranslation("detail.visit.name"));
         nom.setPlaceholder(getTranslation("detail.visit.name.ph"));
-        content.add(nom);
+        nom.setAutocomplete(Autocomplete.FAMILY_NAME);
 
         TextField prenom = new TextField(getTranslation("detail.visit.firstname"));
         prenom.setPlaceholder(getTranslation("detail.visit.firstname.ph"));
-        content.add(prenom);
+        prenom.setAutocomplete(Autocomplete.GIVEN_NAME);
 
         TextField adresse = new TextField(getTranslation("detail.visit.address"));
         adresse.setPlaceholder(getTranslation("detail.visit.address.ph"));
-        content.add(adresse);
+        adresse.setAutocomplete(Autocomplete.STREET_ADDRESS);
 
         TextArea commentaire = new TextArea(getTranslation("detail.visit.comment"));
         commentaire.setPlaceholder(getTranslation("detail.visit.comment.ph"));
-        content.add(commentaire);
+        commentaire.setMinHeight("80px");
 
         DatePicker datePicker = new DatePicker(getTranslation("detail.visit.date"));
         datePicker.setValue(LocalDate.now());
         datePicker.setMin(LocalDate.now());
         datePicker.setLocale(getLocale());
-        content.add(datePicker);
 
         TimePicker timePicker = new TimePicker(getTranslation("detail.visit.time"));
         timePicker.setValue(LocalTime.of(9, 0));
         timePicker.setStep(Duration.ofMinutes(30));
         timePicker.setMin(LocalTime.of(8, 0));
         timePicker.setMax(LocalTime.of(18, 0));
-        content.add(timePicker);
 
-        Button fermerBtn = new Button(getTranslation("detail.close"));
-        fermerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("width", "90px")
-                .set("border", "none");
+        // ✅ FormLayout : 1 colonne sur mobile, 2 colonnes dès 500 px
+        FormLayout form = new FormLayout();
+        form.setWidthFull();
+        form.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("500px", 2));
+        form.add(reponseParEmail, 2);
+        form.add(phoneLayout, 2);
+        form.add(nom, prenom);
+        form.add(adresse, 2);
+        form.add(datePicker, timePicker);
+        form.add(commentaire, 2);
+        dlg.add(form);
+
+        // ✅ Boutons dans le pied de page : toujours visibles, même avec le clavier ouvert
+        Button fermerBtn = secondaryButton(getTranslation("detail.close"));
         fermerBtn.addClickListener(e -> dlg.close());
 
-        Button envoyerBtn = new Button(getTranslation("detail.send"));
-        envoyerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("width", "90px")
-                .set("border", "none");
+        Button envoyerBtn = primaryButton(getTranslation("detail.send"));
         envoyerBtn.addClickListener(e -> {
             // ✅ Validation : date et heure obligatoires (LocalDateTime.of plante sur null)
             if (datePicker.getValue() == null || timePicker.getValue() == null) {
@@ -947,13 +988,16 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                     timePicker.getValue()
             );
 
+            String emailDemandeur = reponseParEmail.getValue() != null
+                    ? reponseParEmail.getValue().trim() : "";
+
             try {
                 Integer idVendeur = referenceService.findIdVendeur(article.getIdArticle().intValue());
                 if (idVendeur != null) {
                     referenceService.enregistrerDemandeVisite(
                             article.getIdArticle().intValue(),
                             idVendeur,
-                            reponseParEmail.getValue().trim(),
+                            emailDemandeur,
                             numeroComplet,
                             nom.getValue().trim(),
                             prenom.getValue().trim(),
@@ -968,7 +1012,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                                 article.getNom(),
                                 nom.getValue() + " " + prenom.getValue(),
                                 commentaire.getValue(),
-                                reponseParEmail.getValue().trim(),
+                                emailDemandeur,
                                 dateVisite
                         );
                     }
@@ -982,9 +1026,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
         });
 
-        HorizontalLayout buttonsLayout = new HorizontalLayout(envoyerBtn, fermerBtn);
-        content.add(buttonsLayout);
-        dlg.add(content);
+        dlg.getFooter().add(fermerBtn, envoyerBtn);
         dlg.open();
     }
 
@@ -1090,25 +1132,29 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         }
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Dialogue : liste des visiteurs
+    //  ✅ Colonnes flexibles (plus de largeurs fixes qui débordent), boutons de
+    //     pagination tactiles, bouton Fermer dans le pied de page.
+    // ══════════════════════════════════════════════════════════
     private void showVisiteursDialog(Article article) {
         Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 560);
+        configureDialog(dlg, 560, false);
+        dlg.setHeaderTitle(getTranslation("detail.visitors.title"));
 
         var visiteurs = referenceService.findVisiteurs(article.getIdArticle().intValue());
         final int PAGE_SIZE = 5;
         int[] currentPage = {0};
 
         VerticalLayout content = new VerticalLayout();
-        content.setPadding(true);
+        content.setPadding(false);
         content.setSpacing(false);
-
-        H4 titre = new H4(getTranslation("detail.visitors.title"));
-        titre.getStyle().set("color", "#0000CC").set("margin", "0").set("font-size", "1rem");
-        content.add(titre);
+        content.setWidthFull();
 
         VerticalLayout listeZone = new VerticalLayout();
         listeZone.setPadding(false);
         listeZone.setSpacing(false);
+        listeZone.setWidthFull();
 
         HorizontalLayout pagination = new HorizontalLayout();
         pagination.setAlignItems(Alignment.CENTER);
@@ -1121,16 +1167,8 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         Button prevBtn = new Button("◀");
         Button nextBtn = new Button("▶");
         Span pageInfo = new Span();
-
-        for (Button btn : new Button[]{prevBtn, nextBtn}) {
-            btn.getStyle()
-                    .set("background", "none")
-                    .set("border", "1px solid #6100C1")
-                    .set("color", "#6100C1")
-                    .set("border-radius", "20px")
-                    .set("cursor", "pointer")
-                    .set("padding", "2px 10px");
-        }
+        stylePageButton(prevBtn);
+        stylePageButton(nextBtn);
 
         Runnable renderPage = () -> {
             listeZone.removeAll();
@@ -1145,17 +1183,22 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
             pagination.setVisible(true);
 
+            // En-tête de tableau : mêmes flex que les lignes pour rester alignées
             HorizontalLayout tableHeader = new HorizontalLayout();
             tableHeader.setWidthFull();
             tableHeader.addClassName("hide-on-mobile");   // masqué sur petit écran (voir CSS)
             tableHeader.getStyle().set("padding", "6px 8px").set("margin-bottom", "4px");
+            Span hSpacer = new Span();                    // place de l'avatar
+            hSpacer.getStyle().set("width", "30px").set("flex-shrink", "0");
             Span hNom = new Span(getTranslation("detail.visitors.h.visitor"));
-            hNom.getStyle().set("width", "150px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
+            hNom.getStyle().set("flex", "1 1 120px").set("min-width", "0")
+                    .set("font-size", "0.8rem").set("font-weight", "bold");
             Span hEmail = new Span(getTranslation("detail.visitors.h.email"));
-            hEmail.getStyle().set("width", "120px").set("font-size", "0.8rem").set("font-weight", "bold").set("flex-shrink", "0");
+            hEmail.getStyle().set("flex", "1 1 100px").set("min-width", "0")
+                    .set("font-size", "0.8rem").set("font-weight", "bold");
             Span hDate = new Span(getTranslation("detail.visitors.h.date"));
             hDate.getStyle().set("font-size", "0.8rem").set("font-weight", "bold").set("white-space", "nowrap");
-            tableHeader.add(hNom, hEmail, hDate);
+            tableHeader.add(hSpacer, hNom, hEmail, hDate);
             listeZone.add(tableHeader);
 
             int totalPages = (int) Math.ceil((double) visiteurs.size() / PAGE_SIZE);
@@ -1194,7 +1237,9 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 Span nomLink = new Span(nomComplet.trim());
                 nomLink.getStyle()
                         .set("color", "#0000CC").set("cursor", "pointer")
-                        .set("font-size", "0.85rem").set("width", "150px").set("flex-shrink", "0");
+                        .set("font-size", "0.85rem")
+                        .set("flex", "1 1 120px").set("min-width", "0")
+                        .set("overflow-wrap", "anywhere");
                 nomLink.addClickListener(e -> {
                     dlg.close();
                     nomLink.getUI().ifPresent(ui -> ui.navigate("profil/" + username));
@@ -1202,7 +1247,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
                 // ✅ Masquage de l'email sécurisé : substring(0, 2) plantait si la partie locale < 2 caractères
                 Span emailSpan = new Span(masquerEmail(email));
-                emailSpan.getStyle().set("font-size", "0.78rem").set("color", "#888").set("width", "120px").set("flex-shrink", "0");
+                emailSpan.getStyle()
+                        .set("font-size", "0.78rem").set("color", "#888")
+                        .set("flex", "1 1 100px").set("min-width", "0")
+                        .set("overflow", "hidden").set("text-overflow", "ellipsis");
 
                 String dateBrute = v.length > 3 ? v[3] : null;
                 Span dateSpan = new Span(formatDateVisite(dateBrute));
@@ -1222,36 +1270,31 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
 
         pagination.add(prevBtn, pageInfo, nextBtn);
         renderPage.run();
-        content.add(listeZone, pagination, new Hr());
-
-        Button fermerBtn = new Button(getTranslation("detail.close"));
-        fermerBtn.setWidthFull();
-        fermerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("border", "none");
-        fermerBtn.addClickListener(e -> dlg.close());
-        content.add(fermerBtn);
-
+        content.add(listeZone, pagination);
         dlg.add(content);
+
+        Button fermerBtn = primaryButton(getTranslation("detail.close"));
+        fermerBtn.addClickListener(e -> dlg.close());
+        dlg.getFooter().add(fermerBtn);
+
         dlg.open();
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Dialogue : faire une offre
+    // ══════════════════════════════════════════════════════════
     private void showFaireOffreDialog(Article article, TextField offreField, Double derniereOffre) {
         Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 380);
+        configureDialog(dlg, 400, false);
+        dlg.setCloseOnOutsideClick(false);
+        dlg.setHeaderTitle(getTranslation("detail.offer.make"));
 
         // ✅ Prix de référence : dernière offre si elle existe, sinon prix de départ de l'article
         final Double prixReference = derniereOffre != null ? derniereOffre : article.getPrix();
 
         VerticalLayout content = new VerticalLayout();
-        content.setPadding(true);
+        content.setPadding(false);
         content.setSpacing(true);
-
-        H4 titre = new H4(getTranslation("detail.offer.make"));
-        titre.getStyle().set("color", "#0000CC").set("margin", "0");
-        content.add(titre);
-        content.add(new Hr());
 
         Span nomArticle = new Span(getTranslation("detail.article", article.getNom() != null ? article.getNom() : "—"));
         nomArticle.getStyle().set("font-size", "0.9rem");
@@ -1264,8 +1307,10 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         content.add(new Hr());
 
         TextField montantField = new TextField(getTranslation("detail.offer.amount"));
-        montantField.setWidth("100%");
+        montantField.setWidthFull();
         montantField.setPlaceholder(getTranslation("detail.offer.amount.ph"));
+        // ✅ Clavier numérique avec séparateur décimal sur mobile
+        montantField.getElement().setAttribute("inputmode", "decimal");
         if (offreField != null && !offreField.getValue().isBlank()) {
             montantField.setValue(offreField.getValue());
         }
@@ -1276,24 +1321,12 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         errMsg.setVisible(false);
         content.add(errMsg);
 
-        content.add(new Hr());
-        HorizontalLayout btns = new HorizontalLayout();
-        btns.setWidthFull();
-        btns.setJustifyContentMode(
-                com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.END
-        );
+        dlg.add(content);
 
-        Button annulerBtn = new Button(getTranslation("detail.cancel"));
-        annulerBtn.getStyle()
-                .set("background-color", "#E0E0E0")
-                .set("border", "1px solid #999");
+        Button annulerBtn = secondaryButton(getTranslation("detail.cancel"));
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button(getTranslation("detail.confirm"));
-        confirmerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("border", "none");
+        Button confirmerBtn = primaryButton(getTranslation("detail.confirm"));
 
         confirmerBtn.addClickListener(e -> {
             String valeur = montantField.getValue().replace(",", ".");
@@ -1354,24 +1387,21 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
         });
 
-        btns.add(annulerBtn, confirmerBtn);
-        content.add(btns);
-        dlg.add(content);
+        dlg.getFooter().add(annulerBtn, confirmerBtn);
         dlg.open();
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Dialogue : acheter
+    // ══════════════════════════════════════════════════════════
     private void showAcheterDialog(Article article) {
         Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 380);
+        configureDialog(dlg, 400, false);
+        dlg.setHeaderTitle(getTranslation("detail.buy.title"));
 
         VerticalLayout content = new VerticalLayout();
-        content.setPadding(true);
+        content.setPadding(false);
         content.setSpacing(true);
-
-        H4 titre = new H4(getTranslation("detail.buy.title"));
-        titre.getStyle().set("color", "#0000CC").set("margin", "0");
-        content.add(titre);
-        content.add(new Hr());
 
         Span nomArticle = new Span(getTranslation("detail.article", article.getNom() != null ? article.getNom() : "—"));
         nomArticle.getStyle().set("font-size", "0.9rem");
@@ -1391,24 +1421,12 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         errMsg.setVisible(false);
         content.add(errMsg);
 
-        content.add(new Hr());
-        HorizontalLayout btns = new HorizontalLayout();
-        btns.setWidthFull();
-        btns.setJustifyContentMode(
-                com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.END
-        );
+        dlg.add(content);
 
-        Button annulerBtn = new Button(getTranslation("detail.cancel"));
-        annulerBtn.getStyle()
-                .set("background-color", "#E0E0E0")
-                .set("border", "1px solid #999");
+        Button annulerBtn = secondaryButton(getTranslation("detail.cancel"));
         annulerBtn.addClickListener(e -> dlg.close());
 
-        Button confirmerBtn = new Button(getTranslation("detail.buy"));
-        confirmerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("border", "none");
+        Button confirmerBtn = primaryButton(getTranslation("detail.buy"));
 
         confirmerBtn.addClickListener(e -> {
             try {
@@ -1467,17 +1485,19 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
             }
         });
 
-        btns.add(annulerBtn, confirmerBtn);
-        content.add(btns);
-        dlg.add(content);
+        dlg.getFooter().add(annulerBtn, confirmerBtn);
         dlg.open();
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Dialogue : agenda du vendeur
+    //  ✅ Hauteur en dvh, plein écran sur téléphone, vue "liste" par défaut sur petit écran.
+    // ══════════════════════════════════════════════════════════
     private void buildCalendrierArticle(String email) {
         Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 900);
-        dlg.setHeight("85vh");
-        dlg.setMaxHeight("600px");
+        configureDialog(dlg, 900, true);
+        dlg.setHeaderTitle(getTranslation("detail.agenda"));
+        dlg.setHeight("min(85dvh, 700px)");
 
         FullCalendar calendar = FullCalendarBuilder.create().build();
         calendar.setSizeFull();
@@ -1518,21 +1538,29 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         viewSelect.setValue(CalendarViewImpl.DAY_GRID_MONTH);
         viewSelect.addValueChangeListener(e -> calendar.changeView(e.getValue()));
 
-        Button fermerBtn = new Button(getTranslation("detail.close"), e -> dlg.close());
-        fermerBtn.getStyle()
-                .set("background-color", "#0000CC")
-                .set("color", "white")
-                .set("border", "none");
+        // ✅ Sur petit écran (< 600 px), la vue semaine en grille horaire est illisible :
+        // on démarre sur la vue liste.
+        UI.getCurrent().getPage().executeJs("return window.innerWidth;")
+                .then(Integer.class, w -> {
+                    if (w != null && w < 600) {
+                        viewSelect.setValue(CalendarViewImpl.LIST_WEEK);
+                    }
+                });
 
         HorizontalLayout toolbar = new HorizontalLayout(prev, today, next, viewSelect);
         toolbar.setAlignItems(Alignment.CENTER);
         toolbar.getStyle().set("flex-wrap", "wrap");
 
-        VerticalLayout content = new VerticalLayout(toolbar, calendar, fermerBtn);
+        VerticalLayout content = new VerticalLayout(toolbar, calendar);
+        content.setPadding(false);
         content.setSizeFull();
         content.expand(calendar);
-
         dlg.add(content);
+
+        Button fermerBtn = primaryButton(getTranslation("detail.close"));
+        fermerBtn.addClickListener(e -> dlg.close());
+        dlg.getFooter().add(fermerBtn);
+
         dlg.open();
     }
 
@@ -1599,6 +1627,7 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
         }
     }
 
+    /** Bouton "contour" violet utilisé pour les actions de la page. */
     private Button styledButton(String label) {
         Button btn = new Button(label);
 
@@ -1616,5 +1645,41 @@ public class DetailArticleView extends VerticalLayout implements BeforeEnterObse
                 .set("box-sizing", "border-box");
 
         return btn;
+    }
+
+    /** ✅ Bouton principal des dialogues (remplace les styles #0000CC répétés). */
+    private Button primaryButton(String label) {
+        Button btn = new Button(label);
+        btn.getStyle()
+                .set("background-color", "#0000CC")
+                .set("color", "white")
+                .set("border", "none")
+                .set("min-height", "40px")
+                .set("cursor", "pointer");
+        return btn;
+    }
+
+    /** ✅ Bouton secondaire des dialogues (Annuler / Fermer). */
+    private Button secondaryButton(String label) {
+        Button btn = new Button(label);
+        btn.getStyle()
+                .set("background-color", "#E0E0E0")
+                .set("border", "1px solid #999")
+                .set("min-height", "40px")
+                .set("cursor", "pointer");
+        return btn;
+    }
+
+    /** ✅ Boutons ◀ ▶ de pagination : zone tactile d'au moins 44 x 44 px. */
+    private void stylePageButton(Button btn) {
+        btn.getStyle()
+                .set("background", "none")
+                .set("border", "1px solid #6100C1")
+                .set("color", "#6100C1")
+                .set("border-radius", "20px")
+                .set("cursor", "pointer")
+                .set("padding", "2px 10px")
+                .set("min-width", "44px")
+                .set("min-height", "44px");
     }
 }
