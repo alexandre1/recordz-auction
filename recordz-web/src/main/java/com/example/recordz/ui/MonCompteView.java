@@ -781,7 +781,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         g.addColumn(art -> art.getIdAlivre() != null
                         ? art.getIdAlivre() : "—")
                 .setHeader(getTranslation("account.col.id"))
-                .setWidth("30px")
+                .setWidth("100px")
                 .setFlexGrow(0);
 
         g.addComponentColumn(this::buildImageBox)
@@ -1772,11 +1772,10 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         titre.getStyle().set("color", "#0000CC").set("margin", "0");
         content.add(titre, new Hr());
 
-        //Integer personneId = this.referenceService.findPersonneId(article.getIdArticle().intValue());
-        Integer personneId = this.referenceService.findIdAcheteur(article.getIdArticle().intValue());
-        System.out.println(" Vendeur id : "  + personneId);
+        // L'acheteur vient de la ligne a_livre affichée, pas d'une recherche par article
+        Long personneId = article.getRefAcheteur();
         if (personneId != null) {
-            Personne personne = this.personneService.findById(personneId.longValue());
+            Personne personne = this.personneService.findById(personneId);
             if (personne != null) {
                 TextField nom = new TextField(getTranslation("account.field.fullname"));
                 nom.setValue(personne.getNom() != null ? personne.getNom() : "");
@@ -1786,9 +1785,8 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                 adresse.setValue(personne.getAdresse() != null ? personne.getAdresse() : "");
                 adresse.setReadOnly(true);
 
-
                 TextField ville = new TextField(getTranslation("account.field.city"));
-                ville.setValue(personne.getVille() != null ? personne.getVille(): "");
+                ville.setValue(personne.getVille() != null ? personne.getVille() : "");
                 ville.setReadOnly(true);
 
                 TextField pays = new TextField(getTranslation("account.field.country"));
@@ -1807,7 +1805,6 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         dlg.add(content);
         dlg.open();
     }
-
     private void showVendeurDetails(Article article) {
         Dialog dlg = new Dialog();
         ResponsiveHelper.dialogWidth(dlg, 380);

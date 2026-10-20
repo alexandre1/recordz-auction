@@ -725,55 +725,49 @@ public class ArticleRepository {
                     return a;                });
     }
 
-    public List<Article> findArticlesAttenteSoulevement(String email, int limit, int offset) {
+    public List<Article> findArticlesAttenteSoulevement(String email, int page, int pageSize) {
         return dsl.select(
                         field("article.id_article"),
                         field("article.pochette"),
                         field("article.pochette2"),
                         field("article.nom"),
                         field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),       // ✅ ajout
+                        field("a_livre.ref_acheteur"),
                         field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),            // ✅ ajout
-                        field("article.prix"),               // ✅ ajout
-                        field("article.ref_mode_de_livraison"),       // ✅ ajout
-                        field("article.ref_condition_payement"),      // ✅ ajout
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
+                        field("a_livre.montant"),
+                        field("article.prix"),
+                        field("article.ref_mode_de_livraison"),
+                        field("article.ref_condition_payement")
                 )
                 .from(
                         table("article"),
                         table("a_livre"),
-                        table("personne"),
-                        table("condition_livraison_libelle_langue")
+                        table("personne")
                 )
                 .where(field("a_livre.ref_article").eq(field("article.id_article")))
                 .and(field("a_livre.ref_vendeur").eq(field("personne.id_personne")))
                 .and(field("personne.email").eq(email))
-                .and(
-                        field("a_livre.ref_statut").eq(8)
-                )
+                .and(field("a_livre.ref_statut").eq(8))
                 .and(field("article.ref_mode_de_livraison").equal(3))
-                .and(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .limit(50)
-                .offset(0)
+                .limit(pageSize)
+                .offset((page - 1) * pageSize)
                 .fetch()
                 .map(r -> {
                     Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),            Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),             Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                    String.class));
-                    a.setPrix(                r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(             r.get(field("a_livre.montant"),                 BigDecimal.class)); // ✅
-                    a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class));   // ✅
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),  Integer.class));   // ✅
-                    return a;                });
+                    a.setIdArticle(           r.get(field("article.id_article"),             Long.class));
+                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),           Long.class));
+                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),            Integer.class));
+                    a.setNom(                 r.get(field("article.nom"),                    String.class));
+                    a.setPochette(            r.get(field("article.pochette"),               String.class));
+                    a.setPochette2(           r.get(field("article.pochette2"),              String.class));
+                    a.setPrix(                r.get(field("article.prix"),                   Double.class));
+                    a.setMontant(             r.get(field("a_livre.montant"),                BigDecimal.class));
+                    a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),  Integer.class));
+                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+                    a.setIdAlivre(            r.get(field("a_livre.id_a_livre"),             Integer.class));
+                    return a;
+                });
     }
-
     // ✅ Parenthèses manquantes corrigées sur ref_vendeur et ref_acheteur
     public void updateStatutEstLivre(Integer idArticle, Article article, Personne personne) {
         dsl.update(table("a_livre"))
@@ -825,23 +819,38 @@ public class ArticleRepository {
                 .execute();
 
     }
+
     public void updateStatutPaye(Integer idArticle, Article article) {
+        var paye = dsl.select(
+                        field("ref_acheteur", Long.class),
+                        field("ref_vendeur", Integer.class),
+                        field("ref_mode_de_livraison", Integer.class),
+                        field("montant", BigDecimal.class))
+                .from(table("a_paye"))
+                .where(field("id_a_paye").eq(article.getIdApaye()))
+                .and(field("ref_article").eq(idArticle))
+                .fetchOne();
+
+        if (paye == null) {
+            throw new IllegalStateException("a_paye introuvable : id_a_paye=" + article.getIdApaye());
+        }
+
         dsl.update(table("a_paye"))
                 .set(field("ref_statut"), 7)
-                .where(field("ref_article").eq(idArticle))
-                .and(field("id_a_paye").eq(article.getIdApaye()))
-                .and(field("ref_vendeur").eq(article.getRefVendeur()))
+                .where(field("id_a_paye").eq(article.getIdApaye()))
                 .execute();
+
         dsl.insertInto(table("a_livre"))
                 .set(field("ref_article"),           idArticle)
                 .set(field("ref_statut"),            8)
-                .set(field("ref_vendeur"),           article.getRefVendeur())
+                .set(field("ref_vendeur"),           paye.get(field("ref_vendeur", Integer.class)))
+                .set(field("ref_acheteur"),          paye.get(field("ref_acheteur", Long.class)))
+                .set(field("ref_mode_de_livraison"), paye.get(field("ref_mode_de_livraison", Integer.class)))
+                .set(field("montant"),               paye.get(field("montant", BigDecimal.class)))
                 .set(field("date_achat"),            LocalDateTime.now())
-                .set(field("ref_acheteur"),          article.getRefAcheteur())
-                .set(field("ref_mode_de_livraison"), article.getRefModeDeLivraison())
-                .set(field("montant"),               article.getMontant())
                 .execute();
     }
+
 
     public void insertAPaye(
             Integer refArticle,
