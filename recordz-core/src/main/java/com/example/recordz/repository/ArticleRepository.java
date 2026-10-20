@@ -446,341 +446,129 @@ public class ArticleRepository {
                 });
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // LIVRAISONS (table a_livre)
+    //
+    // Statuts utilisés :
+    //   8  = à livrer / à retirer  (créé quand l'acheteur confirme son paiement)
+    //   9  = expédié par le vendeur, en attente de réception par l'acheteur
+    //   12 = reçu / terminé
+    //
+    // Modes de livraison (a_livre.ref_mode_de_livraison) :
+    //   1, 2 = par poste     3 = retrait sur place     4 = à domicile
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private org.jooq.Field<?>[] livraisonFields() {
+        return new org.jooq.Field<?>[] {
+                field("article.id_article"),
+                field("article.nom"),
+                field("article.marque"),
+                field("article.pochette"),
+                field("article.pochette2"),
+                field("article.prix"),
+                field("article.ref_mode_de_livraison"),
+                field("article.ref_condition_payement"),
+                field("a_livre.id_a_livre"),
+                field("a_livre.ref_vendeur"),
+                field("a_livre.ref_acheteur"),
+                field("a_livre.montant")
+        };
+    }
+
+    private Article toArticleLivraison(org.jooq.Record r) {
+        Article a = new Article();
+        a.setIdArticle(           r.get(field("article.id_article"),             Long.class));
+        a.setNom(                 r.get(field("article.nom"),                    String.class));
+        a.setMarque(              r.get(field("article.marque"),                 String.class));
+        a.setPochette(            r.get(field("article.pochette"),               String.class));
+        a.setPochette2(           r.get(field("article.pochette2"),              String.class));
+        a.setPrix(                r.get(field("article.prix"),                   Double.class));
+        a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),  Integer.class));
+        a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
+        a.setIdAlivre(            r.get(field("a_livre.id_a_livre"),             Integer.class));
+        a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),            Integer.class));
+        a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),           Long.class));
+        a.setMontant(             r.get(field("a_livre.montant"),                BigDecimal.class));
+        return a;
+    }
+
+    /**
+     * Requête commune à toutes les listes de livraison.
+     *
+     * @param colPersonne "a_livre.ref_vendeur" ou "a_livre.ref_acheteur" : à qui appartient la liste
+     */
+    private List<Article> findLivraisons(String email, String colPersonne, int statut,
+                                         List<Integer> modes, int page, int pageSize) {
+        return dsl.select(livraisonFields())
+                .from(table("a_livre"))
+                .join(table("article"))
+                .on(field("a_livre.ref_article").eq(field("article.id_article")))
+                .join(table("personne"))
+                .on(field(colPersonne).eq(field("personne.id_personne")))
+                .where(field("personne.email").eq(email))
+                .and(field("a_livre.ref_statut").eq(statut))
+                .and(field("a_livre.ref_mode_de_livraison").in(modes))
+                .orderBy(field("a_livre.id_a_livre").desc())
+                .limit(pageSize)
+                .offset((page - 1) * pageSize)
+                .fetch()
+                .map(this::toArticleLivraison);
+    }
+
+    // Acheteur : ancienne liste « à livrer en attente » (domicile, statut 8)
     public List<Article> findArticlesALivrerEnAttente(String email, int page, int pageSize) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement"),
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(table("article"))
-                .join(table("a_livre"))
-                .on(field("a_livre.ref_article").eq(field("article.id_article")))
-                .join(table("personne"))
-                .on(field("a_livre.ref_acheteur").eq(field("personne.id_personne")))
-                .leftJoin(table("condition_livraison_libelle_langue"))
-                .on(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .where(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8)) //Montre tous les articles à livrés
-                .and(field("a_livre.ref_mode_de_livraison").equal(4)) // ✅ groupé correctement
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),             Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),              Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                String.class));
-                    a.setPrix(               r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
-                    a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    return a;
-                });
+        return findLivraisons(email, "a_livre.ref_acheteur", 8, List.of(4), page, pageSize);
     }
 
+    // Vendeur : à livrer à domicile
     public List<Article> findArticlesALivrerADomicile(String email, int page, int pageSize) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement"),
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(table("article"))
-                .join(table("a_livre"))
-                .on(field("a_livre.ref_article").eq(field("article.id_article")))
-                .join(table("personne"))
-                .on(field("a_livre.ref_vendeur").eq(field("personne.id_personne")))
-                .leftJoin(table("condition_livraison_libelle_langue"))
-                .on(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .where(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8)) //Montre tous les articles à livrés
-                .and(field("a_livre.ref_mode_de_livraison").equal(4)) // ✅ groupé correctement
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),             Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),              Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                String.class));
-                    a.setPrix(               r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
-                    a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
-                    return a;
-                });
-    }
-    public List<Article>  findArticlesALivrerADomicilePourMoi(String email, int page, int pageSize) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement"),
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(table("article"))
-                .join(table("a_livre"))
-                .on(field("a_livre.ref_article").eq(field("article.id_article")))
-                .join(table("personne"))
-                .on(field("a_livre.ref_acheteur").eq(field("personne.id_personne")))
-                .leftJoin(table("condition_livraison_libelle_langue"))
-                .on(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .where(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8)) //Montre tous les articles à livrés
-                .and(field("a_livre.ref_mode_de_livraison").equal(4)) // ✅ groupé correctement
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),             Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),              Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                String.class));
-                    a.setPrix(               r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
-                    a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),                         Integer.class));
-                    return a;
-                });
+        return findLivraisons(email, "a_livre.ref_vendeur", 8, List.of(4), page, pageSize);
     }
 
-
-    public List<Article>  findArticlesALivrerPourMoiParPoste(String email, int page, int pageSize) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement"),
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(table("article"))
-                .join(table("a_livre"))
-                .on(field("a_livre.ref_article").eq(field("article.id_article")))
-                .join(table("personne"))
-                .on(field("a_livre.ref_acheteur").eq(field("personne.id_personne")))
-                .leftJoin(table("condition_livraison_libelle_langue"))
-                .on(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .where(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8)) //Montre tous les articles à livrés
-                .and(field("a_livre.ref_mode_de_livraison").in(1,2))
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),             Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),              Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                String.class));
-                    a.setPrix(               r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
-                    a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
-                    return a;
-                });
+    // Vendeur : à livrer par poste
+    public List<Article> findArticlesALivrerParPoste(String email, int page, int pageSize) {
+        return findLivraisons(email, "a_livre.ref_vendeur", 8, List.of(1, 2), page, pageSize);
     }
 
-
-    public List<Article>  findArticlesALivrerParPoste(String email, int page, int pageSize) {
-        return dsl.selectDistinct(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement"),
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(table("article"))
-                .join(table("a_livre"))
-                .on(field("a_livre.ref_article").eq(field("article.id_article")))
-                .join(table("personne"))
-                .on(field("a_livre.ref_vendeur").eq(field("personne.id_personne")))
-                .leftJoin(table("condition_livraison_libelle_langue"))
-                .on(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .where(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8)) //Montre tous les articles à livrés
-                .and(field("a_livre.ref_mode_de_livraison").in(1,2))
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),             Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),              Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                String.class));
-                    a.setPrix(               r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(            r.get(field("a_livre.montant"),                  BigDecimal.class));
-                    a.setRefModeDeLivraison( r.get(field("article.ref_mode_de_livraison"),   Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"), Integer.class));
-                    return a;
-                });
-    }
-
-    public List<Article> findArticlesAllerChercher(String email, int limit, int offset) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),       // ✅ ajout
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),            // ✅ ajout
-                        field("article.prix"),               // ✅ ajout
-                        field("article.ref_mode_de_livraison"),       // ✅ ajout
-                        field("article.ref_condition_payement"),      // ✅ ajout
-                        field("condition_livraison_libelle_langue.ref_mode_de_livraison")
-                )
-                .from(
-                        table("article"),
-                        table("a_livre"),
-                        table("personne"),
-                        table("condition_livraison_libelle_langue")
-                )
-                .where(field("a_livre.ref_article").eq(field("article.id_article")))
-                .and(field("a_livre.ref_acheteur").eq(field("personne.id_personne")))
-                .and(field("personne.email").eq(email))
-                .and(
-                        field("a_livre.ref_statut").eq(8)
-                )
-                .and(field("article.ref_mode_de_livraison").equal(3))
-                .and(field("article.ref_mode_de_livraison")
-                        .eq(field("condition_livraison_libelle_langue.ref_mode_de_livraison")))
-                .limit(50)
-                .offset(0)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),              Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),            Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),             Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                     String.class));
-                    a.setPochette(            r.get(field("article.pochette"),                String.class));
-                    a.setPochette2(            r.get(field("article.pochette2"),                    String.class));
-                    a.setPrix(                r.get(field("article.prix"),                    Double.class));
-                    a.setMontant(             r.get(field("a_livre.montant"),                 BigDecimal.class)); // ✅
-                    a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),   Integer.class));   // ✅
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"),  Integer.class));   // ✅
-                    a.setIdAlivre(r.get(field("a_livre.id_a_livre"),  Integer.class));   // ✅
-                    return a;                });
-    }
-
+    // Vendeur : attente de soulèvement (l'acheteur doit venir chercher)
     public List<Article> findArticlesAttenteSoulevement(String email, int page, int pageSize) {
-        return dsl.select(
-                        field("article.id_article"),
-                        field("article.pochette"),
-                        field("article.pochette2"),
-                        field("article.nom"),
-                        field("a_livre.ref_vendeur"),
-                        field("a_livre.ref_acheteur"),
-                        field("a_livre.id_a_livre"),
-                        field("a_livre.montant"),
-                        field("article.prix"),
-                        field("article.ref_mode_de_livraison"),
-                        field("article.ref_condition_payement")
-                )
-                .from(
-                        table("article"),
-                        table("a_livre"),
-                        table("personne")
-                )
-                .where(field("a_livre.ref_article").eq(field("article.id_article")))
-                .and(field("a_livre.ref_vendeur").eq(field("personne.id_personne")))
-                .and(field("personne.email").eq(email))
-                .and(field("a_livre.ref_statut").eq(8))
-                .and(field("article.ref_mode_de_livraison").equal(3))
-                .limit(pageSize)
-                .offset((page - 1) * pageSize)
-                .fetch()
-                .map(r -> {
-                    Article a = new Article();
-                    a.setIdArticle(           r.get(field("article.id_article"),             Long.class));
-                    a.setRefAcheteur(         r.get(field("a_livre.ref_acheteur"),           Long.class));
-                    a.setRefVendeur(          r.get(field("a_livre.ref_vendeur"),            Integer.class));
-                    a.setNom(                 r.get(field("article.nom"),                    String.class));
-                    a.setPochette(            r.get(field("article.pochette"),               String.class));
-                    a.setPochette2(           r.get(field("article.pochette2"),              String.class));
-                    a.setPrix(                r.get(field("article.prix"),                   Double.class));
-                    a.setMontant(             r.get(field("a_livre.montant"),                BigDecimal.class));
-                    a.setRefModeDeLivraison(  r.get(field("article.ref_mode_de_livraison"),  Integer.class));
-                    a.setRefConditionPayement(r.get(field("article.ref_condition_payement"), Integer.class));
-                    a.setIdAlivre(            r.get(field("a_livre.id_a_livre"),             Integer.class));
-                    return a;
-                });
+        return findLivraisons(email, "a_livre.ref_vendeur", 8, List.of(3), page, pageSize);
     }
-    // ✅ Parenthèses manquantes corrigées sur ref_vendeur et ref_acheteur
-    public void updateStatutEstLivre(Integer idArticle, Article article, Personne personne) {
-        dsl.update(table("a_livre"))
-                .set(field("ref_vendeur"),           article.getRefVendeur())
-                .set(field("ref_acheteur"),          article.getRefAcheteur())
-                .set(field("montant"),               article.getPrix())
-                .set(field("date_reception"),        LocalDateTime.now())
-                .set(field("ref_mode_de_livraison"), article.getRefModeDeLivraison())
-                .set(field("ref_statut"),            12)
-                .set(field("quantite"),              1)
-                .where(field("ref_article").eq(idArticle))
-                .and(field("ref_acheteur").eq(article.getRefAcheteur()))
-                .and(field("id_a_livre").eq(article.getIdAlivre()))
+
+    // Acheteur : attente de livraison à domicile (le vendeur a expédié → statut 9)
+    public List<Article> findArticlesALivrerADomicilePourMoi(String email, int page, int pageSize) {
+        return findLivraisons(email, "a_livre.ref_acheteur", 9, List.of(4), page, pageSize);
+    }
+
+    // Acheteur : attente de livraison par poste (le vendeur a expédié → statut 9)
+    public List<Article> findArticlesALivrerPourMoiParPoste(String email, int page, int pageSize) {
+        return findLivraisons(email, "a_livre.ref_acheteur", 9, List.of(1, 2), page, pageSize);
+    }
+
+    // Acheteur : articles à aller chercher (retrait, statut 8)
+    public List<Article> findArticlesAllerChercher(String email, int page, int pageSize) {
+        return findLivraisons(email, "a_livre.ref_acheteur", 8, List.of(3), page, pageSize);
+    }
+
+    // Vendeur confirme l'envoi : 8 -> 9
+    public int updateStatutEstLivre(Integer idArticle, Article article, Personne personne) {
+        return dsl.update(table("a_livre"))
+                .set(field("ref_statut"), 9)
+                .where(field("id_a_livre").eq(article.getIdAlivre()))
+                .and(field("ref_article").eq(idArticle))
+                .and(field("ref_statut").eq(8))
+                .execute();
+    }
+
+    // Acheteur confirme la réception d'un envoi (poste ou domicile) : 9 -> 12
+    public int confirmerReceptionByPoste(Integer idArticle, Integer refAcheteur, Article article) {
+        return dsl.update(table("a_livre"))
+                .set(field("ref_statut"),     12)
+                .set(field("date_reception"), LocalDateTime.now())
+                .where(field("id_a_livre").eq(article.getIdAlivre()))
+                .and(field("ref_article").eq(idArticle))
+                .and(field("ref_acheteur").eq(refAcheteur))
+                .and(field("ref_statut").eq(9))
                 .execute();
     }
 
@@ -791,6 +579,7 @@ public class ArticleRepository {
                 .execute();
     }
 
+    // Acheteur confirme avoir récupéré l'article (retrait sur place)
     public void confirmerReception (Integer idArticle, Integer refAchteur, Article article) {
         dsl.update(table("a_livre"))
                 .set(field("ref_statut"), 12)
@@ -802,6 +591,7 @@ public class ArticleRepository {
 
     }
 
+    // Vendeur confirme que l'acheteur est venu chercher l'article (retrait sur place)
     public void confirmerReceptionVendeur (Integer idArticle, Integer refVendeur, Integer idAlivre, Article article) {
         dsl.update(table("a_paye"))
                 .set(field("ref_statut"), 14)
@@ -820,6 +610,7 @@ public class ArticleRepository {
 
     }
 
+    // Acheteur a payé : crée la ligne a_livre à partir de a_paye (sans doublon)
     public void updateStatutPaye(Integer idArticle, Article article) {
         var paye = dsl.select(
                         field("ref_acheteur", Long.class),
@@ -840,17 +631,26 @@ public class ArticleRepository {
                 .where(field("id_a_paye").eq(article.getIdApaye()))
                 .execute();
 
+        Long acheteur = paye.get(field("ref_acheteur", Long.class));
+        boolean existe = dsl.fetchExists(
+                dsl.selectOne().from(table("a_livre"))
+                        .where(field("ref_article").eq(idArticle))
+                        .and(field("ref_acheteur").eq(acheteur))
+                        .and(field("ref_statut").in(8, 9)));
+        if (existe) {
+            return;
+        }
+
         dsl.insertInto(table("a_livre"))
                 .set(field("ref_article"),           idArticle)
                 .set(field("ref_statut"),            8)
                 .set(field("ref_vendeur"),           paye.get(field("ref_vendeur", Integer.class)))
-                .set(field("ref_acheteur"),          paye.get(field("ref_acheteur", Long.class)))
+                .set(field("ref_acheteur"),          acheteur)
                 .set(field("ref_mode_de_livraison"), paye.get(field("ref_mode_de_livraison", Integer.class)))
                 .set(field("montant"),               paye.get(field("montant", BigDecimal.class)))
                 .set(field("date_achat"),            LocalDateTime.now())
                 .execute();
     }
-
 
     public void insertAPaye(
             Integer refArticle,

@@ -79,8 +79,8 @@ public class ArticleService {
     }
 
     @Transactional
-    public void updateStatutEstLivreParPoste(Integer idArticle, Article article, Personne  personne) {
-        this.articleRepository.updateStatutEstLivre(idArticle, article, personne);
+    public int updateStatutEstLivreParPoste(Integer idArticle, Article article, Personne  personne) {
+        return this.articleRepository.updateStatutEstLivre(idArticle, article, personne);
     }
 
 
@@ -341,6 +341,11 @@ public class ArticleService {
     @Transactional
     public void confirmerReception (Integer  idArticle, Integer refAchteur, Article article) {
         articleRepository.confirmerReception(idArticle, refAchteur, article);
+    }
+
+    @Transactional
+    public int confirmerReceptionByPoste(Integer idArticle, Integer refAcheteur, Article article) {
+        return articleRepository.confirmerReceptionByPoste(idArticle, refAcheteur, article);
     }
 
     @Transactional
