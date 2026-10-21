@@ -611,6 +611,7 @@ public class ArticleRepository {
     }
 
     // Acheteur a payé : crée la ligne a_livre à partir de a_paye (sans doublon)
+// Acheteur a payé : crée la ligne a_livre à partir de a_paye (une livraison par paiement)
     public void updateStatutPaye(Integer idArticle, Article article) {
         var paye = dsl.select(
                         field("ref_acheteur", Long.class),
@@ -632,16 +633,17 @@ public class ArticleRepository {
                 .execute();
 
         Long acheteur = paye.get(field("ref_acheteur", Long.class));
+
+        // Anti-doublon : une seule livraison par paiement (a_paye), et non plus par article/acheteur
         boolean existe = dsl.fetchExists(
                 dsl.selectOne().from(table("a_livre"))
-                        .where(field("ref_article").eq(idArticle))
-                        .and(field("ref_acheteur").eq(acheteur))
-                        .and(field("ref_statut").in(8, 9)));
+                        .where(field("ref_a_paye").eq(article.getIdApaye())));
         if (existe) {
             return;
         }
 
         dsl.insertInto(table("a_livre"))
+                .set(field("ref_a_paye"),            article.getIdApaye())
                 .set(field("ref_article"),           idArticle)
                 .set(field("ref_statut"),            8)
                 .set(field("ref_vendeur"),           paye.get(field("ref_vendeur", Integer.class)))
@@ -651,8 +653,7 @@ public class ArticleRepository {
                 .set(field("date_achat"),            LocalDateTime.now())
                 .execute();
     }
-
-    public void insertAPaye(
+        public void insertAPaye(
             Integer refArticle,
             Integer refVendeur,
             Long refAcheteur,

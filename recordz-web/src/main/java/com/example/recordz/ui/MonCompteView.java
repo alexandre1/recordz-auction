@@ -1623,7 +1623,7 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             articleService.confirmerReception(article.getIdArticle().intValue(), article.getRefAcheteur().intValue(), article);
             Notification.show(getTranslation("account.notif.reception.confirmed", article.getNom()));
             dlg.close();
-            showContent("mywaitdeliveringbypost");
+            showContent("mywaitdelivering");
         });
 
         content.add(new HorizontalLayout(annulerBtn, confirmerBtn));
@@ -1687,33 +1687,17 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     }
 
     // Vendeur confirme la livraison
+// Vendeur confirme la livraison (à domicile)
     private void showConfirmerLivraison(Article article) {
-        Dialog dlg = new Dialog();
-        ResponsiveHelper.dialogWidth(dlg, 380);
-        VerticalLayout content = new VerticalLayout();
-        content.setPadding(true);
-        content.setSpacing(true);
-
-        H4 titre = new H4(getTranslation("account.btn.confirm.delivery"));
-        titre.getStyle().set("color", "#0000CC").set("margin", "0");
-        content.add(titre, new Hr());
-        content.add(new Span(getTranslation("account.article.line", article.getNom() != null ? article.getNom() : "—")));
-
-        Button annulerBtn = new Button(getTranslation("common.cancel"));
-        annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
-        annulerBtn.addClickListener(e -> dlg.close());
-
-        Button confirmerBtn = new Button(getTranslation("common.confirm"));
-        confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
-
-        // ✅ Initialiser refAcheteur
-        Integer personneId = this.referenceService.findPersonneId(article.getIdArticle().intValue());
-        Personne personne = this.personneService.findById(personneId.longValue());
-        if (personneId != null) {
-            article.setRefAcheteur(personneId.longValue());
+        // L'acheteur vient de la ligne a_livre déjà chargée, pas d'une recherche par article
+        Long acheteurId = article.getRefAcheteur();
+        Personne personne = acheteurId != null ? this.personneService.findById(acheteurId) : null;
+        if (personne == null) {
+            Notification.show(getTranslation("account.notif.error"));
+            return;
         }
 
-        // ✅ Initialiser montant
+        // Montant
         if (article.getMontant() == null) {
             if (article.getPrix() != null) {
                 article.setMontant(BigDecimal.valueOf(article.getPrix()));
@@ -1723,15 +1707,32 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
             }
         }
 
+        Dialog dlg = new Dialog();
+        ResponsiveHelper.dialogWidth(dlg, 380);
+        VerticalLayout content = new VerticalLayout();
+        content.setPadding(true);
+        content.setSpacing(true);
+
+        H4 titre = new H4(getTranslation("account.btn.confirm.delivery"));
+        titre.getStyle().set("color", "#0000CC").set("margin", "0");
+        content.add(titre, new Hr());
+        content.add(new Span(getTranslation("account.article.line",
+                article.getNom() != null ? article.getNom() : "—")));
+
+        Button annulerBtn = new Button(getTranslation("common.cancel"));
+        annulerBtn.getStyle().set("background-color", "#E0E0E0").set("border", "1px solid #999");
+        annulerBtn.addClickListener(e -> dlg.close());
+
+        Button confirmerBtn = new Button(getTranslation("common.confirm"));
+        confirmerBtn.getStyle().set("background-color", "#0000CC").set("color", "white").set("border", "none");
         confirmerBtn.addClickListener(e -> {
-            if (personne.getAdresse() == null || personne.getAdresse().length() == 0) {
+            if (personne.getAdresse() == null || personne.getAdresse().isBlank()) {
                 envoyerEmailAdresseManquante(personne.getEmail(), personne.getNom());
                 Notification.show(getTranslation("account.notif.address.missing"));
-
-            }else {
+            } else {
                 this.articleService.updateStatutEstLivre(article.getIdArticle().intValue(), article, personne);
                 Notification.show(getTranslation("account.notif.delivery.confirmed", article.getNom()));
-                showContent("mywaitdelivering");
+                showContent("myobjectstodeliver");   // ← liste du vendeur, pas celle de l'acheteur
             }
             dlg.close();
         });
@@ -1740,7 +1741,6 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         dlg.add(content);
         dlg.open();
     }
-
 
     private void showConfirmerLivraisonByPost(Article article) {
         // L'acheteur vient de la ligne a_livre déjà chargée, pas d'une recherche par article
