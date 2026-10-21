@@ -11,9 +11,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * Outils partagés pour les pays, les drapeaux (images) et les numéros de téléphone.
@@ -61,15 +60,27 @@ public final class PaysPhoneUtil {
     // ── Liste et recherche ─────────────────────────────────────
 
     /** Liste des pays, avec le nom dans la langue de l'interface. */
-    public static List<PaysPhone> buildList(Locale uiLocale) {
-        List<PaysPhone> list = new ArrayList<>();
-        for (String code : CODES) {
-            list.add(new PaysPhone(
-                    code,
-                    "+" + PHONE_UTIL.getCountryCodeForRegion(code),
-                    new Locale("", code).getDisplayCountry(uiLocale)));
-        }
-        return list;
+    public static List<PaysPhone> buildList(Locale locale) {
+        Collator collator = Collator.getInstance(locale);
+        List<String> favoris = Arrays.asList(CODES);   // épinglés en tête, dans cet ordre
+
+        Comparator<PaysPhone> ordre = Comparator
+                .comparingInt((PaysPhone p) -> {
+                    int i = favoris.indexOf(p.code());
+                    return i < 0 ? Integer.MAX_VALUE : i;
+                })
+                .thenComparing(PaysPhone::nom, collator);
+
+        return Arrays.stream(Locale.getISOCountries())           // ~249 codes ISO
+                .map(code -> {
+                    int dial = PHONE_UTIL.getCountryCodeForRegion(code);   // 0 si inconnu
+                    if (dial <= 0) return null;
+                    return new PaysPhone(code, "+" + dial,
+                            Locale.of("", code).getDisplayCountry(locale));
+                })
+                .filter(Objects::nonNull)
+                .sorted(ordre)
+                .toList();
     }
 
     public static PaysPhone findByCode(List<PaysPhone> list, String code) {
