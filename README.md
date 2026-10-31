@@ -2,7 +2,7 @@
 
 Cette application Web Java Full Stack constitue la base technique d'une
 marketplace suisse spécialisée dans les produits de luxe. Le business
-plan joint présente le produit sous le nom **Chic Overdose** ; le dépôt
+plan joint présente le produit sous le nom *Avant-Garde** ; le dépôt
 et l'application restent documentés sous le nom technique **Recordz**.
 
 La plateforme combine :
@@ -42,18 +42,18 @@ https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620
 ## Positionnement produit et business
 
 > **Nom technique du projet :** Recordz\
-> **Nom utilisé dans le business plan joint :** Chic Overdose\
+> **Nom utilisé dans le business plan joint :** *Avant-Garde\
 > **Marché initial :** Suisse\
 > **Positionnement :** marketplace spécialisée dans les produits de
 > luxe, combinant ventes directes et enchères.
 >
 > Cette section aligne la documentation du dépôt avec le business plan
 > fourni. Le dépôt conserve son nom technique **Recordz**, tandis que le
-> business plan présente le produit sous le nom **Chic Overdose**.
+> business plan présente le produit sous le nom ***Avant-Garde**.
 
 ### Proposition de valeur
 
-Recordz/Chic Overdose est conçu comme une marketplace suisse spécialisée
+Recordz/*Avant-Garde est conçu comme une marketplace suisse spécialisée
 dans les produits de luxe neufs et d'occasion.
 
 Le modèle décrit dans le business plan repose sur deux formats de
