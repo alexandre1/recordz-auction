@@ -235,5 +235,13 @@ public class EncheresView extends VerticalLayout implements HasUrlParameter<Inte
 
         grid.addColumn(Article::getEnchereDateFin)
                 .setHeader(getTranslation("enc.col.enddate"));
+        grid.addColumn(Article::getQuantite)
+                .setHeader(getTranslation("enc.col.quantite"));
+
+        grid.addColumn(a -> a.getQuantite() != null && a.getQuantite() == 0
+                        ? getTranslation("enc.status.sold")
+                        : getTranslation("enc.status.unsold"))
+                .setHeader(getTranslation("enc.col.status"))
+                .setSortable(true);
     }
 }

@@ -376,7 +376,7 @@ public class ArticleRepository {
                 .join(table("personne").as("p"))
                 .on(field("m.ref_vendeur").eq(field("p.id_personne")))
                 .where(field("p.email").eq(email))
-                .and(field("a.ref_statut").eq(1))
+                //.and(field("a.ref_statut").eq(1))
                 .limit(limit)
                 .offset(offset)
                 .fetch()
