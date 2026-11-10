@@ -120,14 +120,14 @@ Montants indicatifs en CHF, tels que présentés dans le business plan.
 
 ### Feuille de route et étapes clés
 
-| Chronologie | Jalon | Détails |
-|---|---|---|
-| Phase 1 — T1-T2 2025 | Développement MVP | Fonctionnalités principales d'enchères et de vente directe, authentification des utilisateurs et système d'annonces |
-| Phase 2 — 3e trimestre 2025 | Lancement de la version bêta | Bêta fermée avec 50 à 100 vendeurs sélectionnés, boucle de rétroaction et itération |
-| Phase 3 — 4e trimestre 2025 | Lancement public (CH) | Lancement sur le marché suisse, activation des partenariats avec les influenceurs et intégration du réseau publicitaire |
-| Phase 4 — T1-T2 2026 | Croissance et monétisation | Annonces sponsorisées, comptes premium et tableau de bord analytique pour les vendeurs |
-| Phase 5 — T3-T4 2026 | Extension de fonctionnalités | Liste de souhaits, application mobile et déploiement multilingue (FR/DE/IT/EN) |
-| Phase 6 — 2027 | Expansion internationale | Pénétration des marchés voisins : France, Allemagne et Italie |
+| Chronologie                 | Jalon | Détails |
+|-----------------------------|---|---|
+| Phase 1 — T1-T2 2026        | Développement MVP | Fonctionnalités principales d'enchères et de vente directe, authentification des utilisateurs et système d'annonces |
+| Phase 2 — 3e trimestre 2026 | Lancement de la version bêta | Bêta fermée avec 50 à 100 vendeurs sélectionnés, boucle de rétroaction et itération |
+| Phase 3 — 4e trimestre 2026 | Lancement public (CH) | Lancement sur le marché suisse, activation des partenariats avec les influenceurs et intégration du réseau publicitaire |
+| Phase 4 — T1-T2 2027        | Croissance et monétisation | Annonces sponsorisées, comptes premium et tableau de bord analytique pour les vendeurs |
+| Phase 5 — T3-T4 2027        | Extension de fonctionnalités | Liste de souhaits, application mobile et déploiement multilingue (FR/DE/IT/EN) |
+| Phase 6 — 2028              | Expansion internationale | Pénétration des marchés voisins : France, Allemagne et Italie |
 
 ### Besoins de financement
 
