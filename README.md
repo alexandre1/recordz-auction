@@ -40,6 +40,129 @@ https://github.com/user-attachments/assets/e759f9c3-66ef-4efb-99f5-e367ad3b2620
 ------------------------------------------------------------------------
 
 
+## Données du business plan Avant-Garde
+
+Les tableaux ci-dessous reprennent les principales données chiffrées et comparatives du document Word *Avant-Garde — Plan d'affaires 2026*. Ils sont placés avant la documentation de l'architecture logicielle afin de distinguer clairement le positionnement commercial du projet de sa description technique.
+
+### Indicateurs clés
+
+| Indicateur | Valeur |
+|---|---:|
+| Marché cible initial | Suisse |
+| Frais d'inscription | 0 CHF |
+| Frais de transaction | 0 % |
+| Modèle de revenus | Publicité |
+
+### Marché cible suisse — vendeurs potentiels
+
+Données d'annonces identifiées via local.ch dans le business plan.
+
+| Catégorie | Annonces (local.ch) | Pertinence |
+|---|---:|:---:|
+| Garages et automobile | 9 820 | ⭐⭐⭐⭐⭐ |
+| Immobilier | 6 273 | ⭐⭐⭐⭐⭐ |
+| Vins et spiritueux | 4 340 | ⭐⭐⭐⭐⭐ |
+| Mode et vêtements | 2 421 | ⭐⭐⭐⭐⭐ |
+| Motos | 1 886 | ⭐⭐⭐⭐ |
+| Jeux vidéo | 1 404 | ⭐⭐⭐ |
+| Bijoux | 1 042 | ⭐⭐⭐⭐⭐ |
+| Magasins de sport | 1 070 | ⭐⭐⭐ |
+| Parfumeries | 854 | ⭐⭐⭐⭐ |
+| Librairies | 535 | ⭐⭐ |
+| Art et design | 469 | ⭐⭐⭐⭐⭐ |
+| Lingerie | 432 | ⭐⭐⭐⭐ |
+| Instruments de musique | 421 | ⭐⭐⭐ |
+| Accessoires pour bébé | 152 | ⭐⭐ |
+| Collections | 59 | ⭐⭐⭐⭐ |
+| Bateaux | 7 | ⭐⭐⭐⭐ |
+
+### Analyse SWOT
+
+| Points forts | Opportunités |
+|---|---|
+| Aucun frais d'inscription ni de transaction | Marché suisse de la revente de produits de luxe en expansion |
+| Créneau dédié au luxe | Expansion sur les marchés de l'UE |
+| Analyses avancées (marque/canton) | Partenariats et commandites de marques |
+| Architecture multilingue | Développement d'applications mobiles |
+| Partenariats avec des influenceurs en cours | Fonctionnalité de liste de souhaits prévue |
+
+| Faiblesses | Menaces |
+|---|---|
+| Phase de démarrage / aucun revenu pour l'instant | Concurrents établis (Vinted, eBay) |
+| Notoriété de la marque à développer | Évolutions réglementaires du commerce électronique |
+| Dépendance aux revenus publicitaires | Ralentissement économique affectant les dépenses de luxe |
+| Ressources initiales de l'équipe limitées | |
+
+### Paysage concurrentiel
+
+| Plateforme | Annonce gratuite | Commission à 0 % | Focus sur le luxe | Analytique |
+|---|---|---|---|---|
+| **Avant-Garde** | ✅ Oui | ✅ Oui | ✅ Oui | ✅ Avancé |
+| eBay | ❌ Non | ❌ Non (10 % et plus) | ❌ Généraliste | ❌ Basique |
+| Ricardo.ch | ❌ Non | ❌ Aucun (frais) | ❌ Généraliste | ❌ Basique |
+| Vinted | ✅ Oui | ❌ Frais d'acheteur | ⚠️ Vêtements uniquement | ❌ Aucun |
+| Catawiki | ❌ Non | ❌ Non (12,5 %) | ⚠️ Partiel | ⚠️ Limité |
+| Farfetch | ❌ Non | ❌ Non (30 % et plus) | ✅ Oui | ❌ Aucun |
+
+### Prévisions de revenus
+
+Montants indicatifs en CHF, tels que présentés dans le business plan.
+
+| Flux de revenus | Année 1 | Année 2 | Année 3 | Année 4 |
+|---|---:|---:|---:|---:|
+| Publicité display | 18 000 CHF | 55 000 CHF | 120 000 CHF | 210 000 CHF |
+| Annonces sponsorisées | 5 000 CHF | 22 000 CHF | 60 000 CHF | 110 000 CHF |
+| Partenariats de marque | 0 CHF | 15 000 CHF | 40 000 CHF | 80 000 CHF |
+| Comptes Premium | 2 000 CHF | 10 000 CHF | 28 000 CHF | 55 000 CHF |
+| **TOTAL** | **25 000 CHF** | **102 000 CHF** | **248 000 CHF** | **455 000 CHF** |
+
+*Ces projections sont indicatives. Les performances réelles dépendront notamment de l'acquisition des utilisateurs, de l'adoption par les annonceurs et des conditions du marché.*
+
+### Feuille de route et étapes clés
+
+| Chronologie | Jalon | Détails |
+|---|---|---|
+| Phase 1 — T1-T2 2025 | Développement MVP | Fonctionnalités principales d'enchères et de vente directe, authentification des utilisateurs et système d'annonces |
+| Phase 2 — 3e trimestre 2025 | Lancement de la version bêta | Bêta fermée avec 50 à 100 vendeurs sélectionnés, boucle de rétroaction et itération |
+| Phase 3 — 4e trimestre 2025 | Lancement public (CH) | Lancement sur le marché suisse, activation des partenariats avec les influenceurs et intégration du réseau publicitaire |
+| Phase 4 — T1-T2 2026 | Croissance et monétisation | Annonces sponsorisées, comptes premium et tableau de bord analytique pour les vendeurs |
+| Phase 5 — T3-T4 2026 | Extension de fonctionnalités | Liste de souhaits, application mobile et déploiement multilingue (FR/DE/IT/EN) |
+| Phase 6 — 2027 | Expansion internationale | Pénétration des marchés voisins : France, Allemagne et Italie |
+
+### Besoins de financement
+
+| Zone de dépenses | Budget prévisionnel |
+|---|---:|
+| Développement de la plateforme (MVP) | CHF 35 000 – 55 000 |
+| Conception d'interface utilisateur / d'expérience utilisateur | CHF 8 000 – 15 000 |
+| Campagne de marketing et de lancement | CHF 15 000 – 25 000 |
+| Juridique et conformité (droit suisse) | CHF 5 000 – 8 000 |
+| Opérations et infrastructure (année 1) | CHF 10 000 – 18 000 |
+| Prévoyance (15 %) | CHF 11 000 – 18 000 |
+
+### Objectifs de chiffre d'affaires et seuil de rentabilité
+
+| Indicateur | Valeur |
+|---|---:|
+| Objectif de chiffre d'affaires — année 1 | 25 000 CHF |
+| Objectif de chiffre d'affaires — année 2 | 102 000 CHF |
+| Seuil de rentabilité estimé | Année 2 |
+| Objectif de chiffre d'affaires — année 4 | 455 000 CHF |
+
+### Analyse des risques
+
+| Risque | Niveau | Atténuation |
+|---|---|---|
+| Adoption lente par les utilisateurs au lancement | 🟠 Moyen | Pré-remplissage avec des vendeurs sélectionnés ; campagne de lancement avec influenceurs ; incitations au parrainage |
+| Recettes publicitaires inférieures aux prévisions | 🟠 Moyen | Diversifier les annonces avec des liens sponsorisés ; rechercher des partenariats directs avec les marques |
+| Réponse des concurrents (Ricardo, Vinted) | 🟡 Bas | La spécialisation et le modèle sans frais créent une position solide et défendable |
+| Impact des bloqueurs de publicité sur les revenus publicitaires | 🟠 Moyen | Formats publicitaires natifs ; diversification vers des sources de revenus non publicitaires |
+| Problèmes de mise à l'échelle de la plateforme | 🟡 Bas | Architecture native du cloud ; tests de charge avant le lancement |
+| Marchandises contrefaites sur la plateforme | 🔴 Haut | Badges de vérification ; système de rapports ; authentification par un tiers (optionnelle) |
+| Réglementation / protection des données (RGPD/nDSG) | 🟠 Moyen | Conseil juridique suisse ; conformité RGPD dès le premier jour |
+
+---
+
 ## Architecture logicielle actuelle
 
 Le dépôt technique reste organisé autour de deux modules Maven :
