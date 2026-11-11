@@ -2,6 +2,11 @@ package com.example.recordz.ui;
 
 import com.example.recordz.security.AuthenticatedUser;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -27,8 +32,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
-        getStyle().set("background", "#f5f5f5");
+        getStyle().set("background", "white");
 
+        // Style du survol du bouton Google (pas de style multi-ligne dans un attribut)
+        add(new Html("<style>.google-btn:hover{box-shadow:0 2px 8px rgba(0,0,0,0.18) !important;}</style>"));
         add(buildLoginCard());
     }
 
@@ -42,63 +49,73 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .set("padding", "40px")
                 .set("box-shadow", "0 4px 24px rgba(0,0,0,0.10)");
 
-        // Logo / titre
-        Html logo = new Html("""
-                <div style="text-align:center; margin-bottom: 8px;">
-                    <span style="font-size:2rem; font-weight:700; color:#1a1a2e;">
-                        🎵 Recordz
-                    </span>
-                    <p style="color:#666; margin-top:6px; font-size:0.95rem;">
-                        La marketplace suisse
-                    </p>
-                </div>
-                """);
+        // ── Image ─────────────────────────────────────────────
+        Image img = new Image("/images/logo2.png", "Avant-Garde");
+        img.setWidth("50%");
+        img.setHeight("auto");
+        img.getStyle()
+                .set("max-width", "50%")
+                .set("object-fit", "contain")
+                .set("display", "block")
+                .set("margin", "0 auto")              // centre l'image horizontalement
+                .set("mix-blend-mode", "multiply");
+        Div imgBox = new Div(img);
+        imgBox.setWidth("100%");
+        imgBox.getStyle().set("margin-bottom", "12px");
+        // ── Logo / titre ──────────────────────────────────────
+        Paragraph subtitle = new Paragraph("La marketplace suisse");
+        subtitle.getStyle()
+                .set("color", "#666")
+                .set("margin-top", "6px")
+                .set("font-size", "0.95rem");
 
-        // Bouton Google OAuth2
+        Div logo = new Div(subtitle);
+        logo.getStyle()
+                .set("text-align", "center")
+                .set("margin-bottom", "8px");
+
+        // ── Bouton Google OAuth2 ──────────────────────────────
         // Spring Security expose automatiquement /oauth2/authorization/google
-        Html googleButton = new Html("""
-                <a href="/oauth2/authorization/google"
-                   style="
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     gap: 12px;
-                     width: 100%;
-                     padding: 12px 24px;
-                     margin-top: 24px;
-                     background: white;
-                     color: #444;
-                     border: 1px solid #ddd;
-                     border-radius: 8px;
-                     font-size: 1rem;
-                     font-weight: 500;
-                     text-decoration: none;
-                     cursor: pointer;
-                     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-                     transition: box-shadow 0.2s;
-                   "
-                   onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.18)'"
-                   onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.08)'"
-                >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                       width="22" height="22" alt="Google"/>
-                  Se connecter avec Google
-                </a>
-                """);
+        Anchor googleButton = new Anchor("/oauth2/authorization/google");
+        googleButton.setRouterIgnore(true); // lien serveur, pas une route Vaadin
+        googleButton.addClassName("google-btn");
 
-        // Message d'info
-        Html info = new Html("""
-                <p style="
-                  text-align:center;
-                  color:#999;
-                  font-size:0.80rem;
-                  margin-top:20px;
-                ">
-                  En vous connectant, vous acceptez les conditions d'utilisation de Recordz.
-                </p>
-                """);
+        Image googleIcon = new Image(
+                "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg", "Google");
+        googleIcon.setWidth("22px");
+        googleIcon.setHeight("22px");
 
-        card.add(logo, googleButton, info);
+        googleButton.add(googleIcon, new Span("Se connecter avec Google"));
+        googleButton.getStyle()
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("gap", "12px")
+                .set("width", "100%")
+                .set("box-sizing", "border-box")
+                .set("padding", "12px 24px")
+                .set("margin-top", "24px")
+                .set("background", "white")
+                .set("color", "#444")
+                .set("border", "1px solid #ddd")
+                .set("border-radius", "8px")
+                .set("font-size", "1rem")
+                .set("font-weight", "500")
+                .set("text-decoration", "none")
+                .set("cursor", "pointer")
+                .set("box-shadow", "0 1px 4px rgba(0,0,0,0.08)")
+                .set("transition", "box-shadow 0.2s");
+
+        // ── Message d'info ────────────────────────────────────
+        Paragraph info = new Paragraph(
+                "En vous connectant, vous acceptez les conditions d'utilisation de Recordz.");
+        info.getStyle()
+                .set("text-align", "center")
+                .set("color", "#999")
+                .set("font-size", "0.80rem")
+                .set("margin-top", "20px");
+
+        card.add(imgBox, logo, googleButton, info);
         return card;
     }
 
