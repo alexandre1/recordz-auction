@@ -153,7 +153,7 @@ sequenceDiagram
     else signature valide
         C->>W: processEvent(payload)
         W->>W: aiguillage sur event
-        Note over W: session.completed traité ; support.message et certificate.transfer journalisés seulement
+        Note over W: session.completed est traité, les événements support.message et certificate.transfer sont seulement journalisés
         W->>A: updateAuthenticationStatus(customerItemId, entrupyId, certificateUrl, isAuthentic)
         A->>DB: UPDATE article (entrupy_status, entrupy_id, entrupy_certificate_url)
         opt article authentique
