@@ -22,6 +22,11 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.codecrete.qrbill</groupId>
+            <artifactId>qrbill-generator</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>

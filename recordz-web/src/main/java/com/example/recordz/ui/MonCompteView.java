@@ -4,8 +4,10 @@ import com.example.recordz.model.domain.Article;
 import com.example.recordz.model.domain.Personne;
 import com.example.recordz.service.ArticleService;
 import com.example.recordz.service.PersonneService;
+import com.example.recordz.service.QrBillService;
 import com.example.recordz.service.ReferenceService;
 import com.example.recordz.ui.layouts.MainLayout;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -29,12 +31,19 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.server.streams.DownloadHandler; // alternative récente
+import com.vaadin.flow.server.StreamResource;
+import java.io.ByteArrayInputStream;
 
 @Route(value = "mon-compte", layout = MainLayout.class)
 @PermitAll
 public class MonCompteView extends VerticalLayout implements BeforeEnterObserver, HasDynamicTitle {
 
     private static final Number[] STATS_PARIS_HILTON = {0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1000};
+
+    private final QrBillService qrBillService;
+
     /** Libellés des 12 mois, traduits selon la locale de l'UI. */
     private String[] months() {
         String[] m = new String[12];
@@ -68,11 +77,12 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
     private final JavaMailSender mailSender;
 
     public MonCompteView(ArticleService articleService, ReferenceService referenceService,
-                         PersonneService personneService,JavaMailSender mailSender) {
+                         PersonneService personneService,JavaMailSender mailSender,QrBillService qrBillService) {
         this.articleService = articleService;
         this.referenceService = referenceService;
         this.personneService = personneService;
         this.mailSender = mailSender;
+        this.qrBillService = qrBillService;
     }
 
     @Override
@@ -1494,11 +1504,13 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
 
                     if (refCond.equals(5)) {
                         // Twint
-                        content.add(fieldRow(getTranslation("account.field.twint"), personne.getNoTelephone()));
-                        if (personne.getNoTelephone() == null || personne.getNoTelephone().isEmpty()) {
+                        String tel = personne.getNoTelephone();
+                        if (tel == null || tel.isBlank()) {
                             Notification.show(getTranslation("account.notif.twint.missing", personne.getNom()));
                             envoyerEmailCompteOuTwtinzManquant(personne.getEmail(), personne.getNom());
                         } else {
+                            content.add(fieldRow(getTranslation("account.field.twint"), tel));
+                            content.add(buildTwintPanel(article, tel));
                             aEnvoyer[0] = true;
                         }
 
@@ -1664,7 +1676,35 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
         dlg.add(content);
         dlg.open();
     }
+    private VerticalLayout buildTwintPanel(Article article, String telVendeur) {
+        String montant = article.getMontant() != null
+                ? article.getMontant().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()
+                : "0.00";
+        String reference = "Avant-Garde #" + article.getIdArticle();
 
+        VerticalLayout panel = new VerticalLayout();
+        panel.setPadding(false);
+        panel.setSpacing(false);
+
+        content(panel, fieldRow(getTranslation("account.col.price"), montant + " CHF"));
+        content(panel, fieldRow("Référence", reference));
+
+        Personne personne = this.personneService.findById(article.getRefVendeur().longValue());
+        byte[] svg = qrBillService.generateSvg(personne.getIban(), personne.getNom(),
+                personne.getAdresse(), personne.getNoRue(), personne.getNpa().toString(), personne.getVille(), article.getMontant(),
+                "Avant-Garde #" + article.getIdArticle(), article.getIdArticle().toString());
+
+        StreamResource res = new StreamResource("qr-" + article.getIdArticle() + ".svg",
+                () -> new ByteArrayInputStream(svg));
+        res.setContentType("image/svg+xml");
+
+        Image qr = new Image(res, "QR de paiement");
+        qr.setWidth("220px");
+        panel.add(qr);
+        return panel;
+    }
+
+    private void content(VerticalLayout l, com.vaadin.flow.component.Component c) { l.add(c); }
     private HorizontalLayout fieldRow(String label, String value) {
         HorizontalLayout row = new HorizontalLayout();
         row.setAlignItems(Alignment.BASELINE);

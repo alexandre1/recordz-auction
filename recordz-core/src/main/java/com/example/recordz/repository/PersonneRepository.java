@@ -129,6 +129,7 @@ public class PersonneRepository {
                 .set(field("iban"), p.getIban())
                 .set(field("paypal_me"), p.getPaypalMe())
                 .set(field("ref_canton"), p.getRefCanton())
+                .set(field("no_de_rue"), p.getNoRue())
                 .where(field("id_personne").eq(p.getIdPersonne()))
                 .execute();
     }
@@ -138,6 +139,7 @@ public class PersonneRepository {
     private Personne toPersonne(org.jooq.Record r) {
         Personne p = new Personne();
         p.setIdPersonne(r.get(field("id_personne"), Long.class));
+        p.setNoRue(r.get(field("no_de_rue"), String.class));
         p.setNomUtilisateur(r.get(field("nom_utilisateur"), String.class));
         p.setMotDePasse(r.get(field("mot_de_passe"), String.class));
         p.setNom(r.get(field("nom"), String.class));

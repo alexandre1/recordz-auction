@@ -29,6 +29,16 @@ public class Personne {
     private Integer refCanton;
     private String paypalMe;
 
+    public String getNoRue() {
+        return noRue;
+    }
+
+    public void setNoRue(String noRue) {
+        this.noRue = noRue;
+    }
+
+    private String noRue;
+
     public Personne() {}
 
     // ── Getters & Setters ─────────────────────────────────────

@@ -107,7 +107,7 @@ public class InformationsPersonnellesView extends VerticalLayout
         TextField nomF     = field(nullSafe(person.getNom()));
         nomF.setReadOnly(true);
         TextField adresseF = field(nullSafe(person.getAdresse()));
-
+        TextField noDeRueF = field(nullSafe(person.getNoRue()));
         TextField villeF   = field(nullSafe(person.getVille()));
         TextField npaF     = field(person.getNpa() != null ? person.getNpa().toString() : "");
         TextField ibanF    = new TextField();
@@ -216,6 +216,7 @@ public class InformationsPersonnellesView extends VerticalLayout
             person.setNpa(npa);
             person.setNoTelephone(telE164);
             person.setIban(ibanF.getValue());
+            person.setNoRue(noDeRueF.getValue());
             person.setPaypalMe(paypalUser.isEmpty() ? "" : PAYPAL_PREFIX + paypalUser);
             person.setPays(paysChoisi.nomFrancais());   // valeur stockée en français
             personneService.updateProfil(person);
@@ -235,6 +236,7 @@ public class InformationsPersonnellesView extends VerticalLayout
                 row(getTranslation("info.field.fullname"), nomF),
                 rowComp(getTranslation("info.field.country"), paysSel),
                 row(getTranslation("info.field.address"),  adresseF),
+                row("No",  noDeRueF),
                 row(getTranslation("info.field.city"),     villeF),
                 row(getTranslation("info.field.zip"),      npaF),
                 rowComp(getTranslation("info.field.phone"), phoneLayout),
