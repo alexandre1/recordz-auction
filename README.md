@@ -241,9 +241,13 @@ utilisateurs, sa monétisation et sa feuille de route.
 [Mon compte](docs/architecture/cas-d-utilisation/05-mon-compte-transactions.md) ·
 [Profils et calendrier](docs/architecture/cas-d-utilisation/06-profils-et-compte.md) ·
 [Points d'attention](docs/architecture/cas-d-utilisation/07-points-d-attention.md)                              
+
+
 ## Diagrammes d'architecture
 
+
 La documentation d'architecture se trouve dans `docs/architecture/` :
+
 
 | Document | Contenu |
 |---|---|
