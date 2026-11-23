@@ -249,7 +249,6 @@ La documentation d'architecture se trouve dans `docs/architecture/` :
 |---|---|
 | [Diagrammes d'architecture](docs/architecture/diagrammes.md) | Composants, déploiement Docker, séquences (enchère, clôture automatique, webhook Entrupy) |
 | [Modèle de données](docs/architecture/modele-de-donnees.md) | Diagramme ER, cycle de vie d'un article, champs par catégorie |
-| [Analyse et architecture](docs/architecture/analyse-et-architecture.md) | Analyse détaillée existante |s
 
 
 ## Documentation historique d'architecture
