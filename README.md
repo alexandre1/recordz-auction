@@ -224,6 +224,23 @@ utilisateurs, sa monétisation et sa feuille de route.
 
 ---
 
+**Modèle de données par domaine** :
+[Utilisateurs](docs/architecture/modele-de-donnees/01-utilisateurs.md) ·
+[Articles](docs/architecture/modele-de-donnees/02-articles.md) ·
+[Enchères et paiements](docs/architecture/modele-de-donnees/03-encheres-commandes-paiements.md) ·
+[Listes de souhaits](docs/architecture/modele-de-donnees/04-wishlist.md) ·
+[Référentiels](docs/architecture/modele-de-donnees/05-referentiels.md) ·
+[Libellés multilingues](docs/architecture/modele-de-donnees/06-multilingue.md) ·
+[Dictionnaire](docs/architecture/modele-de-donnees/dictionnaire.md)
+
+**Cas d'utilisation par thème** :
+[Accès et navigation](docs/architecture/cas-d-utilisation/01-acces-et-navigation.md) ·
+[Catalogue et recherche](docs/architecture/cas-d-utilisation/02-catalogue-et-recherche.md) ·
+[Fiche article et offres](docs/architecture/cas-d-utilisation/03-fiche-article-et-offres.md) ·
+[Publier et promouvoir](docs/architecture/cas-d-utilisation/04-publier-et-promouvoir.md) ·
+[Mon compte](docs/architecture/cas-d-utilisation/05-mon-compte-transactions.md) ·
+[Profils et calendrier](docs/architecture/cas-d-utilisation/06-profils-et-compte.md) ·
+[Points d'attention](docs/architecture/cas-d-utilisation/07-points-d-attention.md)                              
 ## Diagrammes d'architecture
 
 La documentation d'architecture se trouve dans `docs/architecture/` :
