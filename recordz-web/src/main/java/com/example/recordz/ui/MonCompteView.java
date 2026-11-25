@@ -1510,13 +1510,14 @@ public class MonCompteView extends VerticalLayout implements BeforeEnterObserver
                             envoyerEmailCompteOuTwtinzManquant(personne.getEmail(), personne.getNom());
                         } else {
                             content.add(fieldRow(getTranslation("account.field.twint"), tel));
-                            content.add(buildTwintPanel(article, tel));
+
                             aEnvoyer[0] = true;
                         }
 
                     } else if (refCond.equals(3)) {
                         // Virement bancaire
                         content.add(fieldRow(getTranslation("account.field.iban"), personne.getIban()));
+                        content.add(buildTwintPanel(article, personne.getIban()));
                         if (personne.getIban() == null || personne.getIban().isEmpty()) {
                             Notification.show(getTranslation("account.notif.iban.missing", personne.getNom()));
                             envoyerEmailCompteOuTwtinzManquant(personne.getEmail(), personne.getNom());
